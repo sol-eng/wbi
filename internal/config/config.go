@@ -4,10 +4,15 @@ package config
 type WBConfig struct {
 	SSLConfig SSLConfig
 	AuthType  string
+	RConfig   RConfig
 	// TODO: should probably nest this or otherwise
 	LDAPConfig LDAPConfig
 	OIDCConfig OIDCConfig
 	SAMLConfig SAMLConfig
+}
+
+type RConfig struct {
+	Paths []string
 }
 
 // SSLConfig stores SSL config

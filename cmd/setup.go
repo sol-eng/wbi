@@ -38,6 +38,7 @@ func newSetup(setupOpts setupOpts) error {
 	err := survey.Ask(qs, &answers)
 	fmt.Println("You just chose the languages: ", answers.Languages)
 
+	// TODO: conditionally scan for R versions
 	rVersions, err := langscanner.ScanForRVersions()
 	if err != nil {
 		log.Fatal(err)
