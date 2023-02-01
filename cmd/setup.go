@@ -43,11 +43,22 @@ func newSetup(setupOpts setupOpts) error {
 		log.Fatal(err)
 	}
 	if len(rVersions) == 0 {
+		// TODO: if no R version found, send link to R installation doc
 		log.Fatal("no R versions found at locations: \n", strings.Join(langscanner.GetRootDirs(), "\n"))
 	}
 
 	fmt.Println("found R versions: ", strings.Join(rVersions, ", "))
-	// pythonVersions := scanForPythonVersion()
+	// TODO: scan for python versions
+
+	// TODO: If python found -- setup jupyter or ask to setup jupyter or check
+
+	// TODO: Handle SSL cert
+	// * ask if want SSL
+	// * if yes, ask for cert and key
+	// * make sure cert and key are valid
+
+	// TODO:
+
 	return err
 }
 
