@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/dpastoor/wbi/internal/config"
 	"github.com/dpastoor/wbi/internal/langscanner"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -20,8 +20,11 @@ type setupOpts struct {
 
 func newSetup(setupOpts setupOpts) error {
 
+	var WBConfig config.WBConfig
+
 	//TODO: check if workbench installed
 
+	// Ask language question
 	var qs = []*survey.Question{
 		{
 			Name: "languages",
@@ -37,19 +40,8 @@ func newSetup(setupOpts setupOpts) error {
 	}{}
 	err := survey.Ask(qs, &answers)
 	fmt.Println("You just chose the languages: ", answers.Languages)
-
-	// TODO: conditionally scan for R versions
-	rVersions, err := langscanner.ScanForRVersions()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if len(rVersions) == 0 {
-		// TODO: if no R version found, send link to R installation doc
-		log.Fatal("no R versions found at locations: \n", strings.Join(langscanner.GetRootDirs(), "\n"))
-	}
-
-	fmt.Println("found R versions: ", strings.Join(rVersions, ", "))
-	// TODO: scan for python versions
+	WBConfig.RConfig, err = langscanner.ScanAndHandleRVersions()
+	WBConfig.PythonConfig, err = langscanner.ScanAndHandlePythonVersions()
 
 	// TODO: If python found -- setup jupyter or ask to setup jupyter or check
 
