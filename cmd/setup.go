@@ -5,7 +5,10 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/dpastoor/wbi/internal/config"
+	"github.com/dpastoor/wbi/internal/jupyter"
 	"github.com/dpastoor/wbi/internal/langscanner"
+	"github.com/dpastoor/wbi/internal/ssl"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -35,22 +38,77 @@ func newSetup(setupOpts setupOpts) error {
 			},
 		},
 	}
-	answers := struct {
+	languageAnswers := struct {
 		Languages []string `survey:"languages"`
 	}{}
-	err := survey.Ask(qs, &answers)
-	fmt.Println("You just chose the languages: ", answers.Languages)
+	err := survey.Ask(qs, &languageAnswers)
+	fmt.Println("You just chose the languages: ", languageAnswers.Languages)
 	WBConfig.RConfig, err = langscanner.ScanAndHandleRVersions()
 	WBConfig.PythonConfig, err = langscanner.ScanAndHandlePythonVersions()
 
-	// TODO: If python found -- setup jupyter or ask to setup jupyter or check
+	// If python found -- setup jupyter or ask to setup jupyter or check
+	if len(WBConfig.PythonConfig.Paths) > 0 {
+		// Ask if jupyter should be installed
+		jupyterInstallName := true
+		jupyterInstallPrompt := &survey.Confirm{
+			Message: "Would you like to install Jupyter?",
+		}
+		survey.AskOne(jupyterInstallPrompt, &jupyterInstallName)
+		// If Jupyter, then do the install steps
+		if jupyterInstallName {
+			// Allow the user to select a version of Python to target
+			jupyterPythonTarget := ""
+			jupyterPythonPrompt := &survey.Select{
+				Message: "Select a Python kernel to install Jupyter into:",
+				Options: WBConfig.PythonConfig.Paths,
+			}
+			survey.AskOne(jupyterPythonPrompt, &jupyterPythonTarget)
+			// Install Jupyter
+			jupyterInstallError := jupyter.InstallJupyter(jupyterPythonTarget)
+			if jupyterInstallError != nil {
+				log.Fatal(jupyterInstallError)
+			}
+		}
+	}
 
-	// TODO: Handle SSL cert
+	// Handle SSL cert
 	// * ask if want SSL
-	// * if yes, ask for cert and key
-	// * make sure cert and key are valid
+	sslCertName := false
+	sslCertPrompt := &survey.Confirm{
+		Message: "Would you like to use SSL?",
+	}
+	survey.AskOne(sslCertPrompt, &sslCertName)
 
-	// TODO:
+	if sslCertName {
+		// Ask for cert and key locations
+		certLocationName := ""
+		certLocationPrompt := &survey.Input{
+			Message: "Filepath to SSL certificate:",
+		}
+		survey.AskOne(certLocationPrompt, &certLocationName)
+
+		certKeyLocationName := ""
+		certKeyLocationPrompt := &survey.Input{
+			Message: "Filepath to SSL certificate key:",
+		}
+		survey.AskOne(certKeyLocationPrompt, &certKeyLocationName)
+		// Check to make sure cert and key are valid
+		certVerificationError := ssl.VerifySSLCertAndKey(certLocationName, certKeyLocationName)
+		if certVerificationError != nil {
+			log.Fatal(certVerificationError)
+		}
+	}
+
+	// Handle authentication
+	choosenAuthenticationName := ""
+	choosenAuthenticationPrompt := &survey.Select{
+		Message: "Choose an authentication method:",
+		Options: []string{"SAML", "OIDC", "Active Directory/LDAP", "PAM", "Other"},
+	}
+	survey.AskOne(choosenAuthenticationPrompt, &choosenAuthenticationName)
+	// TODO: Handle based on the choosen method
+
+	// TODO: Handle license key
 
 	return err
 }
