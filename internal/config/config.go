@@ -2,9 +2,10 @@ package config
 
 // WBConfig stores the entire workbench configuration
 type WBConfig struct {
-	SSLConfig SSLConfig
-	AuthType  string
-	RConfig   RConfig
+	SSLConfig    SSLConfig
+	AuthType     string
+	RConfig      RConfig
+	PythonConfig PythonConfig
 	// TODO: should probably nest this or otherwise
 	LDAPConfig LDAPConfig
 	OIDCConfig OIDCConfig
@@ -12,6 +13,10 @@ type WBConfig struct {
 }
 
 type RConfig struct {
+	Paths []string
+}
+
+type PythonConfig struct {
 	Paths []string
 }
 
