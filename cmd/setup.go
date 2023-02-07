@@ -10,6 +10,7 @@ import (
 	"github.com/dpastoor/wbi/internal/license"
 	"github.com/dpastoor/wbi/internal/os"
 	"github.com/dpastoor/wbi/internal/ssl"
+	"github.com/dpastoor/wbi/internal/workbench"
 	"github.com/samber/lo"
 
 	log "github.com/sirupsen/logrus"
@@ -28,7 +29,11 @@ func newSetup(setupOpts setupOpts) error {
 
 	var WBConfig config.WBConfig
 
-	//TODO: check if workbench installed
+	// Workbench installation
+	_, err := workbench.VerifyWorkbench()
+	if err != nil {
+		return err
+	}
 
 	// Determine OS
 	osType, err := os.DetectOS()
