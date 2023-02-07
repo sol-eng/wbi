@@ -8,6 +8,7 @@ import (
 	"github.com/dpastoor/wbi/internal/jupyter"
 	"github.com/dpastoor/wbi/internal/languages"
 	"github.com/dpastoor/wbi/internal/license"
+	"github.com/dpastoor/wbi/internal/os"
 	"github.com/dpastoor/wbi/internal/ssl"
 	"github.com/samber/lo"
 
@@ -30,12 +31,10 @@ func newSetup(setupOpts setupOpts) error {
 	//TODO: check if workbench installed
 
 	// Determine OS
-	// TODO switch back to function
-	// osType, err := os.DetectOS()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	osType := "ubuntu22"
+	osType, err := os.DetectOS()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Languages
 	selectedLanguages := languages.PromptAndRespond()
