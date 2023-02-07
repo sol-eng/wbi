@@ -62,10 +62,10 @@ func ScanAndHandleRVersions() ([]string, error) {
 	}
 
 	if len(anyOptLocations) == 0 {
-		fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R. \n\nTo install versions of R in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
+		fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R. \nTo install versions of R in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
 	}
 
-	fmt.Println("Found R versions: ", strings.Join(rVersions, ", "))
+	fmt.Println("\nFound R versions: ", strings.Join(rVersions, ", "))
 
 	return rVersions, nil
 }

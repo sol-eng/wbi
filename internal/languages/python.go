@@ -67,10 +67,10 @@ func ScanAndHandlePythonVersions() ([]string, error) {
 	}
 
 	if len(anyOptLocations) == 0 {
-		fmt.Println("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python. \n\nTo install versions of Python in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
+		fmt.Println("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python. \nTo install versions of Python in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
 	}
 
-	fmt.Println("Found Python versions: ", strings.Join(pythonVersions, ", "))
+	fmt.Println("\nFound Python versions: ", strings.Join(pythonVersions, ", "), "\n")
 
 	return pythonVersions, nil
 }

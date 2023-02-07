@@ -2,7 +2,6 @@ package languages
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
@@ -30,6 +29,5 @@ func PromptAndRespond() ([]string, error) {
 	if !lo.Contains(languageAnswers.Languages, "R") {
 		return []string{}, errors.New("R must be a select language to install Workbench")
 	}
-	fmt.Println("You just chose the languages: ", languageAnswers.Languages)
 	return languageAnswers.Languages, nil
 }
