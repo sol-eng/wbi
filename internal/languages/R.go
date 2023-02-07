@@ -10,7 +10,7 @@ import (
 
 	"github.com/dpastoor/wbi/internal/config"
 	"github.com/hairyhenderson/go-which"
-	"golang.org/x/exp/slices"
+	"github.com/samber/lo"
 )
 
 var globalRPaths = []string{
@@ -52,7 +52,7 @@ func ScanAndHandleRVersions(RConfig *config.RConfig) {
 	if len(rVersions) == 0 {
 		log.Fatal("no R versions found at locations: \n", strings.Join(GetRRootDirs(), "\n"), "To install versions of R, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
 	}
-	if !slices.Contains(rVersions, "/opt") {
+	if !lo.Contains(rVersions, "/opt") {
 		fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R. \n\nTo install versions of R in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
 	}
 

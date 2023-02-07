@@ -10,7 +10,7 @@ import (
 
 	"github.com/dpastoor/wbi/internal/config"
 	"github.com/hairyhenderson/go-which"
-	"golang.org/x/exp/slices"
+	"github.com/samber/lo"
 )
 
 var globalPythonPaths = []string{
@@ -58,7 +58,7 @@ func ScanAndHandlePythonVersions(PythonConfig *config.PythonConfig) {
 		log.Fatal("no Python versions found at locations: \n", strings.Join(GetPythonRootDirs(), "\n"), "To install versions of Python, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
 	}
 
-	if !slices.Contains(pythonVersions, "/opt") {
+	if !lo.Contains(pythonVersions, "/opt") {
 		fmt.Println("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python. \n\nTo install versions of Python in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
 	}
 

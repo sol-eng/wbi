@@ -9,7 +9,7 @@ import (
 	"github.com/dpastoor/wbi/internal/languages"
 	"github.com/dpastoor/wbi/internal/license"
 	"github.com/dpastoor/wbi/internal/ssl"
-	"golang.org/x/exp/slices"
+	"github.com/samber/lo"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -40,7 +40,7 @@ func newSetup(setupOpts setupOpts) error {
 	// Languages
 	selectedLanguages := languages.PromptAndRespond()
 	languages.ScanAndHandleRVersions(&WBConfig.RConfig)
-	if slices.Contains(selectedLanguages, "python") {
+	if lo.Contains(selectedLanguages, "python") {
 		languages.ScanAndHandlePythonVersions(&WBConfig.PythonConfig)
 	}
 

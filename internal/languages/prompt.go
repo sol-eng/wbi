@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/AlecAivazis/survey/v2"
-	"golang.org/x/exp/slices"
+	"github.com/samber/lo"
 )
 
 func PromptAndRespond() []string {
@@ -26,7 +26,7 @@ func PromptAndRespond() []string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if !slices.Contains(languageAnswers.Languages, "R") {
+	if !lo.Contains(languageAnswers.Languages, "R") {
 		log.Fatal("R must be a selected language")
 	}
 	fmt.Println("You just chose the languages: ", languageAnswers.Languages)
