@@ -3,14 +3,11 @@ package languages
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
-
-	"github.com/dpastoor/wbi/internal/config"
-	"github.com/hairyhenderson/go-which"
-	"github.com/samber/lo"
 )
 
 var globalPythonPaths = []string{
@@ -49,22 +46,33 @@ func isPythonDir(path string) (string, bool) {
 }
 
 // ScanAndHandlePythonVersions scans for Python versions, handles result/errors and creates PythonConfig
-func ScanAndHandlePythonVersions(PythonConfig *config.PythonConfig) {
+func ScanAndHandlePythonVersions() ([]string, error) {
 	pythonVersions, err := ScanForPythonVersions()
 	if err != nil {
-		log.Fatal(err)
+		return []string{}, fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 	}
 	if len(pythonVersions) == 0 {
-		log.Fatal("no Python versions found at locations: \n", strings.Join(GetPythonRootDirs(), "\n"), "To install versions of Python, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
+		fmt.Println("To install versions of Python, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
+
+		errorMessage := "no Python versions found at locations: \n" + strings.Join(GetPythonRootDirs(), "\n")
+		return []string{}, errors.New(errorMessage)
 	}
 
-	if !lo.Contains(pythonVersions, "/opt") {
+	var anyOptLocations = make([]string, 0)
+	for _, value := range pythonVersions {
+		matched, err := regexp.MatchString(".*/opt.*", value)
+		if err == nil && matched {
+			anyOptLocations = append(anyOptLocations, value)
+		}
+	}
+
+	if len(anyOptLocations) == 0 {
 		fmt.Println("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python. \n\nTo install versions of Python in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
 	}
 
 	fmt.Println("Found Python versions: ", strings.Join(pythonVersions, ", "))
 
-	PythonConfig.Paths = pythonVersions
+	return pythonVersions, nil
 }
 
 // ScanForPythonVersions scans for Python versions in locations workbench will also look
@@ -94,7 +102,7 @@ func ScanForPythonVersions() ([]string, error) {
 		}
 	}
 
-	maybePython := which.Which("python3")
+	maybePython, _ := exec.LookPath("python3")
 	foundVersions = AppendIfMissing(foundVersions, maybePython)
 
 	return foundVersions, nil

@@ -1,19 +1,33 @@
 package authentication
 
 import (
-	"log"
+	"errors"
+	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/dpastoor/wbi/internal/config"
 )
 
-func HandleSAMLConfig(SAMLConfig *config.SAMLConfig) {
+// Run functions and store values in the SAMLConfig
+func HandleSAMLConfig(SAMLConfig *config.SAMLConfig) error {
 	SAMLConfig.AuthSAML = 1
-	SAMLConfig.AuthSamlSpAttributeUsername = PromptSAMLAttribute()
-	SAMLConfig.AuthSamlMetadataURL = PromptSAMLMetadataURL()
+
+	AuthSamlSpAttributeUsername, err := PromptSAMLAttribute()
+	SAMLConfig.AuthSamlSpAttributeUsername = AuthSamlSpAttributeUsername
+	if err != nil {
+		return fmt.Errorf("PromptSAMLAttribute: %w", err)
+	}
+
+	AuthSamlMetadataURL, err := PromptSAMLMetadataURL()
+	SAMLConfig.AuthSamlMetadataURL = AuthSamlMetadataURL
+	if err != nil {
+		return fmt.Errorf("PromptSAMLMetadataURL: %w", err)
+	}
+	return nil
 }
 
-func PromptSAMLAttribute() string {
+// Prompt asking users to provide a username attribute for SAML
+func PromptSAMLAttribute() (string, error) {
 	name := "Username"
 	prompt := &survey.Input{
 		Message: "SAML IdP username attribute:",
@@ -21,19 +35,20 @@ func PromptSAMLAttribute() string {
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
-		log.Fatal(err)
+		return "", errors.New("there was an issue with the SAML username attribute prompt")
 	}
-	return name
+	return name, nil
 }
 
-func PromptSAMLMetadataURL() string {
+// Prompt asking users to provide a metadata URL for SAML
+func PromptSAMLMetadataURL() (string, error) {
 	name := ""
 	prompt := &survey.Input{
 		Message: "SAML IdP metadata URL:",
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
-		log.Fatal(err)
+		return "", errors.New("there was an issue with the SAML IdP URL prompt")
 	}
-	return name
+	return name, nil
 }

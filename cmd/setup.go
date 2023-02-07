@@ -33,43 +33,89 @@ func newSetup(setupOpts setupOpts) error {
 	// Determine OS
 	osType, err := os.DetectOS()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Languages
-	selectedLanguages := languages.PromptAndRespond()
-	languages.ScanAndHandleRVersions(&WBConfig.RConfig)
+	selectedLanguages, err := languages.PromptAndRespond()
+	if err != nil {
+		return fmt.Errorf("issue selecting languages: %w", err)
+	}
+
+	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions()
+	if err != nil {
+		return fmt.Errorf("issue finding R locations: %w", err)
+	}
+
 	if lo.Contains(selectedLanguages, "python") {
-		languages.ScanAndHandlePythonVersions(&WBConfig.PythonConfig)
+		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions()
+		if err != nil {
+			return fmt.Errorf("issue finding Python locations: %w", err)
+		}
 	}
 
 	// Jupyter
 	if len(WBConfig.PythonConfig.Paths) > 0 {
-		jupyterChoice := jupyter.InstallPrompt()
+		jupyterChoice, err := jupyter.InstallPrompt()
+		if err != nil {
+			return fmt.Errorf("issue selecting Jupyter: %w", err)
+		}
+
 		if jupyterChoice {
 			jupyterPythonTarget, err := jupyter.KernelPrompt(&WBConfig.PythonConfig)
 			if err != nil {
-				jupyter.InstallJupyter(jupyterPythonTarget)
+				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
+			}
+
+			if jupyterPythonTarget != "" {
+				err := jupyter.InstallJupyter(jupyterPythonTarget)
+				if err != nil {
+					return fmt.Errorf("issue installing Jupyter: %w", err)
+				}
 			}
 		}
 	}
 
 	// SSL
-	sslChoice := ssl.PromptSSL()
-	if sslChoice {
-		sslCertPath := ssl.PromptSSLFilePath()
-		sslCertKeyPath := ssl.PromptSSLKeyFilePath()
-		ssl.VerifySSLCertAndKey(sslCertPath, sslCertKeyPath)
+	useSSL, err := ssl.PromptSSL()
+	if err != nil {
+		return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
+	}
+	if useSSL {
+		sslCertPath, err := ssl.PromptSSLFilePath()
+		if err != nil {
+			return fmt.Errorf("issue with the provided SSL cert path: %w", err)
+		}
+		sslCertKeyPath, err := ssl.PromptSSLKeyFilePath()
+		if err != nil {
+			return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
+		}
+		verifySSLCert := ssl.VerifySSLCertAndKey(sslCertPath, sslCertKeyPath)
+		if verifySSLCert != nil {
+			return fmt.Errorf("could not verify the SSL cert: %w", err)
+		}
+		fmt.Println("SSL successfully setup and verified")
 	}
 
 	// Authentication
-	authChoice := authentication.ConvertAuthType(authentication.PromptAuthentication())
-	WBConfig.AuthType = authChoice
-	authentication.HandleAuthChoice(&WBConfig, osType)
+	WBConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+	if err != nil {
+		return fmt.Errorf("issue entering and converting AuthType: %w", err)
+	}
+	AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
+	if AuthErr != nil {
+		return fmt.Errorf("issue handling authentication: %w", AuthErr)
+	}
 
 	// Licensing
-	licenseKey := license.PromptLicense()
-	license.ActivateLicenseKey(licenseKey)
+	licenseKey, err := license.PromptLicense()
+	if err != nil {
+		return fmt.Errorf("issue entering license key: %w", err)
+	}
+	ActivateErr := license.ActivateLicenseKey(licenseKey)
+	if ActivateErr != nil {
+		return fmt.Errorf("issue activating license key: %w", ActivateErr)
+	}
 
 	return nil
 }

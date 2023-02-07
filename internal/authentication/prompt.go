@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -8,7 +9,21 @@ import (
 	"github.com/dpastoor/wbi/internal/config"
 )
 
-func PromptAuthentication() string {
+func PromptAndConvertAuthType() (config.AuthType, error) {
+
+	authChoiceRaw, err := PromptAuthentication()
+	if err != nil {
+		return config.Other, fmt.Errorf("PromptAuthentication: %w", err)
+	}
+	authChoice, err := ConvertAuthType(authChoiceRaw)
+	if err != nil {
+		return config.Other, fmt.Errorf("PromptAuthentication: %w", err)
+	}
+	return authChoice, nil
+}
+
+// Prompt asking user for their desired authentication method
+func PromptAuthentication() (string, error) {
 	name := ""
 	prompt := &survey.Select{
 		Message: "Choose an authentication method:",
@@ -16,35 +31,45 @@ func PromptAuthentication() string {
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
-		log.Fatal(err)
+		return "", errors.New("there was an issue with the authentication prompt")
 	}
-	return name
+	return name, nil
 }
 
-func ConvertAuthType(authChoice string) config.AuthType {
+// Convert authChoice from a string to a proper AuthType type
+func ConvertAuthType(authChoice string) (config.AuthType, error) {
 	switch authChoice {
 	case "SAML":
-		return config.SAML
+		return config.SAML, nil
 	case "OIDC":
-		return config.OIDC
+		return config.OIDC, nil
 	case "Active Directory/LDAP":
-		return config.LDAP
+		return config.LDAP, nil
 	case "PAM":
-		return config.PAM
+		return config.PAM, nil
 	case "Other":
-		return config.Other
+		return config.Other, nil
 	}
-	return config.Other
+	return config.Other, errors.New("unknown AuthType was selected")
 }
 
-func HandleAuthChoice(WBConfig *config.WBConfig, targetOS string) {
+// Route an authentication choice to the proper prompts/information
+func HandleAuthChoice(WBConfig *config.WBConfig, targetOS string) error {
 	switch WBConfig.AuthType {
 	case config.SAML:
-		HandleSAMLConfig(&WBConfig.SAMLConfig)
+		err := HandleSAMLConfig(&WBConfig.SAMLConfig)
+		if err != nil {
+			return fmt.Errorf("HandleSAMLConfig: %w", err)
+		}
+
 		fmt.Println("Setting up SAML based authentication is a 2 step process. The configurations just entered will be setup on Workbench to complete step 1. \n\nTo complete step 2, you must configure your identify provider with Workbench following steps outlined here: https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html#step-2.-configure-your-identity-provider-with-workbench")
 	case config.OIDC:
 		fmt.Println("Setting up OpenID Connect based authentication is a 2 step process. First configure your OpenID provider with the steps outlined here to complete step 1: https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html#configuring-your-openid-provider \n\n As you register Workbench in the IdP, save the client-id and client-secret. Follow the next step of prompts to configure Workbench to complete step 2.")
-		HandleOIDCConfig(&WBConfig.OIDCConfig)
+
+		err := HandleOIDCConfig(&WBConfig.OIDCConfig)
+		if err != nil {
+			return fmt.Errorf("HandleOIDCConfig: %w", err)
+		}
 	case config.LDAP:
 		switch targetOS {
 		case "ubuntu22", "ubuntu20", "ubuntu18":
@@ -59,4 +84,5 @@ func HandleAuthChoice(WBConfig *config.WBConfig, targetOS string) {
 	case config.Other:
 		fmt.Println("To learn about configuring your desired method of authentication please visit: https://docs.posit.co/ide/server-pro/authenticating_users/authenticating_users.html")
 	}
+	return nil
 }

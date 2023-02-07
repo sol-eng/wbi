@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Detect which operating system WBI is running on
 func DetectOS() (string, error) {
 	osType := runtime.GOOS
 	if osType == "linux" {

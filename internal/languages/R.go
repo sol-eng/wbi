@@ -3,14 +3,11 @@ package languages
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
-
-	"github.com/dpastoor/wbi/internal/config"
-	"github.com/hairyhenderson/go-which"
-	"github.com/samber/lo"
 )
 
 var globalRPaths = []string{
@@ -44,21 +41,33 @@ func isRDir(path string) (string, bool) {
 }
 
 // ScanAndHandleRVersions scans for R versions, handles result/errors and creates RConfig
-func ScanAndHandleRVersions(RConfig *config.RConfig) {
+func ScanAndHandleRVersions() ([]string, error) {
 	rVersions, err := ScanForRVersions()
 	if err != nil {
-		log.Fatal(err)
+		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
 	if len(rVersions) == 0 {
-		log.Fatal("no R versions found at locations: \n", strings.Join(GetRRootDirs(), "\n"), "To install versions of R, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
+		fmt.Println("To install versions of R, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
+
+		errorMessage := "no R versions found at locations: \n" + strings.Join(GetRRootDirs(), "\n")
+		return []string{}, errors.New(errorMessage)
 	}
-	if !lo.Contains(rVersions, "/opt") {
+
+	var anyOptLocations = make([]string, 0)
+	for _, value := range rVersions {
+		matched, err := regexp.MatchString(".*/opt.*", value)
+		if err == nil && matched {
+			anyOptLocations = append(anyOptLocations, value)
+		}
+	}
+
+	if len(anyOptLocations) == 0 {
 		fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R. \n\nTo install versions of R in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
 	}
 
 	fmt.Println("Found R versions: ", strings.Join(rVersions, ", "))
 
-	RConfig.Paths = rVersions
+	return rVersions, nil
 }
 
 // Append to a string slice only if the string is not yet in the slice
@@ -99,7 +108,7 @@ func ScanForRVersions() ([]string, error) {
 
 	}
 
-	maybeR := which.Which("R")
+	maybeR, _ := exec.LookPath("R")
 	foundVersions = AppendIfMissing(foundVersions, maybeR)
 
 	return foundVersions, nil

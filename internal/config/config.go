@@ -3,7 +3,7 @@ package config
 type AuthType int
 
 const (
-	SAML AuthType = iota
+	SAML AuthType = iota + 1
 	OIDC
 	LDAP
 	PAM

@@ -1,14 +1,15 @@
 package languages
 
 import (
+	"errors"
 	"fmt"
-	"log"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
 )
 
-func PromptAndRespond() []string {
+// Prompt asking users which languages they will use
+func PromptAndRespond() ([]string, error) {
 	var qs = []*survey.Question{
 		{
 			Name: "languages",
@@ -24,11 +25,11 @@ func PromptAndRespond() []string {
 	}{}
 	err := survey.Ask(qs, &languageAnswers)
 	if err != nil {
-		log.Fatal(err)
+		return []string{}, errors.New("there was an issue with the languages prompt")
 	}
 	if !lo.Contains(languageAnswers.Languages, "R") {
-		log.Fatal("R must be a selected language")
+		return []string{}, errors.New("R must be a select language to install Workbench")
 	}
 	fmt.Println("You just chose the languages: ", languageAnswers.Languages)
-	return languageAnswers.Languages
+	return languageAnswers.Languages, nil
 }
