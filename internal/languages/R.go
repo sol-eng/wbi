@@ -1,15 +1,13 @@
-package langscanner
+package languages
 
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
-
-	"github.com/dpastoor/wbi/internal/config"
-	"github.com/hairyhenderson/go-which"
 )
 
 var globalRPaths = []string{
@@ -43,22 +41,43 @@ func isRDir(path string) (string, bool) {
 }
 
 // ScanAndHandleRVersions scans for R versions, handles result/errors and creates RConfig
-func ScanAndHandleRVersions() (config.RConfig, error) {
+func ScanAndHandleRVersions() ([]string, error) {
 	rVersions, err := ScanForRVersions()
 	if err != nil {
-		log.Fatal(err)
+		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
 	if len(rVersions) == 0 {
-		// TODO: if no R version found, send link to R installation doc
-		log.Fatal("no R versions found at locations: \n", strings.Join(GetRRootDirs(), "\n"))
+		fmt.Println("To install versions of R, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
+
+		errorMessage := "no R versions found at locations: \n" + strings.Join(GetRRootDirs(), "\n")
+		return []string{}, errors.New(errorMessage)
 	}
 
-	fmt.Println("found R versions: ", strings.Join(rVersions, ", "))
+	anyOptLocations := []string{}
+	for _, value := range rVersions {
+		matched, err := regexp.MatchString(".*/opt.*", value)
+		if err == nil && matched {
+			anyOptLocations = append(anyOptLocations, value)
+		}
+	}
 
-	var RConfig config.RConfig
-	RConfig.Paths = rVersions
+	if len(anyOptLocations) == 0 {
+		fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R. \nTo install versions of R in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
+	}
 
-	return RConfig, err
+	fmt.Println("\nFound R versions: ", strings.Join(rVersions, ", "))
+
+	return rVersions, nil
+}
+
+// Append to a string slice only if the string is not yet in the slice
+func AppendIfMissing(slice []string, s string) []string {
+	for _, ele := range slice {
+		if ele == s {
+			return slice
+		}
+	}
+	return append(slice, s)
 }
 
 // ScanForRVersions scans for R versions in locations workbench will also look
@@ -88,9 +107,10 @@ func ScanForRVersions() ([]string, error) {
 		}
 
 	}
-	maybeR := which.Which("R")
-	if maybeR != "" {
-		foundVersions = append(foundVersions, maybeR)
+
+	maybeR, err := exec.LookPath("R")
+	if err == nil {
+		foundVersions = AppendIfMissing(foundVersions, maybeR)
 	}
 
 	return foundVersions, nil

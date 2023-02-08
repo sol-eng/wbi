@@ -3,11 +3,15 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/dpastoor/wbi/internal/authentication"
 	"github.com/dpastoor/wbi/internal/config"
 	"github.com/dpastoor/wbi/internal/jupyter"
-	"github.com/dpastoor/wbi/internal/langscanner"
+	"github.com/dpastoor/wbi/internal/languages"
+	"github.com/dpastoor/wbi/internal/license"
+	"github.com/dpastoor/wbi/internal/os"
 	"github.com/dpastoor/wbi/internal/ssl"
+	"github.com/dpastoor/wbi/internal/workbench"
+	"github.com/samber/lo"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -25,92 +29,100 @@ func newSetup(setupOpts setupOpts) error {
 
 	var WBConfig config.WBConfig
 
-	//TODO: check if workbench installed
-
-	// Ask language question
-	var qs = []*survey.Question{
-		{
-			Name: "languages",
-			Prompt: &survey.MultiSelect{
-				Message: "What languages will you use",
-				Options: []string{"R", "python"},
-				Default: []string{"R", "python"},
-			},
-		},
+	// Workbench installation
+	_, err := workbench.VerifyWorkbench()
+	if err != nil {
+		return err
 	}
-	languageAnswers := struct {
-		Languages []string `survey:"languages"`
-	}{}
-	err := survey.Ask(qs, &languageAnswers)
-	fmt.Println("You just chose the languages: ", languageAnswers.Languages)
-	WBConfig.RConfig, err = langscanner.ScanAndHandleRVersions()
-	WBConfig.PythonConfig, err = langscanner.ScanAndHandlePythonVersions()
 
-	// If python found -- setup jupyter or ask to setup jupyter or check
+	// Determine OS
+	osType, err := os.DetectOS()
+	if err != nil {
+		return err
+	}
+
+	// Languages
+	selectedLanguages, err := languages.PromptAndRespond()
+	if err != nil {
+		return fmt.Errorf("issue selecting languages: %w", err)
+	}
+
+	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions()
+	if err != nil {
+		return fmt.Errorf("issue finding R locations: %w", err)
+	}
+
+	if lo.Contains(selectedLanguages, "python") {
+		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions()
+		if err != nil {
+			return fmt.Errorf("issue finding Python locations: %w", err)
+		}
+	}
+
+	// Jupyter
 	if len(WBConfig.PythonConfig.Paths) > 0 {
-		// Ask if jupyter should be installed
-		jupyterInstallName := true
-		jupyterInstallPrompt := &survey.Confirm{
-			Message: "Would you like to install Jupyter?",
+		jupyterChoice, err := jupyter.InstallPrompt()
+		if err != nil {
+			return fmt.Errorf("issue selecting Jupyter: %w", err)
 		}
-		survey.AskOne(jupyterInstallPrompt, &jupyterInstallName)
-		// If Jupyter, then do the install steps
-		if jupyterInstallName {
-			// Allow the user to select a version of Python to target
-			jupyterPythonTarget := ""
-			jupyterPythonPrompt := &survey.Select{
-				Message: "Select a Python kernel to install Jupyter into:",
-				Options: WBConfig.PythonConfig.Paths,
+
+		if jupyterChoice {
+			jupyterPythonTarget, err := jupyter.KernelPrompt(&WBConfig.PythonConfig)
+			if err != nil {
+				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
 			}
-			survey.AskOne(jupyterPythonPrompt, &jupyterPythonTarget)
-			// Install Jupyter
-			jupyterInstallError := jupyter.InstallJupyter(jupyterPythonTarget)
-			if jupyterInstallError != nil {
-				log.Fatal(jupyterInstallError)
+
+			if jupyterPythonTarget != "" {
+				err := jupyter.InstallJupyter(jupyterPythonTarget)
+				if err != nil {
+					return fmt.Errorf("issue installing Jupyter: %w", err)
+				}
 			}
 		}
 	}
 
-	// Handle SSL cert
-	// * ask if want SSL
-	sslCertName := false
-	sslCertPrompt := &survey.Confirm{
-		Message: "Would you like to use SSL?",
+	// SSL
+	useSSL, err := ssl.PromptSSL()
+	if err != nil {
+		return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 	}
-	survey.AskOne(sslCertPrompt, &sslCertName)
-
-	if sslCertName {
-		// Ask for cert and key locations
-		certLocationName := ""
-		certLocationPrompt := &survey.Input{
-			Message: "Filepath to SSL certificate:",
+	if useSSL {
+		sslCertPath, err := ssl.PromptSSLFilePath()
+		if err != nil {
+			return fmt.Errorf("issue with the provided SSL cert path: %w", err)
 		}
-		survey.AskOne(certLocationPrompt, &certLocationName)
-
-		certKeyLocationName := ""
-		certKeyLocationPrompt := &survey.Input{
-			Message: "Filepath to SSL certificate key:",
+		sslCertKeyPath, err := ssl.PromptSSLKeyFilePath()
+		if err != nil {
+			return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
 		}
-		survey.AskOne(certKeyLocationPrompt, &certKeyLocationName)
-		// Check to make sure cert and key are valid
-		certVerificationError := ssl.VerifySSLCertAndKey(certLocationName, certKeyLocationName)
-		if certVerificationError != nil {
-			log.Fatal(certVerificationError)
+		verifySSLCert := ssl.VerifySSLCertAndKey(sslCertPath, sslCertKeyPath)
+		if verifySSLCert != nil {
+			return fmt.Errorf("could not verify the SSL cert: %w", err)
 		}
+		fmt.Println("SSL successfully setup and verified")
 	}
 
-	// Handle authentication
-	choosenAuthenticationName := ""
-	choosenAuthenticationPrompt := &survey.Select{
-		Message: "Choose an authentication method:",
-		Options: []string{"SAML", "OIDC", "Active Directory/LDAP", "PAM", "Other"},
+	// Authentication
+	WBConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+	if err != nil {
+		return fmt.Errorf("issue entering and converting AuthType: %w", err)
 	}
-	survey.AskOne(choosenAuthenticationPrompt, &choosenAuthenticationName)
-	// TODO: Handle based on the choosen method
+	AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
+	if AuthErr != nil {
+		return fmt.Errorf("issue handling authentication: %w", AuthErr)
+	}
 
-	// TODO: Handle license key
+	// Licensing
+	licenseKey, err := license.PromptLicense()
+	if err != nil {
+		return fmt.Errorf("issue entering license key: %w", err)
+	}
+	ActivateErr := license.ActivateLicenseKey(licenseKey)
+	if ActivateErr != nil {
+		return fmt.Errorf("issue activating license key: %w", ActivateErr)
+	}
 
-	return err
+	return nil
 }
 
 func setSetupOpts(setupOpts *setupOpts) {
