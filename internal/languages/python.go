@@ -102,8 +102,10 @@ func ScanForPythonVersions() ([]string, error) {
 		}
 	}
 
-	maybePython, _ := exec.LookPath("python3")
-	foundVersions = AppendIfMissing(foundVersions, maybePython)
+	maybePython, err := exec.LookPath("python3")
+	if err == nil {
+		foundVersions = AppendIfMissing(foundVersions, maybePython)
+	}
 
 	return foundVersions, nil
 }

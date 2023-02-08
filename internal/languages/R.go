@@ -108,8 +108,10 @@ func ScanForRVersions() ([]string, error) {
 
 	}
 
-	maybeR, _ := exec.LookPath("R")
-	foundVersions = AppendIfMissing(foundVersions, maybeR)
+	maybeR, err := exec.LookPath("R")
+	if err == nil {
+		foundVersions = AppendIfMissing(foundVersions, maybeR)
+	}
 
 	return foundVersions, nil
 }
