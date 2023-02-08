@@ -58,7 +58,7 @@ func ScanAndHandlePythonVersions() ([]string, error) {
 		return []string{}, errors.New(errorMessage)
 	}
 
-	var anyOptLocations = make([]string, 0)
+	anyOptLocations := []string{}
 	for _, value := range pythonVersions {
 		matched, err := regexp.MatchString(".*/opt.*", value)
 		if err == nil && matched {
