@@ -49,6 +49,7 @@
 - Internet access (online installation)
 
 ## TODO
+- Display progress for command outputs
 - Present user at the end with all known configuration info
 - Write out configuration files
 - Verify SSL certs
