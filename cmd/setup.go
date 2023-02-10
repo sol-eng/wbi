@@ -36,7 +36,7 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// Workbench installation
-	workbenchInstalled, err := workbench.VerifyWorkbench()
+	workbenchInstalled := workbench.VerifyWorkbench()
 	// If Workbench is not detected then prompt to install
 	if !workbenchInstalled {
 		installWorkbenchChoice, err := workbench.WorkbenchInstallPrompt()
@@ -48,6 +48,8 @@ func newSetup(setupOpts setupOpts) error {
 			if err != nil {
 				return fmt.Errorf("issue installing Workbench: %w", err)
 			}
+		} else {
+			log.Fatal("Workbench installation is required to continue")
 		}
 	}
 
