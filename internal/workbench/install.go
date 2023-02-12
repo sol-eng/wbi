@@ -11,7 +11,7 @@ import (
 	"github.com/dpastoor/wbi/internal/system"
 )
 
-// Define JSON structure
+// InstallerInfo contains the information needed to download and install Workbench
 type InstallerInfo struct {
 	BaseName string `json:"basename"`
 	URL      string `json:"url"`
@@ -19,6 +19,7 @@ type InstallerInfo struct {
 	Label    string `json:"label"`
 }
 
+// OperatingSystems contains the installer information for each supported operating system
 type OperatingSystems struct {
 	Bionic  InstallerInfo `json:"bionic"`
 	Jammy   InstallerInfo `json:"jammy"`
@@ -26,26 +27,32 @@ type OperatingSystems struct {
 	Redhat8 InstallerInfo `json:"rhel8"`
 }
 
+// Installer contains the installer information for a product
 type Installer struct {
 	Installer OperatingSystems `json:"installer"`
 }
 
+// ProductType contains the installer for each product type
 type ProductType struct {
 	Server Installer `json:"server"`
 }
 
+// Category contains information for stable and preview product types
 type Category struct {
 	Stable ProductType `json:"stable"`
 }
 
+// Product contains information for each RStudio product
 type Product struct {
 	Pro Category `json:"pro"`
 }
 
+// RStudio contains product information
 type RStudio struct {
 	Rstudio Product `json:"rstudio"`
 }
 
+// Retrieves JSON data from Posit, downloads the Workbench installer, and installs Workbench
 func DownloadAndInstallWorkbench(osType string) error {
 	// Retrieve JSON data
 	rstudio, err := RetrieveWorkbenchInstallerInfo()
@@ -70,6 +77,7 @@ func DownloadAndInstallWorkbench(osType string) error {
 	return nil
 }
 
+// Installs Gdebi Core
 func InstallGdebiCore() error {
 	gdebiCoreCommand := "sudo apt-get install -y gdebi-core"
 	err := system.RunCommand(gdebiCoreCommand)
@@ -81,6 +89,7 @@ func InstallGdebiCore() error {
 	return nil
 }
 
+// Upgrades Apt
 func UpgradeApt() error {
 	aptUpgradeCommand := "sudo apt-get update"
 	err := system.RunCommand(aptUpgradeCommand)
@@ -92,6 +101,7 @@ func UpgradeApt() error {
 	return nil
 }
 
+// Installs Workbench in a certain way based on the operating system
 func InstallWorkbench(filepath string, osType string) error {
 	// Install gdebi-core if an Ubuntu system
 	if osType == "ubuntu22" || osType == "ubuntu20" || osType == "ubuntu18" {
@@ -120,6 +130,7 @@ func InstallWorkbench(filepath string, osType string) error {
 	return nil
 }
 
+// Creates the proper command to install Workbench based on the operating system
 func RetrieveInstallCommandForWorkbench(filepath string, os string) (string, error) {
 	switch os {
 	case "ubuntu22", "ubuntu20", "ubuntu18":
@@ -131,6 +142,7 @@ func RetrieveInstallCommandForWorkbench(filepath string, os string) (string, err
 	}
 }
 
+// Pulls out the installer information from the JSON data based on the operating system
 func (r *RStudio) GetInstallerInfo(os string) (InstallerInfo, error) {
 	switch os {
 	case "ubuntu18", "ubuntu20":
@@ -146,6 +158,7 @@ func (r *RStudio) GetInstallerInfo(os string) (InstallerInfo, error) {
 	}
 }
 
+// Retrieves JSON data from Posit
 func RetrieveWorkbenchInstallerInfo() (RStudio, error) {
 	client := &http.Client{
 		Timeout: 30 * time.Second,

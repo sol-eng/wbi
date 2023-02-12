@@ -6,6 +6,7 @@ import (
 	"os/exec"
 )
 
+// Runs a command in the terminal and streams the output
 func RunCommand(command string) error {
 	fmt.Println("Running command: " + command)
 	cmd := exec.Command("/bin/sh", "-c", command)

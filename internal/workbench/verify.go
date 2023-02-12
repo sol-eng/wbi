@@ -5,6 +5,7 @@ import (
 	"os/exec"
 )
 
+// Checks if Workbench is installed
 func VerifyWorkbench() bool {
 	cmd := exec.Command("/bin/sh", "-c", "sudo rstudio-server version")
 	stdout, err := cmd.Output()
