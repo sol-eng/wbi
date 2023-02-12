@@ -11,6 +11,13 @@ import (
 	"github.com/dpastoor/wbi/internal/system"
 )
 
+const Ubuntu22 = "ubuntu22"
+const Ubuntu20 = "ubuntu20"
+const Ubuntu18 = "ubuntu18"
+
+const Redhat8 = "redhat8"
+const Redhat7 = "redhat7"
+
 // InstallerInfo contains the information needed to download and install Workbench
 type InstallerInfo struct {
 	BaseName string `json:"basename"`
@@ -104,7 +111,7 @@ func UpgradeApt() error {
 // Installs Workbench in a certain way based on the operating system
 func InstallWorkbench(filepath string, osType string) error {
 	// Install gdebi-core if an Ubuntu system
-	if osType == "ubuntu22" || osType == "ubuntu20" || osType == "ubuntu18" {
+	if osType == Ubuntu22 || osType == Ubuntu20 || osType == Ubuntu18 {
 		AptErr := UpgradeApt()
 		if AptErr != nil {
 			return fmt.Errorf("UpgradeApt: %w", AptErr)
@@ -133,9 +140,9 @@ func InstallWorkbench(filepath string, osType string) error {
 // Creates the proper command to install Workbench based on the operating system
 func RetrieveInstallCommandForWorkbench(filepath string, os string) (string, error) {
 	switch os {
-	case "ubuntu22", "ubuntu20", "ubuntu18":
+	case Ubuntu22, Ubuntu20, Ubuntu18:
 		return "sudo gdebi -n " + filepath, nil
-	case "redhat7", "redhat8":
+	case Redhat7, Redhat8:
 		return "sudo yum install -y " + filepath, nil
 	default:
 		return "", errors.New("operating system not supported")
@@ -145,13 +152,13 @@ func RetrieveInstallCommandForWorkbench(filepath string, os string) (string, err
 // Pulls out the installer information from the JSON data based on the operating system
 func (r *RStudio) GetInstallerInfo(os string) (InstallerInfo, error) {
 	switch os {
-	case "ubuntu18", "ubuntu20":
+	case Ubuntu18, Ubuntu20:
 		return r.Rstudio.Pro.Stable.Server.Installer.Bionic, nil
-	case "ubuntu22":
+	case Ubuntu22:
 		return r.Rstudio.Pro.Stable.Server.Installer.Jammy, nil
-	case "redhat7":
+	case Redhat7:
 		return r.Rstudio.Pro.Stable.Server.Installer.Redhat7, nil
-	case "redhat8":
+	case Redhat8:
 		return r.Rstudio.Pro.Stable.Server.Installer.Redhat8, nil
 	default:
 		return InstallerInfo{}, errors.New("operating system not supported")
