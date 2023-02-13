@@ -100,6 +100,8 @@ func (installerInfo *InstallerInfo) DownloadR() (string, error) {
 	url := installerInfo.URL
 	name := installerInfo.Name
 
+	fmt.Println("Downloading R installer from: " + url)
+
 	// Create the file
 	tmpFile, err := os.CreateTemp("", name)
 	if err != nil {
