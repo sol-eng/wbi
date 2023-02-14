@@ -29,16 +29,28 @@ func newSetup(setupOpts setupOpts) error {
 
 	var WBConfig config.WBConfig
 
-	// Workbench installation
-	_, err := workbench.VerifyWorkbench()
-	if err != nil {
-		return err
-	}
-
 	// Determine OS
 	osType, err := os.DetectOS()
 	if err != nil {
 		return err
+	}
+
+	// Workbench installation
+	workbenchInstalled := workbench.VerifyWorkbench()
+	// If Workbench is not detected then prompt to install
+	if !workbenchInstalled {
+		installWorkbenchChoice, err := workbench.WorkbenchInstallPrompt()
+		if err != nil {
+			return fmt.Errorf("issue selecting Workbench installation: %w", err)
+		}
+		if installWorkbenchChoice {
+			err := workbench.DownloadAndInstallWorkbench(osType)
+			if err != nil {
+				return fmt.Errorf("issue installing Workbench: %w", err)
+			}
+		} else {
+			log.Fatal("Workbench installation is required to continue")
+		}
 	}
 
 	// Languages
