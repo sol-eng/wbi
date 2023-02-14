@@ -45,33 +45,75 @@ func isPythonDir(path string) (string, bool) {
 	return pythonPath, false
 }
 
+// Prompts user if they want to install Python and does the installation
+func PromptAndInstallPython(osType string) ([]string, error) {
+	installPythonChoice, err := PythonInstallPrompt()
+	if err != nil {
+		return []string{}, fmt.Errorf("issue selecting Python installation: %w", err)
+	}
+	if installPythonChoice {
+		validPythonVersions, err := RetrieveValidPythonVersions()
+		if err != nil {
+			return []string{}, fmt.Errorf("issue retrieving Python versions: %w", err)
+		}
+		installPythonVersions, err := RSelectVersionsPrompt(validPythonVersions)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue selecting Python versions: %w", err)
+		}
+		for _, pythonVersion := range installPythonVersions {
+			err = DownloadAndInstallPython(pythonVersion, osType)
+			if err != nil {
+				return []string{}, fmt.Errorf("issue installing Python version: %w", err)
+			}
+		}
+		return installPythonVersions, nil
+	}
+	return []string{}, nil
+}
+
 // ScanAndHandlePythonVersions scans for Python versions, handles result/errors and creates PythonConfig
-func ScanAndHandlePythonVersions() ([]string, error) {
+func ScanAndHandlePythonVersions(osType string) ([]string, error) {
+	pythonVersionsOrig, err := ScanForPythonVersions()
+	if err != nil {
+		return []string{}, fmt.Errorf("issue occured in scanning for Python versions: %w", err)
+	}
+
+	fmt.Println("\nFound Python versions: ", strings.Join(pythonVersionsOrig, ", "), "\n")
+
+	if len(pythonVersionsOrig) == 0 {
+		scanMessage := "no Python versions found at locations: \n" + strings.Join(GetPythonRootDirs(), "\n")
+		fmt.Println(scanMessage)
+
+		installedPythonVersion, err := PromptAndInstallPython(osType)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue installing Python: %w", err)
+		}
+		if len(installedPythonVersion) == 0 {
+			return []string{}, errors.New("no Python versions have been installed")
+		}
+	} else {
+		anyOptLocations := []string{}
+		for _, value := range pythonVersionsOrig {
+			matched, err := regexp.MatchString(".*/opt.*", value)
+			if err == nil && matched {
+				anyOptLocations = append(anyOptLocations, value)
+			}
+		}
+		if len(anyOptLocations) == 0 {
+			fmt.Println("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python.")
+		}
+		_, err := PromptAndInstallPython(osType)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue installing Python: %w", err)
+		}
+	}
+
 	pythonVersions, err := ScanForPythonVersions()
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 	}
-	if len(pythonVersions) == 0 {
-		fmt.Println("To install versions of Python, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
 
-		errorMessage := "no Python versions found at locations: \n" + strings.Join(GetPythonRootDirs(), "\n")
-		return []string{}, errors.New(errorMessage)
-	}
-
-	anyOptLocations := []string{}
-	for _, value := range pythonVersions {
-		matched, err := regexp.MatchString(".*/opt.*", value)
-		if err == nil && matched {
-			anyOptLocations = append(anyOptLocations, value)
-		}
-	}
-
-	if len(anyOptLocations) == 0 {
-		fmt.Println("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python. \nTo install versions of Python in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-python/")
-	}
-
-	fmt.Println("\nFound Python versions: ", strings.Join(pythonVersions, ", "), "\n")
-
+	fmt.Println("\nFound Python versions: ", strings.Join(pythonVersions, ", "))
 	return pythonVersions, nil
 }
 

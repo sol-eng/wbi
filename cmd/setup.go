@@ -66,7 +66,7 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	if lo.Contains(selectedLanguages, "python") {
-		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions()
+		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions(osType)
 		if err != nil {
 			return fmt.Errorf("issue finding Python locations: %w", err)
 		}
