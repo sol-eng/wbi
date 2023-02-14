@@ -71,6 +71,7 @@ func newSetup(setupOpts setupOpts) error {
 			if err != nil {
 				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
 			}
+			WBConfig.PythonConfig.JupyterPath = jupyterPythonTarget
 
 			if jupyterPythonTarget != "" {
 				err := jupyter.InstallJupyter(jupyterPythonTarget)
@@ -87,15 +88,15 @@ func newSetup(setupOpts setupOpts) error {
 		return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 	}
 	if useSSL {
-		sslCertPath, err := ssl.PromptSSLFilePath()
+		WBConfig.SSLConfig.CertPath, err = ssl.PromptSSLFilePath()
 		if err != nil {
 			return fmt.Errorf("issue with the provided SSL cert path: %w", err)
 		}
-		sslCertKeyPath, err := ssl.PromptSSLKeyFilePath()
+		WBConfig.SSLConfig.KeyPath, err = ssl.PromptSSLKeyFilePath()
 		if err != nil {
 			return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
 		}
-		verifySSLCert := ssl.VerifySSLCertAndKey(sslCertPath, sslCertKeyPath)
+		verifySSLCert := ssl.VerifySSLCertAndKey(WBConfig.SSLConfig.CertPath, WBConfig.SSLConfig.KeyPath)
 		if verifySSLCert != nil {
 			return fmt.Errorf("could not verify the SSL cert: %w", err)
 		}
@@ -103,7 +104,7 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// Authentication
-	WBConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+	WBConfig.AuthConfig.AuthType, err = authentication.PromptAndConvertAuthType()
 	if err != nil {
 		return fmt.Errorf("issue entering and converting AuthType: %w", err)
 	}
@@ -111,6 +112,9 @@ func newSetup(setupOpts setupOpts) error {
 	if AuthErr != nil {
 		return fmt.Errorf("issue handling authentication: %w", AuthErr)
 	}
+
+	// Write config to console
+	WBConfig.ConfigStructToText()
 
 	// Licensing
 	licenseKey, err := license.PromptLicense()

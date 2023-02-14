@@ -55,9 +55,9 @@ func ConvertAuthType(authChoice string) (config.AuthType, error) {
 
 // Route an authentication choice to the proper prompts/information
 func HandleAuthChoice(WBConfig *config.WBConfig, targetOS string) error {
-	switch WBConfig.AuthType {
+	switch WBConfig.AuthConfig.AuthType {
 	case config.SAML:
-		err := HandleSAMLConfig(&WBConfig.SAMLConfig)
+		err := HandleSAMLConfig(&WBConfig.AuthConfig.SAMLConfig)
 		if err != nil {
 			return fmt.Errorf("HandleSAMLConfig: %w", err)
 		}
@@ -66,7 +66,7 @@ func HandleAuthChoice(WBConfig *config.WBConfig, targetOS string) error {
 	case config.OIDC:
 		fmt.Println("Setting up OpenID Connect based authentication is a 2 step process. First configure your OpenID provider with the steps outlined here to complete step 1: https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html#configuring-your-openid-provider \n\n As you register Workbench in the IdP, save the client-id and client-secret. Follow the next step of prompts to configure Workbench to complete step 2.")
 
-		err := HandleOIDCConfig(&WBConfig.OIDCConfig)
+		err := HandleOIDCConfig(&WBConfig.AuthConfig.OIDCConfig)
 		if err != nil {
 			return fmt.Errorf("HandleOIDCConfig: %w", err)
 		}
