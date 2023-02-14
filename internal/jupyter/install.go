@@ -2,9 +2,10 @@ package jupyter
 
 import (
 	"fmt"
-	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/dpastoor/wbi/internal/system"
 )
 
 // InstallJupyter installs jupypter pip stuff
@@ -35,6 +36,19 @@ func RemovePythonFromPath(pythonPath string) (string, error) {
 	}
 }
 
+// Install various Jupyter related packages from PyPI
+func InstallJupyterAndComponents(pythonPath string) error {
+	licenseCommand := "sudo " + pythonPath + " -m pip install jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
+	err := system.RunCommand(licenseCommand)
+	if err != nil {
+		return fmt.Errorf("issue installing Jupyter: %w", err)
+	}
+
+	// TODO add some proper tests to ensure Jupyter is working
+	fmt.Println("\nJupyter has been successfully installed!\n")
+	return nil
+}
+
 // Install and enable various Jupyter notebook extensions
 func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 
@@ -53,32 +67,13 @@ func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 
 	for _, command := range commands {
 		installCommand := "sudo " + pythonPathShort + "/" + command
-		cmd := exec.Command("/bin/sh", "-c", installCommand)
-		stdout, err := cmd.Output()
-
-		fmt.Println(string(stdout))
+		err := system.RunCommand(installCommand)
 		if err != nil {
 			return fmt.Errorf("issue installing Jupyter notebook extensions: %w", err)
 		}
 	}
 
 	// TODO add some proper tests to ensure Jupyter notebook extensions are working
-	fmt.Println("Jupyter notebook extensions have been successfully installed and enabled!")
-	return nil
-}
-
-// Install various Jupyter related packages from PyPI
-func InstallJupyterAndComponents(pythonPath string) error {
-	cmdLicense := "sudo " + pythonPath + " -m pip install jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
-	cmd := exec.Command("/bin/sh", "-c", cmdLicense)
-	stdout, err := cmd.Output()
-
-	fmt.Println(string(stdout))
-	if err != nil {
-		return fmt.Errorf("issue installing Jupyter: %w", err)
-	}
-
-	// TODO add some proper tests to ensure Jupyter is working
-	fmt.Println("Jupyter has been successfully installed!")
+	fmt.Println("\nJupyter notebook extensions have been successfully installed and enabled!\n")
 	return nil
 }
