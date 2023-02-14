@@ -97,14 +97,13 @@ func ScanAndHandleRVersions(osType string) ([]string, error) {
 		}
 		if len(anyOptLocations) == 0 {
 			fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R.")
-
-			installedRVersion, err := PromptAndInstallR(osType)
-			if err != nil {
-				return []string{}, fmt.Errorf("issue installing R: %w", err)
-			}
-
-			fmt.Println("\nThe following R versions have been installed: ", strings.Join(installedRVersion, ", "))
 		}
+		installedRVersion, err := PromptAndInstallR(osType)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue installing R: %w", err)
+		}
+
+		fmt.Println("\nThe following R versions have been installed: ", strings.Join(installedRVersion, ", "))
 	}
 
 	rVersions, err := ScanForRVersions()
