@@ -17,11 +17,15 @@ func (d AuthType) String() string {
 // WBConfig stores the entire workbench configuration
 type WBConfig struct {
 	SSLConfig    SSLConfig
-	AuthType     AuthType
 	RConfig      RConfig
 	PythonConfig PythonConfig
-	OIDCConfig   OIDCConfig
-	SAMLConfig   SAMLConfig
+	AuthConfig   AuthConfig
+}
+
+type AuthConfig struct {
+	AuthType   AuthType
+	OIDCConfig OIDCConfig
+	SAMLConfig SAMLConfig
 }
 
 type RConfig struct {
@@ -29,7 +33,8 @@ type RConfig struct {
 }
 
 type PythonConfig struct {
-	Paths []string
+	Paths       []string
+	JupyterPath string
 }
 
 // SSLConfig stores SSL config
