@@ -3,6 +3,7 @@ package languages
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,6 +33,7 @@ func GetRPaths() []string {
 	return globalRPaths
 }
 
+// Detects if the path is an R directory
 func isRDir(path string) (string, bool) {
 	rpath := filepath.Join(path, "bin", "R")
 	if _, err := os.Stat(rpath); err == nil {
@@ -40,33 +42,77 @@ func isRDir(path string) (string, bool) {
 	return rpath, false
 }
 
+// Prompts user if they want to install R and does the installation
+func PromptAndInstallR(osType string) ([]string, error) {
+	installRChoice, err := RInstallPrompt()
+	if err != nil {
+		return []string{}, fmt.Errorf("issue selecting R installation: %w", err)
+	}
+	if installRChoice {
+		validRVersions, err := RetrieveValidRVersions()
+		if err != nil {
+			return []string{}, fmt.Errorf("issue retrieving R versions: %w", err)
+		}
+		installRVersions, err := RSelectVersionsPrompt(validRVersions)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue selecting R versions: %w", err)
+		}
+		for _, rVersion := range installRVersions {
+			err = DownloadAndInstallR(rVersion, osType)
+			if err != nil {
+				return []string{}, fmt.Errorf("issue installing R version: %w", err)
+			}
+		}
+		return installRVersions, nil
+	}
+	return []string{}, nil
+}
+
 // ScanAndHandleRVersions scans for R versions, handles result/errors and creates RConfig
-func ScanAndHandleRVersions() ([]string, error) {
+func ScanAndHandleRVersions(osType string) ([]string, error) {
+	rVersionsOrig, err := ScanForRVersions()
+	if err != nil {
+		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)
+	}
+	fmt.Println("\nFound R versions: ", strings.Join(rVersionsOrig, ", "))
+
+	if len(rVersionsOrig) == 0 {
+		scanMessage := "no R versions found at locations: \n" + strings.Join(GetRRootDirs(), "\n")
+		fmt.Println(scanMessage)
+
+		installedRVersion, err := PromptAndInstallR(osType)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue installing R: %w", err)
+		}
+		if len(installedRVersion) == 0 {
+			log.Fatal("R must be installed to continue. Please install R and try again.")
+		}
+	} else {
+		anyOptLocations := []string{}
+		for _, value := range rVersionsOrig {
+			matched, err := regexp.MatchString(".*/opt.*", value)
+			if err == nil && matched {
+				anyOptLocations = append(anyOptLocations, value)
+			}
+		}
+		if len(anyOptLocations) == 0 {
+			fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R.")
+
+			installedRVersion, err := PromptAndInstallR(osType)
+			if err != nil {
+				return []string{}, fmt.Errorf("issue installing R: %w", err)
+			}
+
+			fmt.Println("\nThe following R versions have been installed: ", strings.Join(installedRVersion, ", "))
+		}
+	}
+
 	rVersions, err := ScanForRVersions()
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
-	if len(rVersions) == 0 {
-		fmt.Println("To install versions of R, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
-
-		errorMessage := "no R versions found at locations: \n" + strings.Join(GetRRootDirs(), "\n")
-		return []string{}, errors.New(errorMessage)
-	}
-
-	anyOptLocations := []string{}
-	for _, value := range rVersions {
-		matched, err := regexp.MatchString(".*/opt.*", value)
-		if err == nil && matched {
-			anyOptLocations = append(anyOptLocations, value)
-		}
-	}
-
-	if len(anyOptLocations) == 0 {
-		fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R. \nTo install versions of R in this manner, please follow the instructions outline here: https://docs.posit.co/resources/install-r/")
-	}
 
 	fmt.Println("\nFound R versions: ", strings.Join(rVersions, ", "))
-
 	return rVersions, nil
 }
 

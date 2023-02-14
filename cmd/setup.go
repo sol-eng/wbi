@@ -59,7 +59,8 @@ func newSetup(setupOpts setupOpts) error {
 		return fmt.Errorf("issue selecting languages: %w", err)
 	}
 
-	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions()
+	// R
+	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions(osType)
 	if err != nil {
 		return fmt.Errorf("issue finding R locations: %w", err)
 	}
