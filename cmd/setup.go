@@ -130,13 +130,27 @@ func newSetup(setupOpts setupOpts) error {
 	WBConfig.ConfigStructToText()
 
 	// Licensing
-	licenseKey, err := license.PromptLicense()
+	licenseActivationStatus, err := license.CheckLicenseActivation()
 	if err != nil {
-		return fmt.Errorf("issue entering license key: %w", err)
+		return fmt.Errorf("issue in checking for license activation: %w", err)
 	}
-	ActivateErr := license.ActivateLicenseKey(licenseKey)
-	if ActivateErr != nil {
-		return fmt.Errorf("issue activating license key: %w", ActivateErr)
+
+	if !licenseActivationStatus {
+		licenseChoice, err := license.PromptLicenseChoice()
+		if err != nil {
+			return fmt.Errorf("issue in prompt for license activate choice: %w", err)
+		}
+
+		if licenseChoice {
+			licenseKey, err := license.PromptLicense()
+			if err != nil {
+				return fmt.Errorf("issue entering license key: %w", err)
+			}
+			ActivateErr := license.ActivateLicenseKey(licenseKey)
+			if ActivateErr != nil {
+				return fmt.Errorf("issue activating license key: %w", ActivateErr)
+			}
+		}
 	}
 
 	return nil
