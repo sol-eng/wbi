@@ -56,7 +56,7 @@ func PromptAndInstallPython(osType string) ([]string, error) {
 		if err != nil {
 			return []string{}, fmt.Errorf("issue retrieving Python versions: %w", err)
 		}
-		installPythonVersions, err := RSelectVersionsPrompt(validPythonVersions)
+		installPythonVersions, err := PythonSelectVersionsPrompt(validPythonVersions)
 		if err != nil {
 			return []string{}, fmt.Errorf("issue selecting Python versions: %w", err)
 		}
