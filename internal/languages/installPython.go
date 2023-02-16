@@ -148,6 +148,12 @@ func DownloadAndInstallPython(pythonVersion string, osType string) error {
 	if err != nil {
 		return fmt.Errorf("InstallPython: %w", err)
 	}
+	// Upgrade pip, setuptools, and wheel
+	err = UpgradePythonTools(pythonVersion)
+	if err != nil {
+		return fmt.Errorf("UpgradePythonTools: %w", err)
+	}
+
 	return nil
 }
 
@@ -243,6 +249,19 @@ func InstallPython(filepath string, osType string, pythonVersion string) error {
 
 	successMessage := "\nPython version " + pythonVersion + " successfully installed!\n"
 	fmt.Println(successMessage)
+	return nil
+}
+
+func UpgradePythonTools(pythonVersion string) error {
+	upgradeCommand := "/opt/python/" + pythonVersion + "/bin/pip install --upgrade --no-warn-script-location --disable-pip-version-check pip setuptools wheel"
+	err := system.RunCommand(upgradeCommand)
+	if err != nil {
+		return fmt.Errorf("issue upgrading pip, setuptools and wheel for Python: %w", err)
+	}
+
+	successMessage := "\npip, setuptools and wheel have been upgraded for Python version " + pythonVersion + "\n"
+	fmt.Println(successMessage)
+
 	return nil
 }
 
