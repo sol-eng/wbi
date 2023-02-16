@@ -253,7 +253,7 @@ func InstallPython(filepath string, osType string, pythonVersion string) error {
 }
 
 func UpgradePythonTools(pythonVersion string) error {
-	upgradeCommand := "/opt/python/" + pythonVersion + "/bin/pip install --upgrade pip setuptools wheel"
+	upgradeCommand := "/opt/python/" + pythonVersion + "/bin/pip install --upgrade --no-warn-script-location --disable-pip-version-check pip setuptools wheel"
 	err := system.RunCommand(upgradeCommand)
 	if err != nil {
 		return fmt.Errorf("issue upgrading pip, setuptools and wheel for Python: %w", err)
