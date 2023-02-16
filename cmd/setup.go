@@ -35,24 +35,6 @@ func newSetup(setupOpts setupOpts) error {
 		return err
 	}
 
-	// Workbench installation
-	workbenchInstalled := workbench.VerifyWorkbench()
-	// If Workbench is not detected then prompt to install
-	if !workbenchInstalled {
-		installWorkbenchChoice, err := workbench.WorkbenchInstallPrompt()
-		if err != nil {
-			return fmt.Errorf("issue selecting Workbench installation: %w", err)
-		}
-		if installWorkbenchChoice {
-			err := workbench.DownloadAndInstallWorkbench(osType)
-			if err != nil {
-				return fmt.Errorf("issue installing Workbench: %w", err)
-			}
-		} else {
-			log.Fatal("Workbench installation is required to continue")
-		}
-	}
-
 	// Languages
 	selectedLanguages, err := languages.PromptAndRespond()
 	if err != nil {
@@ -70,6 +52,33 @@ func newSetup(setupOpts setupOpts) error {
 		if err != nil {
 			return fmt.Errorf("issue finding Python locations: %w", err)
 		}
+	}
+
+	workbenchInstalled := workbench.VerifyWorkbench()
+	// If Workbench is not detected then prompt to install
+	if !workbenchInstalled {
+		installWorkbenchChoice, err := workbench.WorkbenchInstallPrompt()
+		if err != nil {
+			return fmt.Errorf("issue selecting Workbench installation: %w", err)
+		}
+		if installWorkbenchChoice {
+			err := workbench.DownloadAndInstallWorkbench(osType)
+			if err != nil {
+				return fmt.Errorf("issue installing Workbench: %w", err)
+			}
+		} else {
+			log.Fatal("Workbench installation is required to continue")
+		}
+	}
+
+	// Licensing
+	licenseKey, err := license.PromptLicense()
+	if err != nil {
+		return fmt.Errorf("issue entering license key: %w", err)
+	}
+	ActivateErr := license.ActivateLicenseKey(licenseKey)
+	if ActivateErr != nil {
+		return fmt.Errorf("issue activating license key: %w", ActivateErr)
 	}
 
 	// Jupyter
@@ -128,16 +137,6 @@ func newSetup(setupOpts setupOpts) error {
 
 	// Write config to console
 	WBConfig.ConfigStructToText()
-
-	// Licensing
-	licenseKey, err := license.PromptLicense()
-	if err != nil {
-		return fmt.Errorf("issue entering license key: %w", err)
-	}
-	ActivateErr := license.ActivateLicenseKey(licenseKey)
-	if ActivateErr != nil {
-		return fmt.Errorf("issue activating license key: %w", ActivateErr)
-	}
 
 	return nil
 }
