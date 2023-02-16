@@ -35,7 +35,25 @@ func newSetup(setupOpts setupOpts) error {
 		return err
 	}
 
-	// Workbench installation
+	// Languages
+	selectedLanguages, err := languages.PromptAndRespond()
+	if err != nil {
+		return fmt.Errorf("issue selecting languages: %w", err)
+	}
+
+	// R
+	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions(osType)
+	if err != nil {
+		return fmt.Errorf("issue finding R locations: %w", err)
+	}
+
+	if lo.Contains(selectedLanguages, "python") {
+		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions(osType)
+		if err != nil {
+			return fmt.Errorf("issue finding Python locations: %w", err)
+		}
+	}
+
 	workbenchInstalled := workbench.VerifyWorkbench()
 	// If Workbench is not detected then prompt to install
 	if !workbenchInstalled {
@@ -53,22 +71,27 @@ func newSetup(setupOpts setupOpts) error {
 		}
 	}
 
-	// Languages
-	selectedLanguages, err := languages.PromptAndRespond()
+	// Licensing
+	licenseActivationStatus, err := license.CheckLicenseActivation()
 	if err != nil {
-		return fmt.Errorf("issue selecting languages: %w", err)
+		return fmt.Errorf("issue in checking for license activation: %w", err)
 	}
 
-	// R
-	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions(osType)
-	if err != nil {
-		return fmt.Errorf("issue finding R locations: %w", err)
-	}
-
-	if lo.Contains(selectedLanguages, "python") {
-		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions(osType)
+	if !licenseActivationStatus {
+		licenseChoice, err := license.PromptLicenseChoice()
 		if err != nil {
-			return fmt.Errorf("issue finding Python locations: %w", err)
+			return fmt.Errorf("issue in prompt for license activate choice: %w", err)
+		}
+
+		if licenseChoice {
+			licenseKey, err := license.PromptLicense()
+			if err != nil {
+				return fmt.Errorf("issue entering license key: %w", err)
+			}
+			ActivateErr := license.ActivateLicenseKey(licenseKey)
+			if ActivateErr != nil {
+				return fmt.Errorf("issue activating license key: %w", ActivateErr)
+			}
 		}
 	}
 
@@ -128,30 +151,6 @@ func newSetup(setupOpts setupOpts) error {
 
 	// Write config to console
 	WBConfig.ConfigStructToText()
-
-	// Licensing
-	licenseActivationStatus, err := license.CheckLicenseActivation()
-	if err != nil {
-		return fmt.Errorf("issue in checking for license activation: %w", err)
-	}
-
-	if !licenseActivationStatus {
-		licenseChoice, err := license.PromptLicenseChoice()
-		if err != nil {
-			return fmt.Errorf("issue in prompt for license activate choice: %w", err)
-		}
-
-		if licenseChoice {
-			licenseKey, err := license.PromptLicense()
-			if err != nil {
-				return fmt.Errorf("issue entering license key: %w", err)
-			}
-			ActivateErr := license.ActivateLicenseKey(licenseKey)
-			if ActivateErr != nil {
-				return fmt.Errorf("issue activating license key: %w", ActivateErr)
-			}
-		}
-	}
 
 	return nil
 }
