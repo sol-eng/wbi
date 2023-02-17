@@ -172,7 +172,7 @@ func newSetup(setupOpts setupOpts) error {
 	// Package Manager URL
 	packageManagerChoice, err := packagemanager.PromptPackageManagerChoice()
 	if err != nil {
-		return fmt.Errorf("issue in prompt for Posit Package Manager URL choice: %w", err)
+		return fmt.Errorf("issue in prompt for Posit Package Manager choice: %w", err)
 	}
 	if packageManagerChoice {
 		rawPackageManagerURL, err := packagemanager.PromptPackageManagerURL()
@@ -191,6 +191,23 @@ func newSetup(setupOpts setupOpts) error {
 		WBConfig.PackageManagerURL, err = packagemanager.BuildPackagemanagerFullURL(cleanPackageManagerURL, repoPackageManager, osType)
 		if err != nil {
 			return fmt.Errorf("issue with creating the full Posit Package Manager URL: %w", err)
+		}
+	} else {
+		publicPackageManagerChoice, err := packagemanager.PromptPublicPackageManagerChoice()
+		if err != nil {
+			return fmt.Errorf("issue in prompt for Posit Public Package Manager choice: %w", err)
+		}
+		if publicPackageManagerChoice {
+			// validate the public package manager URL can be reached
+			_, err := packagemanager.VerifyPackageManagerURL("https://packagemanager.rstudio.com", true)
+			if err != nil {
+				return fmt.Errorf("issue with reaching the Posit Public Package Manager URL: %w", err)
+			}
+
+			WBConfig.PackageManagerURL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
+			if err != nil {
+				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
+			}
 		}
 	}
 

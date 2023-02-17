@@ -23,9 +23,9 @@ func cleanPackageManagerURL(packageManagerURL string) string {
 
 // VerifyPackageManagerURLAndRepo checks if the Posit Package Manager URL and repo is valid
 func VerifyPackageManagerURLAndRepo(packageManagerURL string, packageManagerRepo string) (string, error) {
-	cleanPackageManagerURL, err := VerifyPackageManagerURL(packageManagerURL)
+	cleanPackageManagerURL, err := VerifyPackageManagerURL(packageManagerURL, false)
 	if err != nil {
-		return "", fmt.Errorf("issue with checking the Posit Package Manager URL: %w", err)
+		return "", fmt.Errorf("issue with reaching the Posit Package Manager URL: %w", err)
 	}
 	cleanPackageManagerRepoURL, err := VerifyPackageManagerRepo(cleanPackageManagerURL, packageManagerRepo)
 	if err != nil {
@@ -34,7 +34,7 @@ func VerifyPackageManagerURLAndRepo(packageManagerURL string, packageManagerRepo
 	return cleanPackageManagerRepoURL, nil
 }
 
-func VerifyPackageManagerURL(packageManagerURL string) (string, error) {
+func VerifyPackageManagerURL(packageManagerURL string, public bool) (string, error) {
 	cleanPackageManagerURL := cleanPackageManagerURL(packageManagerURL)
 	fullTestURL := cleanPackageManagerURL + "/__ping__"
 
@@ -55,7 +55,12 @@ func VerifyPackageManagerURL(packageManagerURL string) (string, error) {
 		return "", errors.New("error in HTTP status code")
 	}
 
-	fmt.Println("\nPosit Package Manager URL has been successfull validated.\n")
+	if public {
+		fmt.Println("\nPosit Public Package Manager URL has been successfull validated.\n")
+	} else {
+		fmt.Println("\nPosit Package Manager URL has been successfull validated.\n")
+	}
+
 	return cleanPackageManagerURL, nil
 }
 

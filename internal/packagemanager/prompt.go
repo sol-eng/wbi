@@ -11,11 +11,11 @@ import (
 func PromptPackageManagerChoice() (bool, error) {
 	name := true
 	prompt := &survey.Confirm{
-		Message: "Would you like to provide a default Posit Package Manager URL for Workbench?",
+		Message: "Would you like to setup Posit Package Manager as the default CRAN repo in Workbench? You will need connectivity to the Package Manager server to use this option.",
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
-		return false, errors.New("there was an issue with the Posit Package Manager URL prompt")
+		return false, errors.New("there was an issue with the Posit Package Manager choice prompt")
 	}
 	return name, nil
 }
@@ -44,4 +44,17 @@ func PromptPackageManagerRepo() (string, error) {
 		return "", fmt.Errorf("issue prompting for a Posit Package Manager repo: %w", err)
 	}
 	return target, nil
+}
+
+// Prompt users if they wish to add Posit Public Package Manager as the default CRAN repo in Workbench
+func PromptPublicPackageManagerChoice() (bool, error) {
+	name := true
+	prompt := &survey.Confirm{
+		Message: "Would you like to setup Posit Public Package Manager as the default CRAN repo in Workbench? You will need internet accessibility to use this option.",
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with the Posit Public Package Manager choice prompt")
+	}
+	return name, nil
 }
