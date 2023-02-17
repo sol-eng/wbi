@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/dpastoor/wbi/internal/config"
 )
 
 var globalPythonPaths = []string{
@@ -46,7 +48,7 @@ func isPythonDir(path string) (string, bool) {
 }
 
 // Prompts user if they want to install Python and does the installation
-func PromptAndInstallPython(osType string) ([]string, error) {
+func PromptAndInstallPython(osType config.OperatingSystem) ([]string, error) {
 	installPythonChoice, err := PythonInstallPrompt()
 	if err != nil {
 		return []string{}, fmt.Errorf("issue selecting Python installation: %w", err)
@@ -72,7 +74,7 @@ func PromptAndInstallPython(osType string) ([]string, error) {
 }
 
 // ScanAndHandlePythonVersions scans for Python versions, handles result/errors and creates PythonConfig
-func ScanAndHandlePythonVersions(osType string) ([]string, error) {
+func ScanAndHandlePythonVersions(osType config.OperatingSystem) ([]string, error) {
 	pythonVersionsOrig, err := ScanForPythonVersions()
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in scanning for Python versions: %w", err)

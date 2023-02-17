@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/dpastoor/wbi/internal/config"
 )
 
 var globalRPaths = []string{
@@ -43,7 +45,7 @@ func isRDir(path string) (string, bool) {
 }
 
 // Prompts user if they want to install R and does the installation
-func PromptAndInstallR(osType string) ([]string, error) {
+func PromptAndInstallR(osType config.OperatingSystem) ([]string, error) {
 	installRChoice, err := RInstallPrompt()
 	if err != nil {
 		return []string{}, fmt.Errorf("issue selecting R installation: %w", err)
@@ -69,7 +71,7 @@ func PromptAndInstallR(osType string) ([]string, error) {
 }
 
 // ScanAndHandleRVersions scans for R versions, handles result/errors and creates RConfig
-func ScanAndHandleRVersions(osType string) ([]string, error) {
+func ScanAndHandleRVersions(osType config.OperatingSystem) ([]string, error) {
 	rVersionsOrig, err := ScanForRVersions()
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)

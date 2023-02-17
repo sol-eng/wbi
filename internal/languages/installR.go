@@ -10,19 +10,13 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/dpastoor/wbi/internal/config"
 	"github.com/dpastoor/wbi/internal/system"
 )
 
 var availableRVersions = []string{
 	"4.2.2", "4.2.1", "4.2.0", "4.1.3", "4.1.2", "4.1.1", "4.1.0", "4.0.5", "4.0.4", "4.0.3", "4.0.2", "4.0.1", "4.0.0", "3.6.3", "3.6.2", "3.6.1", "3.6.0", "3.5.3", "3.5.2", "3.5.1", "3.5.0", "3.4.4", "3.4.3", "3.4.2", "3.4.1", "3.4.0", "3.3.3", "3.3.2", "3.3.1", "3.3.0",
 }
-
-const Ubuntu22 = "ubuntu22"
-const Ubuntu20 = "ubuntu20"
-const Ubuntu18 = "ubuntu18"
-
-const Redhat8 = "redhat8"
-const Redhat7 = "redhat7"
 
 // InstallerInfo contains the information needed to download and install R
 type InstallerInfo struct {
@@ -75,7 +69,7 @@ func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 }
 
 // Downloads the R installer, and installs R
-func DownloadAndInstallR(rVersion string, osType string) error {
+func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
 	// Create InstallerInfo with the proper information
 	installerInfo, err := PopulateInstallerInfo(rVersion, osType)
 	if err != nil {
@@ -136,9 +130,9 @@ func (installerInfo *InstallerInfo) DownloadR() (string, error) {
 }
 
 // Installs R in a certain way based on the operating system
-func InstallR(filepath string, osType string, rVersion string) error {
+func InstallR(filepath string, osType config.OperatingSystem, rVersion string) error {
 	// Update apt and install gdebi-core if an Ubuntu system
-	if osType == Ubuntu22 || osType == Ubuntu20 || osType == Ubuntu18 {
+	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
 		AptErr := UpgradeApt()
 		if AptErr != nil {
 			return fmt.Errorf("UpgradeApt: %w", AptErr)
@@ -148,7 +142,7 @@ func InstallR(filepath string, osType string, rVersion string) error {
 		if GdebiCoreErr != nil {
 			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
 		}
-	} else if osType == Redhat8 {
+	} else if osType == config.Redhat8 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
 		EnableEPELErr := EnableEPELRepo(osType)
 		if EnableEPELErr != nil {
@@ -159,7 +153,7 @@ func InstallR(filepath string, osType string, rVersion string) error {
 		if EnableCodeReadyErr != nil {
 			return fmt.Errorf("EnableCodeReadyRepo: %w", EnableCodeReadyErr)
 		}
-	} else if osType == Redhat7 {
+	} else if osType == config.Redhat7 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
 		EnableEPELErr := EnableEPELRepo(osType)
 		if EnableEPELErr != nil {
@@ -190,44 +184,44 @@ func InstallR(filepath string, osType string, rVersion string) error {
 }
 
 // Creates the proper command to install R based on the operating system
-func RetrieveInstallCommandForR(filepath string, os string) (string, error) {
-	switch os {
-	case Ubuntu22, Ubuntu20, Ubuntu18:
+func RetrieveInstallCommandForR(filepath string, osType config.OperatingSystem) (string, error) {
+	switch osType {
+	case config.Ubuntu22, config.Ubuntu20, config.Ubuntu18:
 		return "sudo gdebi -n " + filepath, nil
-	case Redhat7, Redhat8:
+	case config.Redhat7, config.Redhat8:
 		return "sudo yum install -y " + filepath, nil
 	default:
 		return "", errors.New("operating system not supported")
 	}
 }
 
-func PopulateInstallerInfo(rVersion string, osType string) (InstallerInfo, error) {
+func PopulateInstallerInfo(rVersion string, osType config.OperatingSystem) (InstallerInfo, error) {
 	switch osType {
-	case Ubuntu18:
+	case config.Ubuntu18:
 		return InstallerInfo{
 			Name:    "r-" + rVersion + "_1_amd64.deb",
 			URL:     "https://cdn.rstudio.com/r/ubuntu-1804/pkgs/r-" + rVersion + "_1_amd64.deb",
 			Version: rVersion,
 		}, nil
-	case Ubuntu20:
+	case config.Ubuntu20:
 		return InstallerInfo{
 			Name:    "r-" + rVersion + "_1_amd64.deb",
 			URL:     "https://cdn.rstudio.com/r/ubuntu-2004/pkgs/r-" + rVersion + "_1_amd64.deb",
 			Version: rVersion,
 		}, nil
-	case Ubuntu22:
+	case config.Ubuntu22:
 		return InstallerInfo{
 			Name:    "r-" + rVersion + "_1_amd64.deb",
 			URL:     "https://cdn.rstudio.com/r/ubuntu-2204/pkgs/r-" + rVersion + "_1_amd64.deb",
 			Version: rVersion,
 		}, nil
-	case Redhat7:
+	case config.Redhat7:
 		return InstallerInfo{
 			Name:    "R-" + rVersion + "-1-1.x86_64.rpm",
 			URL:     "https://cdn.rstudio.com/r/centos-7/pkgs/R-" + rVersion + "-1-1.x86_64.rpm",
 			Version: rVersion,
 		}, nil
-	case Redhat8:
+	case config.Redhat8:
 		return InstallerInfo{
 			Name:    "R-" + rVersion + "-1-1.x86_64.rpm",
 			URL:     "https://cdn.rstudio.com/r/centos-8/pkgs/R-" + rVersion + "-1-1.x86_64.rpm",
@@ -263,11 +257,11 @@ func UpgradeApt() error {
 }
 
 // Enable the Extra Packages for Enterprise Linux (EPEL) repository
-func EnableEPELRepo(osType string) error {
+func EnableEPELRepo(osType config.OperatingSystem) error {
 	var EPELCommand string
-	if osType == Redhat8 {
+	if osType == config.Redhat8 {
 		EPELCommand = "sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
-	} else if osType == Redhat7 {
+	} else if osType == config.Redhat7 {
 		EPELCommand = "sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
 	} else {
 		return errors.New("operating system not supported")

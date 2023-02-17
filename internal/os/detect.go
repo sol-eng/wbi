@@ -5,47 +5,45 @@ import (
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/dpastoor/wbi/internal/config"
 )
 
 // Detect which operating system WBI is running on
-func DetectOS() (string, error) {
+func DetectOS() (config.OperatingSystem, error) {
 	osType := runtime.GOOS
 	if osType == "linux" {
 		// Check RHEL
 		if _, err := os.Stat("/etc/redhat-release"); err == nil {
 			releaseVersionRHEL, err := os.ReadFile("/etc/redhat-release")
 			if err != nil {
-				return "", err
+				return config.Unknown, err
 			}
 			if strings.Contains(string(releaseVersionRHEL), "release 7") {
-				osType = "rhel7"
+				return config.Redhat7, nil
+			} else if strings.Contains(string(releaseVersionRHEL), "release 8") {
+				return config.Redhat8, nil
+			} else {
+				return config.Unknown, errors.New("unsupported operating system")
 			}
-			if strings.Contains(string(releaseVersionRHEL), "release 8") {
-				osType = "rhel8"
-			}
-			if strings.Contains(string(releaseVersionRHEL), "release 9") {
-				osType = "rhel9"
-			}
-			return osType, nil
 		} else if _, err := os.Stat("/etc/issue"); err == nil {
 			releaseVersionUbuntu, err := os.ReadFile("/etc/issue")
 			if err != nil {
-				return "", err
+				return config.Unknown, err
 			}
 			if strings.Contains(string(releaseVersionUbuntu), "Ubuntu 22") {
-				osType = "ubuntu22"
+				return config.Ubuntu22, nil
+			} else if strings.Contains(string(releaseVersionUbuntu), "Ubuntu 20") {
+				return config.Ubuntu20, nil
+			} else if strings.Contains(string(releaseVersionUbuntu), "Ubuntu 18") {
+				return config.Ubuntu18, nil
+			} else {
+				return config.Unknown, errors.New("unsupported operating system")
 			}
-			if strings.Contains(string(releaseVersionUbuntu), "Ubuntu 20") {
-				osType = "ubuntu20"
-			}
-			if strings.Contains(string(releaseVersionUbuntu), "Ubuntu 18") {
-				osType = "ubuntu18"
-			}
-			return osType, nil
 		} else {
-			return "", errors.New("unsupported operating system")
+			return config.Unknown, errors.New("unsupported operating system")
 		}
 	} else {
-		return "", errors.New("unsupported operating system")
+		return config.Unknown, errors.New("unsupported operating system")
 	}
 }

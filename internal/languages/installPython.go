@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/dpastoor/wbi/internal/config"
 	"github.com/dpastoor/wbi/internal/system"
 )
 
@@ -132,7 +133,7 @@ func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, err
 }
 
 // Downloads the Python installer, and installs Python
-func DownloadAndInstallPython(pythonVersion string, osType string) error {
+func DownloadAndInstallPython(pythonVersion string, osType config.OperatingSystem) error {
 	// Create InstallerInfoPython with the proper information
 	installerInfo, err := PopulateInstallerInfoPython(pythonVersion, osType)
 	if err != nil {
@@ -199,9 +200,9 @@ func (installerInfoPython *InstallerInfoPython) DownloadPython() (string, error)
 }
 
 // Installs Python in a certain way based on the operating system
-func InstallPython(filepath string, osType string, pythonVersion string) error {
+func InstallPython(filepath string, osType config.OperatingSystem, pythonVersion string) error {
 	// Update apt and install gdebi-core if an Ubuntu system
-	if osType == Ubuntu22 || osType == Ubuntu20 || osType == Ubuntu18 {
+	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
 		AptErr := UpgradeApt()
 		if AptErr != nil {
 			return fmt.Errorf("UpgradeApt: %w", AptErr)
@@ -211,7 +212,7 @@ func InstallPython(filepath string, osType string, pythonVersion string) error {
 		if GdebiCoreErr != nil {
 			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
 		}
-	} else if osType == Redhat8 {
+	} else if osType == config.Redhat8 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
 		EnableEPELErr := EnableEPELRepo(osType)
 		if EnableEPELErr != nil {
@@ -222,7 +223,7 @@ func InstallPython(filepath string, osType string, pythonVersion string) error {
 		if EnableCodeReadyErr != nil {
 			return fmt.Errorf("EnableCodeReadyRepo: %w", EnableCodeReadyErr)
 		}
-	} else if osType == Redhat7 {
+	} else if osType == config.Redhat7 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
 		EnableEPELErr := EnableEPELRepo(osType)
 		if EnableEPELErr != nil {
@@ -266,44 +267,44 @@ func UpgradePythonTools(pythonVersion string) error {
 }
 
 // Creates the proper command to install Python based on the operating system
-func RetrieveInstallCommandForPython(filepath string, os string) (string, error) {
-	switch os {
-	case Ubuntu22, Ubuntu20, Ubuntu18:
+func RetrieveInstallCommandForPython(filepath string, osType config.OperatingSystem) (string, error) {
+	switch osType {
+	case config.Ubuntu22, config.Ubuntu20, config.Ubuntu18:
 		return "sudo gdebi -n " + filepath, nil
-	case Redhat7, Redhat8:
+	case config.Redhat7, config.Redhat8:
 		return "sudo yum install -y " + filepath, nil
 	default:
 		return "", errors.New("operating system not supported")
 	}
 }
 
-func PopulateInstallerInfoPython(pythonVersion string, osType string) (InstallerInfoPython, error) {
+func PopulateInstallerInfoPython(pythonVersion string, osType config.OperatingSystem) (InstallerInfoPython, error) {
 	switch osType {
-	case Ubuntu18:
+	case config.Ubuntu18:
 		return InstallerInfoPython{
 			Name:    "python-" + pythonVersion + "_1_amd64.deb",
 			URL:     "https://cdn.rstudio.com/python/ubuntu-1804/pkgs/python-" + pythonVersion + "_1_amd64.deb",
 			Version: pythonVersion,
 		}, nil
-	case Ubuntu20:
+	case config.Ubuntu20:
 		return InstallerInfoPython{
 			Name:    "python-" + pythonVersion + "_1_amd64.deb",
 			URL:     "https://cdn.rstudio.com/python/ubuntu-2004/pkgs/python-" + pythonVersion + "_1_amd64.deb",
 			Version: pythonVersion,
 		}, nil
-	case Ubuntu22:
+	case config.Ubuntu22:
 		return InstallerInfoPython{
 			Name:    "python-" + pythonVersion + "_1_amd64.deb",
 			URL:     "https://cdn.rstudio.com/python/ubuntu-2204/pkgs/python-" + pythonVersion + "_1_amd64.deb",
 			Version: pythonVersion,
 		}, nil
-	case Redhat7:
+	case config.Redhat7:
 		return InstallerInfoPython{
 			Name:    "python-" + pythonVersion + "-1-1.x86_64.rpm",
 			URL:     "https://cdn.rstudio.com/python/centos-7/pkgs/python-" + pythonVersion + "-1-1.x86_64.rpm",
 			Version: pythonVersion,
 		}, nil
-	case Redhat8:
+	case config.Redhat8:
 		return InstallerInfoPython{
 			Name:    "python-" + pythonVersion + "-1-1.x86_64.rpm",
 			URL:     "https://cdn.rstudio.com/python/centos-8/pkgs/python-" + pythonVersion + "-1-1.x86_64.rpm",
