@@ -7,6 +7,7 @@ func (WBConfig *WBConfig) ConfigStructToText() {
 	WBConfig.PythonConfig.PythonStructToText()
 	WBConfig.SSLConfig.SSLStructToText()
 	WBConfig.AuthConfig.AuthStructToText()
+	WBConfig.PackageManagerStringToText()
 	fmt.Println("\n=== Please restart Workbench after making these changes")
 }
 
@@ -54,4 +55,10 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToText() {
 	fmt.Println("\n=== Add to config file: /etc/rstudio/openid-client-secret:")
 	fmt.Println("client-id=" + OIDCConfig.ClientID)
 	fmt.Println("client-secret=" + OIDCConfig.ClientSecret)
+}
+
+// Prints the Package Manager URL configuration string information to the console
+func (WBConfig *WBConfig) PackageManagerStringToText() {
+	fmt.Println("\n=== Add to config file: /etc/rstudio/repos.conf:")
+	fmt.Println("CRAN=" + WBConfig.PackageManagerURL)
 }

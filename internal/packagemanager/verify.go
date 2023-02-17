@@ -1,0 +1,103 @@
+package packagemanager
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"time"
+)
+
+type RepoInformation []struct {
+	Name string `json:"name"`
+}
+
+func cleanPackageManagerURL(packageManagerURL string) string {
+	// remove trailing slash if present
+	if packageManagerURL[len(packageManagerURL)-1] == '/' {
+		packageManagerURL = packageManagerURL[:len(packageManagerURL)-1]
+	}
+	return packageManagerURL
+}
+
+// VerifyPackageManagerURLAndRepo checks if the Posit Package Manager URL and repo is valid
+func VerifyPackageManagerURLAndRepo(packageManagerURL string, packageManagerRepo string) (string, error) {
+	cleanPackageManagerURL, err := VerifyPackageManagerURL(packageManagerURL)
+	if err != nil {
+		return "", fmt.Errorf("issue with checking the Posit Package Manager URL: %w", err)
+	}
+	cleanPackageManagerRepoURL, err := VerifyPackageManagerRepo(cleanPackageManagerURL, packageManagerRepo)
+	if err != nil {
+		return "", fmt.Errorf("issue with checking the Posit Package Manager repo: %w", err)
+	}
+	return cleanPackageManagerRepoURL, nil
+}
+
+func VerifyPackageManagerURL(packageManagerURL string) (string, error) {
+	cleanPackageManagerURL := cleanPackageManagerURL(packageManagerURL)
+	fullTestURL := cleanPackageManagerURL + "/__ping__"
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	req, err := http.NewRequestWithContext(context.Background(),
+		http.MethodGet, fullTestURL, nil)
+	if err != nil {
+		return "", errors.New("error creating request")
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", errors.New("error retrieving JSON data")
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return "", errors.New("error in HTTP status code")
+	}
+
+	fmt.Println("\nPosit Package Manager URL has been successfull validated.\n")
+	return cleanPackageManagerURL, nil
+}
+
+func VerifyPackageManagerRepo(packageManagerURL string, packageManagerRepo string) (string, error) {
+	repoSearchURL := packageManagerURL + "/__api__/repos?type=R"
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	req, err := http.NewRequestWithContext(context.Background(),
+		http.MethodGet, repoSearchURL, nil)
+	if err != nil {
+		return "", errors.New("error creating request")
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", errors.New("error retrieving JSON data")
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return "", errors.New("error in HTTP status code")
+	}
+
+	var repoInformation RepoInformation
+	err = json.NewDecoder(res.Body).Decode(&repoInformation)
+	if err != nil {
+		return "", errors.New("error unmarshalling JSON data")
+	}
+
+	// verify the repo name exists in the list of repos
+	matchFound := false
+	for _, repo := range repoInformation {
+		if repo.Name == packageManagerRepo {
+			matchFound = true
+			break
+		}
+	}
+	if !matchFound {
+		return "", errors.New("error finding the " + packageManagerRepo + " repository in Posit Package Manager")
+	}
+
+	fmt.Println("\nPosit Package Manager Repository has been successfull validated.\n")
+	return packageManagerURL, nil
+
+}

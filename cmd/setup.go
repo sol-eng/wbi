@@ -9,6 +9,7 @@ import (
 	"github.com/dpastoor/wbi/internal/languages"
 	"github.com/dpastoor/wbi/internal/license"
 	"github.com/dpastoor/wbi/internal/os"
+	"github.com/dpastoor/wbi/internal/packagemanager"
 	"github.com/dpastoor/wbi/internal/prodrivers"
 	"github.com/dpastoor/wbi/internal/ssl"
 	"github.com/dpastoor/wbi/internal/workbench"
@@ -166,6 +167,31 @@ func newSetup(setupOpts setupOpts) error {
 	AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
 	if AuthErr != nil {
 		return fmt.Errorf("issue handling authentication: %w", AuthErr)
+	}
+
+	// Package Manager URL
+	packageManagerChoice, err := packagemanager.PromptPackageManagerChoice()
+	if err != nil {
+		return fmt.Errorf("issue in prompt for Posit Package Manager URL choice: %w", err)
+	}
+	if packageManagerChoice {
+		rawPackageManagerURL, err := packagemanager.PromptPackageManagerURL()
+		if err != nil {
+			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
+		}
+		repoPackageManager, err := packagemanager.PromptPackageManagerRepo()
+		if err != nil {
+			return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+		}
+
+		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURLAndRepo(rawPackageManagerURL, repoPackageManager)
+		if err != nil {
+			return fmt.Errorf("issue with checking the Posit Package Manager URL and repo: %w", err)
+		}
+		WBConfig.PackageManagerURL, err = packagemanager.BuildPackagemanagerFullURL(cleanPackageManagerURL, repoPackageManager, osType)
+		if err != nil {
+			return fmt.Errorf("issue with creating the full Posit Package Manager URL: %w", err)
+		}
 	}
 
 	// Write config to console
