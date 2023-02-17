@@ -156,11 +156,11 @@ func newSetup(setupOpts setupOpts) error {
 		return fmt.Errorf("issue in prompt for Connect URL choice: %w", err)
 	}
 	if connectChoice {
-		WBConfig.ConnectURL, err = connect.PromptConnectURL()
+		rawConnectURL, err := connect.PromptConnectURL()
 		if err != nil {
 			return fmt.Errorf("issue entering Connect URL: %w", err)
 		}
-		_, err = connect.VerifyConnectURL(WBConfig.ConnectURL)
+		WBConfig.ConnectURL, err = connect.VerifyConnectURL(rawConnectURL)
 		if err != nil {
 			return fmt.Errorf("issue with checking the Connect URL: %w", err)
 		}
