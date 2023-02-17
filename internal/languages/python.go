@@ -271,12 +271,12 @@ func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, err
 // Downloads the Python installer, and installs Python
 func DownloadAndInstallPython(pythonVersion string, osType config.OperatingSystem) error {
 	// Create InstallerInfoPython with the proper information
-	installerInfo, err := install.PopulateInstallerInfo("python", pythonVersion, osType)
+	installerInfo, err := PopulateInstallerInfo("python", pythonVersion, osType)
 	if err != nil {
 		return fmt.Errorf("PopulateInstallerInfoPython: %w", err)
 	}
 	// Download installer
-	filepath, err := installerInfo.DownloadLanguage("python")
+	filepath, err := install.DownloadFile("Python", installerInfo.URL, installerInfo.Name)
 	if err != nil {
 		return fmt.Errorf("DownloadPython: %w", err)
 	}
