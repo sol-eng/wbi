@@ -14,6 +14,17 @@ func (d AuthType) String() string {
 	return [...]string{"SAML", "OIDC", "LDAP", "PAM", "Other"}[d]
 }
 
+type OperatingSystem int
+
+const (
+	Unknown OperatingSystem = iota
+	Ubuntu18
+	Ubuntu20
+	Ubuntu22
+	Redhat7
+	Redhat8
+)
+
 // WBConfig stores the entire workbench configuration
 type WBConfig struct {
 	SSLConfig    SSLConfig

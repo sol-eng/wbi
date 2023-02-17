@@ -8,15 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dpastoor/wbi/internal/config"
+	"github.com/dpastoor/wbi/internal/install"
 	"github.com/dpastoor/wbi/internal/system"
 )
-
-const Ubuntu22 = "ubuntu22"
-const Ubuntu20 = "ubuntu20"
-const Ubuntu18 = "ubuntu18"
-
-const Redhat8 = "redhat8"
-const Redhat7 = "redhat7"
 
 // InstallerInfo contains the information needed to download and install Workbench
 type InstallerInfo struct {
@@ -60,7 +55,7 @@ type RStudio struct {
 }
 
 // Retrieves JSON data from Posit, downloads the Workbench installer, and installs Workbench
-func DownloadAndInstallWorkbench(osType string) error {
+func DownloadAndInstallWorkbench(osType config.OperatingSystem) error {
 	// Retrieve JSON data
 	rstudio, err := RetrieveWorkbenchInstallerInfo()
 	if err != nil {
@@ -84,40 +79,16 @@ func DownloadAndInstallWorkbench(osType string) error {
 	return nil
 }
 
-// Installs Gdebi Core
-func InstallGdebiCore() error {
-	gdebiCoreCommand := "sudo apt-get install -y gdebi-core"
-	err := system.RunCommand(gdebiCoreCommand)
-	if err != nil {
-		return fmt.Errorf("issue installing gdebi-core: %w", err)
-	}
-
-	fmt.Println("\ngdebi-core has been successfully installed!\n")
-	return nil
-}
-
-// Upgrades Apt
-func UpgradeApt() error {
-	aptUpgradeCommand := "sudo apt-get update"
-	err := system.RunCommand(aptUpgradeCommand)
-	if err != nil {
-		return fmt.Errorf("issue upgrading apt: %w", err)
-	}
-
-	fmt.Println("\napt has been successfully upgraded!\n")
-	return nil
-}
-
 // Installs Workbench in a certain way based on the operating system
-func InstallWorkbench(filepath string, osType string) error {
+func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 	// Install gdebi-core if an Ubuntu system
-	if osType == Ubuntu22 || osType == Ubuntu20 || osType == Ubuntu18 {
-		AptErr := UpgradeApt()
+	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
+		AptErr := install.UpgradeApt()
 		if AptErr != nil {
 			return fmt.Errorf("UpgradeApt: %w", AptErr)
 		}
 
-		GdebiCoreErr := InstallGdebiCore()
+		GdebiCoreErr := install.InstallGdebiCore()
 		if GdebiCoreErr != nil {
 			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
 		}
@@ -138,11 +109,11 @@ func InstallWorkbench(filepath string, osType string) error {
 }
 
 // Creates the proper command to install Workbench based on the operating system
-func RetrieveInstallCommandForWorkbench(filepath string, os string) (string, error) {
-	switch os {
-	case Ubuntu22, Ubuntu20, Ubuntu18:
+func RetrieveInstallCommandForWorkbench(filepath string, osType config.OperatingSystem) (string, error) {
+	switch osType {
+	case config.Ubuntu22, config.Ubuntu20, config.Ubuntu18:
 		return "sudo gdebi -n " + filepath, nil
-	case Redhat7, Redhat8:
+	case config.Redhat7, config.Redhat8:
 		return "sudo yum install -y " + filepath, nil
 	default:
 		return "", errors.New("operating system not supported")
@@ -150,15 +121,15 @@ func RetrieveInstallCommandForWorkbench(filepath string, os string) (string, err
 }
 
 // Pulls out the installer information from the JSON data based on the operating system
-func (r *RStudio) GetInstallerInfo(os string) (InstallerInfo, error) {
-	switch os {
-	case Ubuntu18, Ubuntu20:
+func (r *RStudio) GetInstallerInfo(osType config.OperatingSystem) (InstallerInfo, error) {
+	switch osType {
+	case config.Ubuntu18, config.Ubuntu20:
 		return r.Rstudio.Pro.Stable.Server.Installer.Bionic, nil
-	case Ubuntu22:
+	case config.Ubuntu22:
 		return r.Rstudio.Pro.Stable.Server.Installer.Jammy, nil
-	case Redhat7:
+	case config.Redhat7:
 		return r.Rstudio.Pro.Stable.Server.Installer.Redhat7, nil
-	case Redhat8:
+	case config.Redhat8:
 		return r.Rstudio.Pro.Stable.Server.Installer.Redhat8, nil
 	default:
 		return InstallerInfo{}, errors.New("operating system not supported")
