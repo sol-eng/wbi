@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -13,14 +12,6 @@ func cleanConnectURL(connectURL string) string {
 	// remove trailing slash if present
 	if connectURL[len(connectURL)-1] == '/' {
 		connectURL = connectURL[:len(connectURL)-1]
-	}
-	// if the url does not contain :// then add it, either http if port 3939 or https in other cases (most installs)
-	if !strings.Contains(connectURL, "://") {
-		if strings.Contains(connectURL, ":3939") {
-			connectURL = "http://" + connectURL
-		} else {
-			connectURL = "https://" + connectURL
-		}
 	}
 	return connectURL
 }
