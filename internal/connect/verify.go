@@ -2,7 +2,6 @@ package connect
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -26,16 +25,11 @@ func cleanConnectURL(connectURL string) string {
 	return connectURL
 }
 
-// Information is only needed to check if the URL is valid
-type ProhibitedUsernames struct {
-	ProhibitedUsernames []string `json:"prohibited_usernames"`
-}
-
 // VerifyConnectURL checks if the Connect URL is valid
 func VerifyConnectURL(connectURL string) (string, error) {
 
 	cleanConnectURL := cleanConnectURL(connectURL)
-	fullTestURL := cleanConnectURL + "/__api__/server_settings"
+	fullTestURL := cleanConnectURL + "/__ping__"
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
@@ -52,11 +46,6 @@ func VerifyConnectURL(connectURL string) (string, error) {
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		return "", errors.New("error in HTTP status code")
-	}
-	var prohibitedUsernames ProhibitedUsernames
-	err = json.NewDecoder(res.Body).Decode(&prohibitedUsernames)
-	if err != nil {
-		return "", errors.New("error unmarshalling JSON data")
 	}
 
 	fmt.Println("\nConnect URL has been successfull validated.\n")
