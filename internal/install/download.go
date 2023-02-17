@@ -7,22 +7,16 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
-// Create a temporary file and download the R/Python installer to it.
-func (installerInfo *InstallerInfo) DownloadLanguage(language string) (string, error) {
+// Create a temporary file and download the installer to it.
+func DownloadFile(installerName string, url string, filename string) (string, error) {
 
-	url := installerInfo.URL
-	name := installerInfo.Name
-
-	languageTitleCase := strings.Title(language)
-
-	fmt.Println("Downloading " + languageTitleCase + " installer from: " + url)
+	fmt.Println("Downloading " + installerName + " installer from: " + url)
 
 	// Create the file
-	tmpFile, err := os.CreateTemp("", name)
+	tmpFile, err := os.CreateTemp("", filename)
 	if err != nil {
 		return tmpFile.Name(), err
 	}
@@ -38,11 +32,11 @@ func (installerInfo *InstallerInfo) DownloadLanguage(language string) (string, e
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		return "", errors.New("error downloading " + languageTitleCase + " installer")
+		return "", errors.New("error downloading " + installerName + " installer")
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return "", errors.New("error retrieving " + languageTitleCase + " installer")
+		return "", errors.New("error retrieving " + installerName + " installer")
 	}
 
 	// Writer the body to file

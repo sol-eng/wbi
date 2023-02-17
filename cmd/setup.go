@@ -9,6 +9,7 @@ import (
 	"github.com/dpastoor/wbi/internal/languages"
 	"github.com/dpastoor/wbi/internal/license"
 	"github.com/dpastoor/wbi/internal/os"
+	"github.com/dpastoor/wbi/internal/prodrivers"
 	"github.com/dpastoor/wbi/internal/ssl"
 	"github.com/dpastoor/wbi/internal/workbench"
 	"github.com/samber/lo"
@@ -114,6 +115,24 @@ func newSetup(setupOpts setupOpts) error {
 				if err != nil {
 					return fmt.Errorf("issue installing Jupyter: %w", err)
 				}
+			}
+		}
+	}
+
+	// Pro Drivers
+	proDriversExistingStatus, err := prodrivers.CheckExistingProDrivers()
+	if err != nil {
+		return fmt.Errorf("issue in checking for prior pro driver installation: %w", err)
+	}
+	if !proDriversExistingStatus {
+		installProDriversChoice, err := prodrivers.ProDriversInstallPrompt()
+		if err != nil {
+			return fmt.Errorf("issue selecting Pro Drivers installation: %w", err)
+		}
+		if installProDriversChoice {
+			err := prodrivers.DownloadAndInstallProDrivers(osType)
+			if err != nil {
+				return fmt.Errorf("issue installing Pro Drivers: %w", err)
 			}
 		}
 	}

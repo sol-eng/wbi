@@ -215,12 +215,12 @@ func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 // Downloads the R installer, and installs R
 func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
 	// Create InstallerInfo with the proper information
-	installerInfo, err := install.PopulateInstallerInfo("r", rVersion, osType)
+	installerInfo, err := PopulateInstallerInfo("r", rVersion, osType)
 	if err != nil {
 		return fmt.Errorf("PopulateInstallerInfo: %w", err)
 	}
 	// Download installer
-	filepath, err := installerInfo.DownloadLanguage("r")
+	filepath, err := install.DownloadFile("R", installerInfo.URL, installerInfo.Name)
 	if err != nil {
 		return fmt.Errorf("DownloadR: %w", err)
 	}
