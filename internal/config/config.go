@@ -31,6 +31,7 @@ type WBConfig struct {
 	RConfig      RConfig
 	PythonConfig PythonConfig
 	AuthConfig   AuthConfig
+	ConnectURL   string
 }
 
 type AuthConfig struct {
