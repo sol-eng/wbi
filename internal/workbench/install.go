@@ -9,15 +9,9 @@ import (
 	"time"
 
 	"github.com/dpastoor/wbi/internal/config"
+	"github.com/dpastoor/wbi/internal/install"
 	"github.com/dpastoor/wbi/internal/system"
 )
-
-const Ubuntu22 = "ubuntu22"
-const Ubuntu20 = "ubuntu20"
-const Ubuntu18 = "ubuntu18"
-
-const Redhat8 = "redhat8"
-const Redhat7 = "redhat7"
 
 // InstallerInfo contains the information needed to download and install Workbench
 type InstallerInfo struct {
@@ -85,40 +79,16 @@ func DownloadAndInstallWorkbench(osType config.OperatingSystem) error {
 	return nil
 }
 
-// Installs Gdebi Core
-func InstallGdebiCore() error {
-	gdebiCoreCommand := "sudo apt-get install -y gdebi-core"
-	err := system.RunCommand(gdebiCoreCommand)
-	if err != nil {
-		return fmt.Errorf("issue installing gdebi-core: %w", err)
-	}
-
-	fmt.Println("\ngdebi-core has been successfully installed!\n")
-	return nil
-}
-
-// Upgrades Apt
-func UpgradeApt() error {
-	aptUpgradeCommand := "sudo apt-get update"
-	err := system.RunCommand(aptUpgradeCommand)
-	if err != nil {
-		return fmt.Errorf("issue upgrading apt: %w", err)
-	}
-
-	fmt.Println("\napt has been successfully upgraded!\n")
-	return nil
-}
-
 // Installs Workbench in a certain way based on the operating system
 func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 	// Install gdebi-core if an Ubuntu system
 	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
-		AptErr := UpgradeApt()
+		AptErr := install.UpgradeApt()
 		if AptErr != nil {
 			return fmt.Errorf("UpgradeApt: %w", AptErr)
 		}
 
-		GdebiCoreErr := InstallGdebiCore()
+		GdebiCoreErr := install.InstallGdebiCore()
 		if GdebiCoreErr != nil {
 			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
 		}

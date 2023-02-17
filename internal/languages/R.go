@@ -10,8 +10,14 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/dpastoor/wbi/internal/config"
+	"github.com/dpastoor/wbi/internal/install"
 )
+
+var availableRVersions = []string{
+	"4.2.2", "4.2.1", "4.2.0", "4.1.3", "4.1.2", "4.1.1", "4.1.0", "4.0.5", "4.0.4", "4.0.3", "4.0.2", "4.0.1", "4.0.0", "3.6.3", "3.6.2", "3.6.1", "3.6.0", "3.5.3", "3.5.2", "3.5.1", "3.5.0", "3.4.4", "3.4.3", "3.4.2", "3.4.1", "3.4.0", "3.3.3", "3.3.2", "3.3.1", "3.3.0",
+}
 
 var globalRPaths = []string{
 	"/usr/bin/R",
@@ -161,4 +167,67 @@ func ScanForRVersions() ([]string, error) {
 	}
 
 	return foundVersions, nil
+}
+
+// Prompt users if they would like to install R versions
+func RInstallPrompt() (bool, error) {
+	name := true
+	prompt := &survey.Confirm{
+		Message: "Would you like to install version(s) of R?",
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with the R install prompt")
+	}
+	return name, nil
+}
+
+func RetrieveValidRVersions() ([]string, error) {
+	// TODO make this dynamic based on https://cran.r-project.org/src/base/R-4/ and https://cran.r-project.org/src/base/R-3/
+	return availableRVersions, nil
+}
+
+// Prompt asking users which R version(s) they would like to install
+func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
+	var qs = []*survey.Question{
+		{
+			Name: "rversions",
+			Prompt: &survey.MultiSelect{
+				Message: "Which version(s) of R would you like to install?",
+				Options: availableRVersions,
+				Default: availableRVersions[0],
+			},
+		},
+	}
+	rVersionsAnswers := struct {
+		RVersions []string `survey:"rversions"`
+	}{}
+	err := survey.Ask(qs, &rVersionsAnswers)
+	if err != nil {
+		return []string{}, errors.New("there was an issue with the R versions selection prompt")
+	}
+	if len(rVersionsAnswers.RVersions) == 0 {
+		return []string{}, errors.New("at least one R version must be selected")
+	}
+	return rVersionsAnswers.RVersions, nil
+}
+
+// Downloads the R installer, and installs R
+func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
+	// Create InstallerInfo with the proper information
+	installerInfo, err := install.PopulateInstallerInfo("r", rVersion, osType)
+	if err != nil {
+		return fmt.Errorf("PopulateInstallerInfo: %w", err)
+	}
+	// Download installer
+	filepath, err := installerInfo.DownloadLanguage("r")
+	if err != nil {
+		return fmt.Errorf("DownloadR: %w", err)
+	}
+	// Install R
+	err = install.InstallLanguage("r", filepath, osType, rVersion)
+	if err != nil {
+		return fmt.Errorf("InstallLanguage: %w", err)
+	}
+	return nil
 }
