@@ -4,13 +4,32 @@ import "fmt"
 
 // Prints the WBConfig configuration struct information to the console
 func (WBConfig *WBConfig) ConfigStructToText() {
-	WBConfig.PythonConfig.PythonStructToText()
-	WBConfig.SSLConfig.SSLStructToText()
-	WBConfig.AuthConfig.AuthStructToText()
-	WBConfig.PackageManagerStringToText()
-	WBConfig.ConnectStringToText()
-
-	fmt.Println("\n=== Please restart Workbench after making these changes")
+	anyPrint := false
+	if WBConfig.PythonConfig.JupyterPath != "" {
+		anyPrint = true
+		WBConfig.PythonConfig.PythonStructToText()
+	}
+	if WBConfig.SSLConfig.UseSSL {
+		anyPrint = true
+		WBConfig.SSLConfig.SSLStructToText()
+	}
+	if WBConfig.AuthConfig.Using {
+		anyPrint = true
+		WBConfig.AuthConfig.AuthStructToText()
+	}
+	if WBConfig.PackageManagerConfig.Using {
+		anyPrint = true
+		WBConfig.PackageManagerStringToText()
+	}
+	if WBConfig.ConnectConfig.Using {
+		anyPrint = true
+		WBConfig.ConnectStringToText()
+	}
+	if anyPrint {
+		fmt.Println("\n=== Please restart Workbench after making these changes")
+	} else {
+		fmt.Println("\n=== No configuration changes are needed")
+	}
 }
 
 // Prints the PythonConfig configuration struct information to the console
@@ -62,11 +81,11 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToText() {
 // Prints the Package Manager URL configuration string information to the console
 func (WBConfig *WBConfig) PackageManagerStringToText() {
 	fmt.Println("\n=== Add to config file: /etc/rstudio/repos.conf:")
-	fmt.Println("CRAN=" + WBConfig.PackageManagerURL)
+	fmt.Println("CRAN=" + WBConfig.PackageManagerConfig.URL)
 }
 
 // Prints the ConnectURL configuration string information to the console
 func (WBConfig *WBConfig) ConnectStringToText() {
 	fmt.Println("\n=== Add to config file: /etc/rstudio/rsession.conf:")
-	fmt.Println("default-rsconnect-server=" + WBConfig.ConnectURL)
+	fmt.Println("default-rsconnect-server=" + WBConfig.ConnectConfig.URL)
 }

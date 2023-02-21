@@ -140,11 +140,11 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// SSL
-	useSSL, err := ssl.PromptSSL()
+	WBConfig.SSLConfig.Using, err = ssl.PromptSSL()
 	if err != nil {
 		return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 	}
-	if useSSL {
+	if WBConfig.SSLConfig.Using {
 		WBConfig.SSLConfig.CertPath, err = ssl.PromptSSLFilePath()
 		if err != nil {
 			return fmt.Errorf("issue with the provided SSL cert path: %w", err)
@@ -161,21 +161,27 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// Authentication
-	WBConfig.AuthConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+	WBConfig.AuthConfig.Using, err = authentication.PromptAuth()
 	if err != nil {
-		return fmt.Errorf("issue entering and converting AuthType: %w", err)
+		return fmt.Errorf("issue selecting if Authentication is to be setup: %w", err)
 	}
-	AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
-	if AuthErr != nil {
-		return fmt.Errorf("issue handling authentication: %w", AuthErr)
+	if WBConfig.AuthConfig.Using {
+		WBConfig.AuthConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+		if err != nil {
+			return fmt.Errorf("issue entering and converting AuthType: %w", err)
+		}
+		AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
+		if AuthErr != nil {
+			return fmt.Errorf("issue handling authentication: %w", AuthErr)
+		}
 	}
 
 	// Package Manager URL
-	packageManagerChoice, err := packagemanager.PromptPackageManagerChoice()
+	WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPackageManagerChoice()
 	if err != nil {
 		return fmt.Errorf("issue in prompt for Posit Package Manager choice: %w", err)
 	}
-	if packageManagerChoice {
+	if WBConfig.PackageManagerConfig.Using {
 		rawPackageManagerURL, err := packagemanager.PromptPackageManagerURL()
 		if err != nil {
 			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
@@ -189,39 +195,40 @@ func newSetup(setupOpts setupOpts) error {
 		if err != nil {
 			return fmt.Errorf("issue with checking the Posit Package Manager URL and repo: %w", err)
 		}
-		WBConfig.PackageManagerURL, err = packagemanager.BuildPackagemanagerFullURL(cleanPackageManagerURL, repoPackageManager, osType)
+		WBConfig.PackageManagerConfig.URL, err = packagemanager.BuildPackagemanagerFullURL(cleanPackageManagerURL, repoPackageManager, osType)
 		if err != nil {
 			return fmt.Errorf("issue with creating the full Posit Package Manager URL: %w", err)
 		}
 	} else {
-		publicPackageManagerChoice, err := packagemanager.PromptPublicPackageManagerChoice()
+		WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPublicPackageManagerChoice()
 		if err != nil {
 			return fmt.Errorf("issue in prompt for Posit Public Package Manager choice: %w", err)
 		}
-		if publicPackageManagerChoice {
+		if WBConfig.PackageManagerConfig.Using {
 			// validate the public package manager URL can be reached
 			_, err := packagemanager.VerifyPackageManagerURL("https://packagemanager.rstudio.com", true)
 			if err != nil {
 				return fmt.Errorf("issue with reaching the Posit Public Package Manager URL: %w", err)
 			}
 
-			WBConfig.PackageManagerURL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
+			WBConfig.PackageManagerConfig.URL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
 			if err != nil {
 				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
 			}
 		}
 	}
 
-	connectChoice, err := connect.PromptConnectChoice()
+	// Connect URL
+	WBConfig.ConnectConfig.Using, err = connect.PromptConnectChoice()
 	if err != nil {
 		return fmt.Errorf("issue in prompt for Connect URL choice: %w", err)
 	}
-	if connectChoice {
+	if WBConfig.ConnectConfig.Using {
 		rawConnectURL, err := connect.PromptConnectURL()
 		if err != nil {
 			return fmt.Errorf("issue entering Connect URL: %w", err)
 		}
-		WBConfig.ConnectURL, err = connect.VerifyConnectURL(rawConnectURL)
+		WBConfig.ConnectConfig.URL, err = connect.VerifyConnectURL(rawConnectURL)
 		if err != nil {
 			return fmt.Errorf("issue with checking the Connect URL: %w", err)
 		}

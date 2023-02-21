@@ -27,15 +27,16 @@ const (
 
 // WBConfig stores the entire workbench configuration
 type WBConfig struct {
-	SSLConfig         SSLConfig
-	RConfig           RConfig
-	PythonConfig      PythonConfig
-	AuthConfig        AuthConfig
-	PackageManagerURL string
-  ConnectURL        string
+	SSLConfig            SSLConfig
+	RConfig              RConfig
+	PythonConfig         PythonConfig
+	AuthConfig           AuthConfig
+	PackageManagerConfig PackageManagerConfig
+	ConnectConfig        ConnectConfig
 }
 
 type AuthConfig struct {
+	Using      bool
 	AuthType   AuthType
 	OIDCConfig OIDCConfig
 	SAMLConfig SAMLConfig
@@ -52,6 +53,7 @@ type PythonConfig struct {
 
 // SSLConfig stores SSL config
 type SSLConfig struct {
+	Using    bool
 	KeyPath  string
 	CertPath string
 	UseSSL   bool
@@ -71,4 +73,14 @@ type SAMLConfig struct {
 	AuthSAML                    int
 	AuthSamlSpAttributeUsername string
 	AuthSamlMetadataURL         string
+}
+
+type PackageManagerConfig struct {
+	Using bool
+	URL   string
+}
+
+type ConnectConfig struct {
+	Using bool
+	URL   string
 }
