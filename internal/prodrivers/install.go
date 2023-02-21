@@ -78,19 +78,6 @@ func DownloadAndInstallProDrivers(osType config.OperatingSystem) error {
 
 // Installs Posit Pro Drivers in a certain way based on the operating system
 func InstallProDrivers(filepath string, osType config.OperatingSystem) error {
-	// Install gdebi-core if an Ubuntu system
-	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
-		AptErr := install.UpgradeApt()
-		if AptErr != nil {
-			return fmt.Errorf("UpgradeApt: %w", AptErr)
-		}
-
-		GdebiCoreErr := install.InstallGdebiCore()
-		if GdebiCoreErr != nil {
-			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
-		}
-	}
-
 	installCommand, err := install.RetrieveInstallCommand(filepath, osType)
 	if err != nil {
 		return fmt.Errorf("RetrieveInstallCommand: %w", err)
