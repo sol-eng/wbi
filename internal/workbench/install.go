@@ -81,19 +81,6 @@ func DownloadAndInstallWorkbench(osType config.OperatingSystem) error {
 
 // Installs Workbench in a certain way based on the operating system
 func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
-	// Install gdebi-core if an Ubuntu system
-	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
-		AptErr := install.UpgradeApt()
-		if AptErr != nil {
-			return fmt.Errorf("UpgradeApt: %w", AptErr)
-		}
-
-		GdebiCoreErr := install.InstallGdebiCore()
-		if GdebiCoreErr != nil {
-			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
-		}
-	}
-
 	installCommand, err := RetrieveInstallCommandForWorkbench(filepath, osType)
 	if err != nil {
 		return fmt.Errorf("RetrieveInstallCommandForWorkbench: %w", err)
