@@ -161,13 +161,19 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// Authentication
-	WBConfig.AuthConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+	WBConfig.AuthConfig.Using, err = authentication.PromptAuth()
 	if err != nil {
-		return fmt.Errorf("issue entering and converting AuthType: %w", err)
+		return fmt.Errorf("issue selecting if Authentication is to be setup: %w", err)
 	}
-	AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
-	if AuthErr != nil {
-		return fmt.Errorf("issue handling authentication: %w", AuthErr)
+	if WBConfig.AuthConfig.Using {
+		WBConfig.AuthConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+		if err != nil {
+			return fmt.Errorf("issue entering and converting AuthType: %w", err)
+		}
+		AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
+		if AuthErr != nil {
+			return fmt.Errorf("issue handling authentication: %w", AuthErr)
+		}
 	}
 
 	// Package Manager URL

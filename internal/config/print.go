@@ -27,6 +27,8 @@ func (WBConfig *WBConfig) ConfigStructToText() {
 	}
 	if anyPrint {
 		fmt.Println("\n=== Please restart Workbench after making these changes")
+	} else {
+		fmt.Println("\n=== No configuration changes are needed")
 	}
 }
 

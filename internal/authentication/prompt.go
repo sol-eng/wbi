@@ -9,6 +9,19 @@ import (
 	"github.com/dpastoor/wbi/internal/config"
 )
 
+// Prompt asking users if they wish to setup Authentication
+func PromptAuth() (bool, error) {
+	name := false
+	prompt := &survey.Confirm{
+		Message: "Would you like to setup Authentication?",
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with the Authentication prompt")
+	}
+	return name, nil
+}
+
 func PromptAndConvertAuthType() (config.AuthType, error) {
 
 	authChoiceRaw, err := PromptAuthentication()
