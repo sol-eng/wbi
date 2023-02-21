@@ -32,6 +32,8 @@ func newSetup(setupOpts setupOpts) error {
 
 	var WBConfig config.WBConfig
 
+	fmt.Println("Welcome to the Workbench Installer!\n")
+
 	// Determine OS and install pre-requisites
 	osType, err := os.DetectOS()
 	if err != nil {

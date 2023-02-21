@@ -9,6 +9,7 @@ import (
 )
 
 func InstallPrereqs(osType config.OperatingSystem) error {
+	fmt.Println("Installing prerequisites...\n")
 	// Update apt and install gdebi-core if an Ubuntu system
 	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
 		AptErr := UpgradeApt()
@@ -45,6 +46,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 	} else {
 		return errors.New("unsupported operating system")
 	}
+	fmt.Println("\nPrerequisites successfully installed!\n")
 	return nil
 }
 
