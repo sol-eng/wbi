@@ -209,7 +209,8 @@ func newSetup(setupOpts setupOpts) error {
 			if err != nil {
 				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
 			}
-  }
+		}
+	}
 
 	connectChoice, err := connect.PromptConnectChoice()
 	if err != nil {
