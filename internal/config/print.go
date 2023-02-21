@@ -7,6 +7,7 @@ func (WBConfig *WBConfig) ConfigStructToText() {
 	WBConfig.PythonConfig.PythonStructToText()
 	WBConfig.SSLConfig.SSLStructToText()
 	WBConfig.AuthConfig.AuthStructToText()
+	WBConfig.ConnectStringToText()
 	fmt.Println("\n=== Please restart Workbench after making these changes")
 }
 
@@ -54,4 +55,10 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToText() {
 	fmt.Println("\n=== Add to config file: /etc/rstudio/openid-client-secret:")
 	fmt.Println("client-id=" + OIDCConfig.ClientID)
 	fmt.Println("client-secret=" + OIDCConfig.ClientSecret)
+}
+
+// Prints the ConnectURL configuration string information to the console
+func (WBConfig *WBConfig) ConnectStringToText() {
+	fmt.Println("\n=== Add to config file: /etc/rstudio/rsession.conf:")
+	fmt.Println("default-rsconnect-server=" + WBConfig.ConnectURL)
 }
