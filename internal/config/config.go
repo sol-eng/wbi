@@ -32,6 +32,7 @@ type WBConfig struct {
 	PythonConfig      PythonConfig
 	AuthConfig        AuthConfig
 	PackageManagerURL string
+  ConnectURL        string
 }
 
 type AuthConfig struct {

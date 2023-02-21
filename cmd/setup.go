@@ -5,6 +5,7 @@ import (
 
 	"github.com/dpastoor/wbi/internal/authentication"
 	"github.com/dpastoor/wbi/internal/config"
+	"github.com/dpastoor/wbi/internal/connect"
 	"github.com/dpastoor/wbi/internal/jupyter"
 	"github.com/dpastoor/wbi/internal/languages"
 	"github.com/dpastoor/wbi/internal/license"
@@ -208,6 +209,20 @@ func newSetup(setupOpts setupOpts) error {
 			if err != nil {
 				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
 			}
+  }
+
+	connectChoice, err := connect.PromptConnectChoice()
+	if err != nil {
+		return fmt.Errorf("issue in prompt for Connect URL choice: %w", err)
+	}
+	if connectChoice {
+		rawConnectURL, err := connect.PromptConnectURL()
+		if err != nil {
+			return fmt.Errorf("issue entering Connect URL: %w", err)
+		}
+		WBConfig.ConnectURL, err = connect.VerifyConnectURL(rawConnectURL)
+		if err != nil {
+			return fmt.Errorf("issue with checking the Connect URL: %w", err)
 		}
 	}
 

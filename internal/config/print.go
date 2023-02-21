@@ -8,6 +8,8 @@ func (WBConfig *WBConfig) ConfigStructToText() {
 	WBConfig.SSLConfig.SSLStructToText()
 	WBConfig.AuthConfig.AuthStructToText()
 	WBConfig.PackageManagerStringToText()
+	WBConfig.ConnectStringToText()
+
 	fmt.Println("\n=== Please restart Workbench after making these changes")
 }
 
@@ -61,4 +63,10 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToText() {
 func (WBConfig *WBConfig) PackageManagerStringToText() {
 	fmt.Println("\n=== Add to config file: /etc/rstudio/repos.conf:")
 	fmt.Println("CRAN=" + WBConfig.PackageManagerURL)
+}
+
+// Prints the ConnectURL configuration string information to the console
+func (WBConfig *WBConfig) ConnectStringToText() {
+	fmt.Println("\n=== Add to config file: /etc/rstudio/rsession.conf:")
+	fmt.Println("default-rsconnect-server=" + WBConfig.ConnectURL)
 }
