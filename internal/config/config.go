@@ -27,11 +27,12 @@ const (
 
 // WBConfig stores the entire workbench configuration
 type WBConfig struct {
-	SSLConfig    SSLConfig
-	RConfig      RConfig
-	PythonConfig PythonConfig
-	AuthConfig   AuthConfig
-	ConnectURL   string
+	SSLConfig         SSLConfig
+	RConfig           RConfig
+	PythonConfig      PythonConfig
+	AuthConfig        AuthConfig
+	PackageManagerURL string
+  ConnectURL        string
 }
 
 type AuthConfig struct {
