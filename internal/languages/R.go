@@ -110,8 +110,9 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) ([]string, error) {
 		if err != nil {
 			return []string{}, fmt.Errorf("issue installing R: %w", err)
 		}
-
-		fmt.Println("\nThe following R versions have been installed: ", strings.Join(installedRVersion, ", "))
+		if len(installedRVersion) > 0 {
+			fmt.Println("\nThe following R versions have been installed: ", strings.Join(installedRVersion, ", "))
+		}
 	}
 
 	rVersions, err := ScanForRVersions()
