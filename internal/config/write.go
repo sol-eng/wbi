@@ -2,7 +2,6 @@ package config
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 )
@@ -108,7 +107,7 @@ func (AuthConfig *AuthConfig) AuthStructToConfigWrite() error {
 			return fmt.Errorf("failed to write OIDC config: %w", err)
 		}
 	default:
-		return errors.New("unknown Authentication type for writing to a config")
+		return nil
 	}
 	return nil
 }
