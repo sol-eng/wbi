@@ -33,6 +33,7 @@ type WBConfig struct {
 	AuthConfig           AuthConfig
 	PackageManagerConfig PackageManagerConfig
 	ConnectConfig        ConnectConfig
+	ConfigChange         bool
 }
 
 type AuthConfig struct {

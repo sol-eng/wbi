@@ -4,32 +4,22 @@ import "fmt"
 
 // Prints the WBConfig configuration struct information to the console
 func (WBConfig *WBConfig) ConfigStructToText() {
-	anyPrint := false
 	if WBConfig.PythonConfig.JupyterPath != "" {
-		anyPrint = true
 		WBConfig.PythonConfig.PythonStructToText()
 	}
 	if WBConfig.SSLConfig.UseSSL {
-		anyPrint = true
 		WBConfig.SSLConfig.SSLStructToText()
 	}
 	if WBConfig.AuthConfig.Using {
-		anyPrint = true
 		WBConfig.AuthConfig.AuthStructToText()
 	}
 	if WBConfig.PackageManagerConfig.Using {
-		anyPrint = true
 		WBConfig.PackageManagerStringToText()
 	}
 	if WBConfig.ConnectConfig.Using {
-		anyPrint = true
 		WBConfig.ConnectStringToText()
 	}
-	if anyPrint {
-		fmt.Println("\n=== Please restart Workbench after making these changes")
-	} else {
-		fmt.Println("\n=== No configuration changes are needed")
-	}
+	fmt.Println("\n=== Please restart Workbench after making these changes\n")
 }
 
 // Prints the PythonConfig configuration struct information to the console
