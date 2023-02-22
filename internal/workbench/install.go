@@ -99,9 +99,9 @@ func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 func RetrieveInstallCommandForWorkbench(filepath string, osType config.OperatingSystem) (string, error) {
 	switch osType {
 	case config.Ubuntu22, config.Ubuntu20, config.Ubuntu18:
-		return "sudo gdebi -n " + filepath, nil
+		return "gdebi -n " + filepath, nil
 	case config.Redhat7, config.Redhat8:
-		return "sudo yum install -y " + filepath, nil
+		return "yum install -y " + filepath, nil
 	default:
 		return "", errors.New("operating system not supported")
 	}

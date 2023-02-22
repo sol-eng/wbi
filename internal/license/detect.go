@@ -9,7 +9,7 @@ import (
 
 func CheckLicenseActivation() (bool, error) {
 
-	stdout, _, err := system.RunCommandAndCaptureOutput("sudo rstudio-server license-manager status")
+	stdout, _, err := system.RunCommandAndCaptureOutput("rstudio-server license-manager status")
 	if err != nil {
 		return false, fmt.Errorf("issue checking license activation: %w", err)
 	}

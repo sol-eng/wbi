@@ -38,7 +38,7 @@ func RemovePythonFromPath(pythonPath string) (string, error) {
 
 // Install various Jupyter related packages from PyPI
 func InstallJupyterAndComponents(pythonPath string) error {
-	licenseCommand := "sudo " + pythonPath + " -m pip install jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
+	licenseCommand := pythonPath + " -m pip install jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
 	err := system.RunCommand(licenseCommand)
 	if err != nil {
 		return fmt.Errorf("issue installing Jupyter: %w", err)
@@ -66,7 +66,7 @@ func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 	}
 
 	for _, command := range commands {
-		installCommand := "sudo " + pythonPathShort + "/" + command
+		installCommand := pythonPathShort + "/" + command
 		err := system.RunCommand(installCommand)
 		if err != nil {
 			return fmt.Errorf("issue installing Jupyter notebook extensions: %w", err)
