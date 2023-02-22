@@ -1,5 +1,19 @@
 # (W)ork(b)ench (I)nstaller 
 
+## Getting started
+
+wbi is a CLI tool aimed at streamlining the installation and configuration of Posit Workbench. Please read through the assumptions below to ensure that your target architecture matches the current capabilities of wbi. Also note wbi requires to be run as root.
+
+To get started run the setup command as root and follow the prompts:
+```
+sudo ./wbi setup
+```
+
+## Assumptions
+- Single server
+- SQLite database
+- Internet access (online installation)
+
 ## Functionality
 
 ### R and Python installations
@@ -38,7 +52,6 @@
 ### Posit Connect integration
 - Record, validate and specify config for Posit Connect URL
 
-## Assumptions
-- Single server
-- SQLite database
-- Internet access (online installation)
+### Configuration
+- Inform of exact configuration changes needed
+- Write changes to the correct config files
