@@ -52,7 +52,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 
 // Installs Gdebi Core
 func InstallGdebiCore() error {
-	gdebiCoreCommand := "sudo apt-get install -y gdebi-core"
+	gdebiCoreCommand := "apt-get install -y gdebi-core"
 	err := system.RunCommand(gdebiCoreCommand)
 	if err != nil {
 		return fmt.Errorf("issue installing gdebi-core: %w", err)
@@ -64,7 +64,7 @@ func InstallGdebiCore() error {
 
 // Upgrades Apt
 func UpgradeApt() error {
-	aptUpgradeCommand := "sudo apt-get update"
+	aptUpgradeCommand := "apt-get update"
 	err := system.RunCommand(aptUpgradeCommand)
 	if err != nil {
 		return fmt.Errorf("issue upgrading apt: %w", err)
@@ -77,13 +77,13 @@ func UpgradeApt() error {
 // Enable the CodeReady Linux Builder repository:
 func EnableCodeReadyRepo() error {
 	// TODO add support for On Premise as well as cloud (currently only cloud)
-	dnfPluginsCoreCommand := "sudo dnf install dnf-plugins-core"
+	dnfPluginsCoreCommand := "dnf install dnf-plugins-core"
 	err := system.RunCommand(dnfPluginsCoreCommand)
 	if err != nil {
 		return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
 	}
 
-	enableCodeReadyCommand := `sudo dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
+	enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
 	err = system.RunCommand(enableCodeReadyCommand)
 	if err != nil {
 		return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
@@ -96,13 +96,13 @@ func EnableCodeReadyRepo() error {
 // Enable the Optional repository
 func EnableOptionalRepo() error {
 	// TODO add support for On Premise as well as cloud (currently only cloud)
-	yumUtilsCommand := "sudo yum install yum-utils"
+	yumUtilsCommand := "yum install yum-utils"
 	err := system.RunCommand(yumUtilsCommand)
 	if err != nil {
 		return fmt.Errorf("issue installing yum-utils: %w", err)
 	}
 
-	enableOptionalCommand := `sudo yum-config-manager --enable "rhel-*-optional-rpms"`
+	enableOptionalCommand := `yum-config-manager --enable "rhel-*-optional-rpms"`
 	err = system.RunCommand(enableOptionalCommand)
 	if err != nil {
 		return fmt.Errorf("issue enabling the optional repo: %w", err)
@@ -116,9 +116,9 @@ func EnableOptionalRepo() error {
 func EnableEPELRepo(osType config.OperatingSystem) error {
 	var EPELCommand string
 	if osType == config.Redhat8 {
-		EPELCommand = "sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+		EPELCommand = "yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
 	} else if osType == config.Redhat7 {
-		EPELCommand = "sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
+		EPELCommand = "yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
 	} else {
 		return errors.New("operating system not supported")
 	}

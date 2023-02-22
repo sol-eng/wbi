@@ -34,6 +34,12 @@ func newSetup(setupOpts setupOpts) error {
 
 	fmt.Println("Welcome to the Workbench Installer!\n")
 
+	// Check if running as root
+	err := os.CheckIfRunningAsRoot()
+	if err != nil {
+		return err
+	}
+
 	// Determine OS and install pre-requisites
 	osType, err := os.DetectOS()
 	if err != nil {

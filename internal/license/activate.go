@@ -8,7 +8,7 @@ import (
 
 // Activate Workbench based on a license key
 func ActivateLicenseKey(licenseKey string) error {
-	cmdLicense := "sudo rstudio-server license-manager activate " + licenseKey
+	cmdLicense := "rstudio-server license-manager activate " + licenseKey
 	err := system.RunCommand(cmdLicense)
 	if err != nil {
 		return fmt.Errorf("issue activating Workbench license: %w", err)
