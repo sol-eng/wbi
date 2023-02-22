@@ -240,9 +240,33 @@ func newSetup(setupOpts setupOpts) error {
 		}
 	}
 
-	// Write config to console
-	WBConfig.ConfigStructToText()
+	// Config
+	// first check if there are any config changes needed
+	configChangesNeeded := WBConfig.DetectConfigChange()
+	if configChangesNeeded {
+		// print out the changes needed
+		fmt.Println("\n=== The following configuration changes are needed:")
+		WBConfig.ConfigStructToText()
+		// ask the user if they want to write the config automatically
+		configWriteChoice, err := config.PromptWriteConfig()
+		if err != nil {
+			return fmt.Errorf("issue selecting if config changes are to be written: %w", err)
+		}
+		if configWriteChoice {
+			err := config.WriteConfig(WBConfig)
+			if err != nil {
+				return fmt.Errorf("issue writing config: %w", err)
+			}
+			err = workbench.RestartRStudioServerAndLauncher()
+			if err != nil {
+				return fmt.Errorf("issue restarting RStudio Server and Launcher: %w", err)
+			}
+		}
+	} else {
+		fmt.Println("\n=== No configuration changes are needed")
+	}
 
+	fmt.Println("\nThanks for using wbi! Please remember to make any needed manual configuration changes and restart RStudio Server and Launcher.")
 	return nil
 }
 

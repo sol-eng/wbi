@@ -13,7 +13,7 @@ func VerifyWorkbench() bool {
 	if err != nil {
 		return false
 	} else {
-		fmt.Println("Workbench installation detected: ", string(stdout))
+		fmt.Println("\nWorkbench installation detected: ", string(stdout))
 		return true
 	}
 }
