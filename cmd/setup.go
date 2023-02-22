@@ -122,7 +122,13 @@ func newSetup(setupOpts setupOpts) error {
 			if err != nil {
 				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
 			}
-			WBConfig.PythonConfig.JupyterPath = jupyterPythonTarget
+			// the path to jupyter must be set in the config, not python
+			pythonSubPath, err := jupyter.RemovePythonFromPath(jupyterPythonTarget)
+			if err != nil {
+				return fmt.Errorf("issue removing Python from path: %w", err)
+			}
+			jupyterPath := pythonSubPath + "/jupyter"
+			WBConfig.PythonConfig.JupyterPath = jupyterPath
 
 			if jupyterPythonTarget != "" {
 				err := jupyter.InstallJupyter(jupyterPythonTarget)
