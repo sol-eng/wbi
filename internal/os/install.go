@@ -115,7 +115,7 @@ func EnableOptionalRepo() error {
 // Enable the Extra Packages for Enterprise Linux (EPEL) repository
 func EnableEPELRepo(osType config.OperatingSystem) error {
 	var EPELCommand string
-	if osType == config.Redhat8 {
+	if osType == config.Redhat8 { //TODO: Add a -y to these commands to make them non-interactive
 		EPELCommand = "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
 	} else if osType == config.Redhat7 {
 		EPELCommand = "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
