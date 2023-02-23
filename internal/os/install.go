@@ -3,6 +3,7 @@ package os
 import (
 	"errors"
 	"fmt"
+	"github.com/dpastoor/wbi/internal/install"
 
 	"github.com/dpastoor/wbi/internal/config"
 	"github.com/dpastoor/wbi/internal/system"
@@ -115,15 +116,20 @@ func EnableOptionalRepo() error {
 // Enable the Extra Packages for Enterprise Linux (EPEL) repository
 func EnableEPELRepo(osType config.OperatingSystem) error {
 	var EPELCommand string
-	if osType == config.Redhat8 { //TODO: Add a -y to these commands to make them non-interactive
-		EPELCommand = "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+	var err error
+	//TODO: Add a -y to these commands to make them non-interactive
+	if osType == config.Redhat8 {
+		EPELCommand, err = install.RetrieveInstallCommand("https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm", config.Redhat8)
 	} else if osType == config.Redhat7 {
-		EPELCommand = "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
+		EPELCommand, err = install.RetrieveInstallCommand("https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm", config.Redhat7)
 	} else {
 		return errors.New("operating system not supported")
 	}
 
-	err := system.RunCommand(EPELCommand)
+	if err != nil {
+		return fmt.Errorf("Error creating EPEL installation command: %w", err)
+	}
+	err = system.RunCommand(EPELCommand)
 	if err != nil {
 		return fmt.Errorf("issue enabling EPEL repo: %w", err)
 	}
