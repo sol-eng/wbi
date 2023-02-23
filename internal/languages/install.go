@@ -2,8 +2,8 @@ package languages
 
 import (
 	"errors"
-
 	"github.com/dpastoor/wbi/internal/config"
+	"strings"
 )
 
 // InstallerInfo contains the information needed to download and install R and Python
@@ -36,13 +36,13 @@ func PopulateInstallerInfo(language string, version string, osType config.Operat
 	case config.Redhat7: //TODO: Upper the language variable for RHEL
 		return InstallerInfo{
 			Name:    language + "-" + version + "-1-1.x86_64.rpm",
-			URL:     "https://cdn.rstudio.com/" + language + "/centos-7/pkgs/" + language + "-" + version + "-1-1.x86_64.rpm",
+			URL:     "https://cdn.rstudio.com/" + language + "/centos-7/pkgs/" + strings.ToUpper(language) + "-" + version + "-1-1.x86_64.rpm",
 			Version: version,
 		}, nil
 	case config.Redhat8:
 		return InstallerInfo{
 			Name:    language + "-" + version + "-1-1.x86_64.rpm",
-			URL:     "https://cdn.rstudio.com/" + language + "/centos-8/pkgs/" + language + "-" + version + "-1-1.x86_64.rpm",
+			URL:     "https://cdn.rstudio.com/" + language + "/centos-8/pkgs/" + strings.ToUpper(language) + "-" + version + "-1-1.x86_64.rpm",
 			Version: version,
 		}, nil
 	default:
