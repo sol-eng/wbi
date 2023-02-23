@@ -116,9 +116,9 @@ func EnableOptionalRepo() error {
 func EnableEPELRepo(osType config.OperatingSystem) error {
 	var EPELCommand string
 	if osType == config.Redhat8 {
-		EPELCommand = "yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+		EPELCommand = "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
 	} else if osType == config.Redhat7 {
-		EPELCommand = "yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
+		EPELCommand = "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
 	} else {
 		return errors.New("operating system not supported")
 	}
