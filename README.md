@@ -54,5 +54,4 @@ sudo ./wbi setup
 
 ### Configuration
 - Inform of exact configuration changes needed
-
 - Write changes to the correct config files
