@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/install"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -114,16 +115,20 @@ func EnableOptionalRepo() error {
 
 // Enable the Extra Packages for Enterprise Linux (EPEL) repository
 func EnableEPELRepo(osType config.OperatingSystem) error {
-	var EPELCommand string
+	var EPELURL string
 	if osType == config.Redhat8 {
-		EPELCommand = "yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+		EPELURL = "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
 	} else if osType == config.Redhat7 {
-		EPELCommand = "yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm "
+		EPELURL = "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
 	} else {
 		return errors.New("operating system not supported")
 	}
 
-	err := system.RunCommand(EPELCommand)
+	EPELCommand, err := install.RetrieveInstallCommand(EPELURL, osType)
+	if err != nil {
+		return fmt.Errorf("issue retrieving EPEL install command: %w", err)
+	}
+	err = system.RunCommand(EPELCommand)
 	if err != nil {
 		return fmt.Errorf("issue enabling EPEL repo: %w", err)
 	}
