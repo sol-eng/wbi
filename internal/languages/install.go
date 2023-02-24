@@ -2,10 +2,7 @@ package languages
 
 import (
 	"errors"
-
-
 	"github.com/sol-eng/wbi/internal/config"
-
 )
 
 // InstallerInfo contains the information needed to download and install R and Python
