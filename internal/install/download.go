@@ -16,6 +16,8 @@ func DownloadFile(installerName string, url string, filename string) (string, er
 	fmt.Println("Downloading " + installerName + " installer from: " + url)
 
 	// Create the file
+	// TODO: Change the location of the random string
+	filename = "*_" + filename
 	tmpFile, err := os.CreateTemp("", filename)
 	if err != nil {
 		return tmpFile.Name(), err
