@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/dpastoor/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/config"
 )
 
 // Detect which operating system WBI is running on

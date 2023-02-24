@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/dpastoor/wbi/internal/system"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // InstallJupyter installs jupypter pip stuff

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/dpastoor/wbi/internal/install"
 
-	"github.com/dpastoor/wbi/internal/config"
-	"github.com/dpastoor/wbi/internal/system"
+	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 func InstallPrereqs(osType config.OperatingSystem) error {
@@ -119,6 +119,7 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 	var err error
 	//TODO: Add a -y to these commands to make them non-interactive
 	if osType == config.Redhat8 {
+
 		EPELCommand, err = install.RetrieveInstallCommand("https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm", config.Redhat8)
 	} else if osType == config.Redhat7 {
 		EPELCommand, err = install.RetrieveInstallCommand("https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm", config.Redhat7)

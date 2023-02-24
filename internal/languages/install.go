@@ -2,8 +2,10 @@ package languages
 
 import (
 	"errors"
-	"github.com/dpastoor/wbi/internal/config"
-	"strings"
+
+
+	"github.com/sol-eng/wbi/internal/config"
+
 )
 
 // InstallerInfo contains the information needed to download and install R and Python

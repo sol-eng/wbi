@@ -6,7 +6,7 @@ import (
 	"runtime"
 
 	"github.com/adrg/xdg"
-	"github.com/dpastoor/wbi/cmd"
+	"github.com/sol-eng/wbi/cmd"
 )
 
 // https://goreleaser.com/cookbooks/using-main.version

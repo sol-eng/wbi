@@ -3,7 +3,7 @@ package packagemanager
 import (
 	"errors"
 
-	"github.com/dpastoor/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/config"
 )
 
 func BuildPackagemanagerFullURL(url string, repo string, osType config.OperatingSystem) (string, error) {

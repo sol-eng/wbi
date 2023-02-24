@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/dpastoor/wbi/internal/system"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 func CheckExistingProDrivers() (bool, error) {

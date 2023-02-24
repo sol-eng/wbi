@@ -10,9 +10,9 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/dpastoor/wbi/internal/config"
-	"github.com/dpastoor/wbi/internal/install"
-	"github.com/dpastoor/wbi/internal/system"
+	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/install"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 var availablePythonVersions = []string{
