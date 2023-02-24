@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/dpastoor/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/config"
 )
 
 // Prompt asking users if they wish to setup Authentication

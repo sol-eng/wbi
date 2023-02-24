@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dpastoor/wbi/internal/config"
-	"github.com/dpastoor/wbi/internal/system"
+	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 func InstallPrereqs(osType config.OperatingSystem) error {

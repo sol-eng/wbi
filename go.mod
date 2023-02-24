@@ -1,4 +1,4 @@
-module github.com/dpastoor/wbi
+module github.com/sol-eng/wbi
 
 go 1.20
 

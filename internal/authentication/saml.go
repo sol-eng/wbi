@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/dpastoor/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/config"
 )
 
 // Run functions and store values in the SAMLConfig

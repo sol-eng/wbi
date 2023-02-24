@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dpastoor/wbi/internal/config"
-	"github.com/dpastoor/wbi/internal/system"
+	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // Installs R/Python in a certain way based on the operating system
