@@ -21,6 +21,7 @@ sudo ./wbi setup
 - Install one or more R version from binary
 - Scan for existing Python installations
 - Install one or more Python version from binary
+- Adds a version of Python to PATH
 
 ### Posit Workbench installation
 - Scan for an existing Workbench installation
