@@ -61,7 +61,16 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return fmt.Errorf("issue finding R locations: %w", err)
 	}
-
+	// remove any path that starts with /usr and only offer symlinks for those that don't (i.e. /opt directories)
+	rPathsFiltered := languages.RemoveSystemRPaths(WBConfig.RConfig.Paths)
+	// check if R has already been symlinked
+	rSymlinked := languages.CheckIfRSymlinkExists()
+	if (len(rPathsFiltered) > 0) && !rSymlinked {
+		err = languages.PromptAndSetRSymlinks(rPathsFiltered)
+		if err != nil {
+			return fmt.Errorf("issue setting R symlinks: %w", err)
+		}
+	}
 	if lo.Contains(selectedLanguages, "python") {
 		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions(osType)
 		if err != nil {
