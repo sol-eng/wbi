@@ -67,6 +67,10 @@ func newSetup(setupOpts setupOpts) error {
 		if err != nil {
 			return fmt.Errorf("issue finding Python locations: %w", err)
 		}
+		err = languages.PromptAndSetPythonPATH(WBConfig.PythonConfig.Paths)
+		if err != nil {
+			return fmt.Errorf("issue setting Python PATH: %w", err)
+		}
 	}
 
 	workbenchInstalled := workbench.VerifyWorkbench()
@@ -123,7 +127,7 @@ func newSetup(setupOpts setupOpts) error {
 				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
 			}
 			// the path to jupyter must be set in the config, not python
-			pythonSubPath, err := jupyter.RemovePythonFromPath(jupyterPythonTarget)
+			pythonSubPath, err := languages.RemovePythonFromPath(jupyterPythonTarget)
 			if err != nil {
 				return fmt.Errorf("issue removing Python from path: %w", err)
 			}

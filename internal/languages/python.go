@@ -118,6 +118,50 @@ func isPythonDir(path string) (string, bool) {
 	return pythonPath, false
 }
 
+// PromptAndSetPythonPATH prompts user to set Python PATH
+func PromptAndSetPythonPATH(pythonPaths []string) error {
+	setPathPythonChoice, err := PythonPATHPrompt()
+	if err != nil {
+		return fmt.Errorf("issue selecting adding Python to PATH: %w", err)
+	}
+	if setPathPythonChoice {
+		// Remove python/python3 from each path so other binaries will be available in path such as pip, jupyter, etc.
+		pythonPathsBin, err := RemovePythonFromPathSlice(pythonPaths)
+		if err != nil {
+			return fmt.Errorf("issue removing python from slice of locations: %w", err)
+		}
+		pythonPathChoice, err := PythonLocationPATHPrompt(pythonPathsBin)
+		if err != nil {
+			return fmt.Errorf("issue selecting Python binary to add to PATH: %w", err)
+		}
+		err = system.AddToPATH(pythonPathChoice)
+		if err != nil {
+			return fmt.Errorf("issue adding Python binary to PATH: %w", err)
+		}
+
+		fmt.Println("\nThe selected Python directory  " + pythonPathChoice + " has been successfully added to PATH in the /etc/profile.d/wbi_python.sh file.\n")
+	}
+	return nil
+}
+
+// PythonLocationPATHPrompt asks users which Python binary they want to add to PATH
+func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
+	// Allow the user to select a version of Python to target
+	target := ""
+	prompt := &survey.Select{
+		Message: "Select a Python binary to add to PATH:",
+		Options: pythonPaths,
+	}
+	err := survey.AskOne(prompt, &target)
+	if err != nil {
+		return "", errors.New("there was an issue with the Python selection prompt for adding to PATH")
+	}
+	if target == "" {
+		return target, errors.New("no Python binary selected to add to PATH")
+	}
+	return target, nil
+}
+
 // Prompts user if they want to install Python and does the installation
 func PromptAndInstallPython(osType config.OperatingSystem) ([]string, error) {
 	installPythonChoice, err := PythonInstallPrompt()
@@ -238,6 +282,19 @@ func PythonInstallPrompt() (bool, error) {
 	return name, nil
 }
 
+// PythonPATHPrompt asks users if they would like to set Python PATH
+func PythonPATHPrompt() (bool, error) {
+	name := true
+	prompt := &survey.Confirm{
+		Message: `Would you like to add a Python version to PATH? This is recommended so users can type "python" and "pip" in the terminal to access this specified version of python and associated tools.`,
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with the Python set PATH prompt")
+	}
+	return name, nil
+}
+
 func RetrieveValidPythonVersions() ([]string, error) {
 	// TODO make this dynamic based on https://cdn.posit.co/python/versions.json
 	return availablePythonVersions, nil
@@ -305,4 +362,32 @@ func UpgradePythonTools(pythonVersion string) error {
 	fmt.Println(successMessage)
 
 	return nil
+}
+
+// RemovePythonFromPath removes python or python3 from the end of a path so the directory can be used
+func RemovePythonFromPath(pythonPath string) (string, error) {
+	if _, err := regexp.MatchString(".*/python.*", pythonPath); err == nil {
+		i := strings.LastIndex(pythonPath, "/python")
+		excludingLast := pythonPath[:i] + strings.Replace(pythonPath[i:], "/python", "", 1)
+		return excludingLast, nil
+	} else if _, err := regexp.MatchString(".*/python3.*", pythonPath); err == nil {
+		i := strings.LastIndex(pythonPath, "/python3")
+		excludingLast := pythonPath[:i] + strings.Replace(pythonPath[i:], "/python3", "", 1)
+		return excludingLast, nil
+	} else {
+		return pythonPath, nil
+	}
+}
+
+// RemovePythonFromPathSlice removes python or python3 from the end of a set of path strings in a slice so the directories can be used
+func RemovePythonFromPathSlice(pythonPaths []string) ([]string, error) {
+	var newPythonPaths []string
+	for _, pythonPath := range pythonPaths {
+		newPythonPath, err := RemovePythonFromPath(pythonPath)
+		if err != nil {
+			return []string{}, err
+		}
+		newPythonPaths = append(newPythonPaths, newPythonPath)
+	}
+	return newPythonPaths, nil
 }
