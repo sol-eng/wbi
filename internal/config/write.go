@@ -48,7 +48,7 @@ func (PythonConfig *PythonConfig) PythonStructToConfigWrite() error {
 	filepath := "/etc/rstudio/jupyter.conf"
 
 	fmt.Println("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath)
+	err := system.WriteStrings(writeLines, filepath, 0644)
 	if err != nil {
 		fmt.Errorf("failed to write config: %w", err)
 	}
@@ -65,7 +65,7 @@ func (SSLConfig *SSLConfig) SSLStructToConfigWrite() error {
 	filepath := "/etc/rstudio/rserver.conf"
 
 	fmt.Println("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath)
+	err := system.WriteStrings(writeLines, filepath, 0644)
 	if err != nil {
 		fmt.Errorf("failed to write config: %w", err)
 	}
@@ -101,7 +101,7 @@ func (SAMLConfig *SAMLConfig) AuthSAMLStructToConfigWrite() error {
 	filepath := "/etc/rstudio/rserver.conf"
 
 	fmt.Println("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath)
+	err := system.WriteStrings(writeLines, filepath, 0644)
 	if err != nil {
 		fmt.Errorf("failed to write config: %w", err)
 	}
@@ -119,7 +119,7 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToConfigWrite() error {
 	filepathRserver := "/etc/rstudio/rserver.conf"
 
 	fmt.Println("\n=== Writing to the file " + filepathRserver + ":")
-	err := system.WriteStrings(writeLinesRserver, filepathRserver)
+	err := system.WriteStrings(writeLinesRserver, filepathRserver, 0644)
 	if err != nil {
 		fmt.Errorf("failed to write config: %w", err)
 	}
@@ -132,7 +132,7 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToConfigWrite() error {
 	filepathClientSecret := "/etc/rstudio/openid-client-secret"
 
 	fmt.Println("\n=== Writing to the file " + filepathClientSecret + ":")
-	err = system.WriteStrings(writeLinesClientSecret, filepathClientSecret)
+	err = system.WriteStrings(writeLinesClientSecret, filepathClientSecret, 0644)
 	if err != nil {
 		fmt.Errorf("failed to write config: %w", err)
 	}
@@ -148,7 +148,7 @@ func (WBConfig *WBConfig) PackageManagerStringToConfigWrite() error {
 	filepath := "/etc/rstudio/repos.conf"
 
 	fmt.Println("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath)
+	err := system.WriteStrings(writeLines, filepath, 0644)
 	if err != nil {
 		fmt.Errorf("failed to write config: %w", err)
 	}
@@ -163,7 +163,7 @@ func (WBConfig *WBConfig) ConnectStringToConfigWrite() error {
 	filepath := "/etc/rstudio/rsession.conf"
 
 	fmt.Println("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath)
+	err := system.WriteStrings(writeLines, filepath, 0644)
 	if err != nil {
 		fmt.Errorf("failed to write config: %w", err)
 	}
