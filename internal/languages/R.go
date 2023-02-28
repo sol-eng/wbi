@@ -238,7 +238,7 @@ func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
 func PromptAndSetRSymlinks(rPaths []string) error {
 	setRSymlinkChoice, err := RSymlinkPrompt()
 	if err != nil {
-		return fmt.Errorf("issue selecting adding R symlinks: %w", err)
+		return fmt.Errorf("an issue occured during the selection of R symlink choice: %w", err)
 	}
 	if setRSymlinkChoice {
 		RPathChoice, err := RLocationSymlinksPrompt(rPaths)
