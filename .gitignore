@@ -9,3 +9,7 @@ completions/
 .task/
 coverage.txt
 wbi
+
+dist/
+
+dist/
