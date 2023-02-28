@@ -319,6 +319,17 @@ func CheckIfRSymlinkExists() bool {
 		return false
 	}
 
-	fmt.Println("\nAn existing R symlink has been detected (/usr/local/bin/R), skipping symlink prompt and continuing.\n")
+	fmt.Println("\nAn existing R symlink has been detected (/usr/local/bin/R)")
+	return true
+}
+
+// CheckIfRscriptSymlinkExists checks if the Rscript symlink exists
+func CheckIfRscriptSymlinkExists() bool {
+	_, err := os.Stat("/usr/local/bin/Rscript")
+	if err != nil {
+		return false
+	}
+
+	fmt.Println("\nAn existing Rscript symlink has been detected (/usr/local/bin/Rscript)")
 	return true
 }

@@ -63,9 +63,10 @@ func newSetup(setupOpts setupOpts) error {
 	}
 	// remove any path that starts with /usr and only offer symlinks for those that don't (i.e. /opt directories)
 	rPathsFiltered := languages.RemoveSystemRPaths(WBConfig.RConfig.Paths)
-	// check if R has already been symlinked
+	// check if R and Rscript has already been symlinked
 	rSymlinked := languages.CheckIfRSymlinkExists()
-	if (len(rPathsFiltered) > 0) && !rSymlinked {
+	rScriptSymlinked := languages.CheckIfRscriptSymlinkExists()
+	if (len(rPathsFiltered) > 0) && !rSymlinked && !rScriptSymlinked {
 		err = languages.PromptAndSetRSymlinks(rPathsFiltered)
 		if err != nil {
 			return fmt.Errorf("issue setting R symlinks: %w", err)
