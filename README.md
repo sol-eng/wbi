@@ -19,6 +19,7 @@ sudo ./wbi setup
 ### R and Python installations
 - Scan for existing R installations
 - Install one or more R version from binary
+- Symlinks R and Rscript
 - Scan for existing Python installations
 - Install one or more Python version from binary
 

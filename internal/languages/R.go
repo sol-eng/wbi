@@ -13,6 +13,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 var availableRVersions = []string{
@@ -231,4 +232,104 @@ func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
 		return fmt.Errorf("InstallLanguage: %w", err)
 	}
 	return nil
+}
+
+// PromptAndSetRSymlinks prompts user to set R symlinks
+func PromptAndSetRSymlinks(rPaths []string) error {
+	setRSymlinkChoice, err := RSymlinkPrompt()
+	if err != nil {
+		return fmt.Errorf("an issue occured during the selection of R symlink choice: %w", err)
+	}
+	if setRSymlinkChoice {
+		RPathChoice, err := RLocationSymlinksPrompt(rPaths)
+		if err != nil {
+			return fmt.Errorf("issue selecting R binary to add symlinks: %w", err)
+		}
+		err = SetRSymlinks(RPathChoice)
+		if err != nil {
+			return fmt.Errorf("issue setting R symlinks: %w", err)
+		}
+
+		fmt.Println("\nThe selected R directory  " + RPathChoice + " has been successfully symlinked and will be available on the default system PATH.\n")
+	}
+	return nil
+}
+
+// RSymlinkPrompt asks users if they would like to set R symlinks
+func RSymlinkPrompt() (bool, error) {
+	name := true
+	prompt := &survey.Confirm{
+		Message: `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal.`,
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with the symlink R prompt")
+	}
+	return name, nil
+}
+
+// RLocationSymlinksPrompt asks users which R binary they want to symlink
+func RLocationSymlinksPrompt(rPaths []string) (string, error) {
+	// Allow the user to select a version of R to target
+	target := ""
+	prompt := &survey.Select{
+		Message: "Select a R binary to symlink:",
+		Options: rPaths,
+	}
+	err := survey.AskOne(prompt, &target)
+	if err != nil {
+		return "", errors.New("there was an issue with the R selection prompt for symlinking")
+	}
+	if target == "" {
+		return target, errors.New("no R binary selected to be symlinked")
+	}
+	return target, nil
+}
+
+// SetRSymlinks sets the R symlinks (both R and Rscript)
+func SetRSymlinks(rPath string) error {
+	rCommand := "ln -s " + rPath + " /usr/local/bin/R"
+	err := system.RunCommand(rCommand)
+	if err != nil {
+		return fmt.Errorf("error setting R symlink: %w", err)
+	}
+	rScriptCommand := "ln -s " + rPath + "script /usr/local/bin/Rscript"
+	err = system.RunCommand(rScriptCommand)
+	if err != nil {
+		return fmt.Errorf("error setting Rscript symlink: %w", err)
+	}
+	return nil
+}
+
+// RemoveSystemRPaths removes the system R paths from string slice
+func RemoveSystemRPaths(rPaths []string) []string {
+	var filteredRPaths []string
+	for _, rPath := range rPaths {
+		if !strings.Contains(rPath, "/usr/") {
+			filteredRPaths = append(filteredRPaths, rPath)
+		}
+	}
+	return filteredRPaths
+}
+
+// CheckIfRSymlinkExists checks if the R symlink exists
+func CheckIfRSymlinkExists() bool {
+	_, err := os.Stat("/usr/local/bin/R")
+	if err != nil {
+		return false
+	}
+
+	fmt.Println("\nAn existing R symlink has been detected (/usr/local/bin/R)")
+	return true
+}
+
+// CheckIfRscriptSymlinkExists checks if the Rscript symlink exists
+func CheckIfRscriptSymlinkExists() bool {
+	_, err := os.Stat("/usr/local/bin/Rscript")
+	if err != nil {
+		return false
+	}
+
+	fmt.Println("\nAn existing Rscript symlink has been detected (/usr/local/bin/Rscript)")
+	return true
 }
