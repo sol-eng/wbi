@@ -210,22 +210,25 @@ func newSetup(setupOpts setupOpts) error {
 		return fmt.Errorf("issue in prompt for Posit Package Manager choice: %w", err)
 	}
 	if WBConfig.PackageManagerConfig.Using {
+		// prompt for base URL
 		rawPackageManagerURL, err := packagemanager.PromptPackageManagerURL()
 		if err != nil {
 			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
 		}
-		repoPackageManager, err := packagemanager.PromptPackageManagerRepo()
+		// verify URL is valid first
+		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURL(rawPackageManagerURL, false)
 		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+			return fmt.Errorf("issue with reaching the Posit Package Manager URL: %w", err)
 		}
-
-		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURLAndRepo(rawPackageManagerURL, repoPackageManager)
+		// R repo
+		WBConfig.PackageManagerConfig.RURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "r")
 		if err != nil {
-			return fmt.Errorf("issue with checking the Posit Package Manager URL and repo: %w", err)
+			return fmt.Errorf("issue entering Posit Package Manager R repo and building URL: %w", err)
 		}
-		WBConfig.PackageManagerConfig.URL, err = packagemanager.BuildPackagemanagerFullURL(cleanPackageManagerURL, repoPackageManager, osType)
+		// Python repo
+		WBConfig.PackageManagerConfig.PythonURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "python")
 		if err != nil {
-			return fmt.Errorf("issue with creating the full Posit Package Manager URL: %w", err)
+			return fmt.Errorf("issue entering Posit Package Manager Python repo and building URL: %w", err)
 		}
 	} else {
 		WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPublicPackageManagerChoice()
@@ -239,7 +242,7 @@ func newSetup(setupOpts setupOpts) error {
 				return fmt.Errorf("issue with reaching the Posit Public Package Manager URL: %w", err)
 			}
 
-			WBConfig.PackageManagerConfig.URL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
+			WBConfig.PackageManagerConfig.RURL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
 			if err != nil {
 				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
 			}
