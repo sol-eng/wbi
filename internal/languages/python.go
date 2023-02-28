@@ -134,7 +134,7 @@ func PromptAndSetPythonPATH(pythonPaths []string) error {
 		if err != nil {
 			return fmt.Errorf("issue selecting Python binary to add to PATH: %w", err)
 		}
-		err = system.AddToPATH(pythonPathChoice)
+		err = system.AddToPATH(pythonPathChoice, "python")
 		if err != nil {
 			return fmt.Errorf("issue adding Python binary to PATH: %w", err)
 		}
