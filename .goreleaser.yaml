@@ -1,0 +1,76 @@
+project_name: wbi
+
+release:
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto
+  footer: |
+    ## Installation Instructions
+    ### Linux
+    ```
+    sudo wget https://github.com/sol-eng/wbi/releases/download/{{ .Tag }}/wbi_Linux_x86_64.tar.gz -O /tmp/wbi.tar.gz
+    sudo tar xzf /tmp/wbi.tar.gz wbi
+    sudo mv wbi /usr/local/bin/wbi
+    sudo chmod +x /usr/local/bin/wbi
+    ```
+    ### Linux User
+    Assumes `~/bin` is available in your PATH
+    ```
+    wget https://github.com/sol-eng/wbi/releases/download/{{ .Tag }}/wbi_Linux_x86_64.tar.gz -O /tmp/wbi.tar.gz
+    tar xzf /tmp/wbi.tar.gz wbi
+    mv wbi ~/bin/wbi
+    chmod +x ~/bin/wbi
+    ```
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+    - amd64
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+publishers:
+  - name: fury.io
+    ids:
+    - packages
+    env:
+    - 'FURY_TOKEN={{ .Env.FURY_TOKEN }}'
+    cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
+
+nfpms:
+  - file_name_template: '{{ .ConventionalFileName }}'
+    id: packages
+    homepage:  https://github.com/sol-eng/wbi
+    description: workbench installer
+    maintainer: Trevor Nederlof <trevor.nederlof@posit.co>
+    license: MIT
+    formats:
+    - deb
+    - rpm
