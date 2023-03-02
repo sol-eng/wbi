@@ -6,16 +6,19 @@ import (
 	"github.com/sol-eng/wbi/internal/config"
 )
 
-func BuildPackagemanagerFullURL(url string, repo string, osType config.OperatingSystem) (string, error) {
+func BuildPackagemanagerFullURL(url string, repo string, osType config.OperatingSystem, language string) (string, error) {
+	if language == "r" {
+		osName, err := ConvertOSTypeToOSName(osType)
+		if err != nil {
+			return "", errors.New("there was an issue converting the operating system type to an os name")
+		}
 
-	osName, err := ConvertOSTypeToOSName(osType)
-	if err != nil {
-		return "", errors.New("there was an issue converting the operating system type to an os name")
+		return url + "/" + repo + "/__linux__/" + osName + "/" + "latest", nil
+	} else if language == "python" {
+		return url + "/" + repo + "/latest/simple", nil
+	} else {
+		return "", errors.New("language not supported for Posit Package Manager")
 	}
-
-	fullURL := url + "/" + repo + "/__linux__/" + osName + "/" + "latest"
-
-	return fullURL, nil
 }
 
 func BuildPublicPackageManagerFullURL(osType config.OperatingSystem) (string, error) {

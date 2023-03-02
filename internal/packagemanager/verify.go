@@ -21,19 +21,6 @@ func cleanPackageManagerURL(packageManagerURL string) string {
 	return packageManagerURL
 }
 
-// VerifyPackageManagerURLAndRepo checks if the Posit Package Manager URL and repo is valid
-func VerifyPackageManagerURLAndRepo(packageManagerURL string, packageManagerRepo string) (string, error) {
-	cleanPackageManagerURL, err := VerifyPackageManagerURL(packageManagerURL, false)
-	if err != nil {
-		return "", fmt.Errorf("issue with reaching the Posit Package Manager URL: %w", err)
-	}
-	cleanPackageManagerRepoURL, err := VerifyPackageManagerRepo(cleanPackageManagerURL, packageManagerRepo)
-	if err != nil {
-		return "", fmt.Errorf("issue with checking the Posit Package Manager repo: %w", err)
-	}
-	return cleanPackageManagerRepoURL, nil
-}
-
 func VerifyPackageManagerURL(packageManagerURL string, public bool) (string, error) {
 	cleanPackageManagerURL := cleanPackageManagerURL(packageManagerURL)
 	fullTestURL := cleanPackageManagerURL + "/__ping__"
@@ -64,8 +51,8 @@ func VerifyPackageManagerURL(packageManagerURL string, public bool) (string, err
 	return cleanPackageManagerURL, nil
 }
 
-func VerifyPackageManagerRepo(packageManagerURL string, packageManagerRepo string) (string, error) {
-	repoSearchURL := packageManagerURL + "/__api__/repos?type=R"
+func VerifyPackageManagerRepo(packageManagerURL string, packageManagerRepo string, language string) error {
+	repoSearchURL := packageManagerURL + "/__api__/repos?type=" + language
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
@@ -73,21 +60,21 @@ func VerifyPackageManagerRepo(packageManagerURL string, packageManagerRepo strin
 	req, err := http.NewRequestWithContext(context.Background(),
 		http.MethodGet, repoSearchURL, nil)
 	if err != nil {
-		return "", errors.New("error creating request")
+		return errors.New("error creating request")
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		return "", errors.New("error retrieving JSON data")
+		return errors.New("error retrieving JSON data")
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return "", errors.New("error in HTTP status code")
+		return errors.New("error in HTTP status code")
 	}
 
 	var repoInformation RepoInformation
 	err = json.NewDecoder(res.Body).Decode(&repoInformation)
 	if err != nil {
-		return "", errors.New("error unmarshalling JSON data")
+		return errors.New("error unmarshalling JSON data")
 	}
 
 	// verify the repo name exists in the list of repos
@@ -99,10 +86,10 @@ func VerifyPackageManagerRepo(packageManagerURL string, packageManagerRepo strin
 		}
 	}
 	if !matchFound {
-		return "", errors.New("error finding the " + packageManagerRepo + " repository in Posit Package Manager")
+		return errors.New("error finding the " + packageManagerRepo + " repository in Posit Package Manager")
 	}
 
 	fmt.Println("\nPosit Package Manager Repository has been successfull validated.\n")
-	return packageManagerURL, nil
+	return nil
 
 }

@@ -142,15 +142,39 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToConfigWrite() error {
 
 // Prints the Package Manager URL configuration string information to the console
 func (WBConfig *WBConfig) PackageManagerStringToConfigWrite() error {
-	writeLines := []string{
-		"CRAN=" + WBConfig.PackageManagerConfig.URL,
-	}
-	filepath := "/etc/rstudio/repos.conf"
+	if WBConfig.PackageManagerConfig.RURL != "" {
+		writeLines := []string{
+			"CRAN=" + WBConfig.PackageManagerConfig.RURL,
+		}
+		filepath := "/etc/rstudio/repos.conf"
 
-	fmt.Println("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath, 0644)
-	if err != nil {
-		fmt.Errorf("failed to write config: %w", err)
+		fmt.Println("\n=== Writing to the file " + filepath + ":")
+		err := WriteStrings(writeLines, filepath)
+		if err != nil {
+			fmt.Errorf("failed to write config: %w", err)
+		}
+	}
+
+	if WBConfig.PackageManagerConfig.PythonURL != "" {
+		// Remove pip.conf if it exists
+		if _, err := os.Stat("/etc/pip.conf"); err == nil {
+			err = os.Remove("/etc/pip.conf")
+			if err != nil {
+				return fmt.Errorf("failed to remove pip.conf: %w", err)
+			}
+		}
+
+		writeLines := []string{
+			"[global]",
+			"index-url=" + WBConfig.PackageManagerConfig.PythonURL,
+		}
+		filepath := "/etc/pip.conf"
+
+		fmt.Println("\n=== Writing to the file " + filepath + ":")
+		err := WriteStrings(writeLines, filepath)
+		if err != nil {
+			fmt.Errorf("failed to write config: %w", err)
+		}
 	}
 	return nil
 }

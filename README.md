@@ -19,6 +19,7 @@ sudo ./wbi setup
 ### R and Python installations
 - Scan for existing R installations
 - Install one or more R version from binary
+- Symlinks R and Rscript
 - Scan for existing Python installations
 - Install one or more Python version from binary
 - Adds a version of Python to PATH
@@ -47,7 +48,7 @@ sudo ./wbi setup
 - Record and specify where to put values for SAML and OIDC SSO setups
 
 ### Posit Package Manager integration
-- Record, validate, and specify config for Posit Package Manger URL and R repo
+- Record, validate, and specify config for Posit Package Manger URL and R/Python repos
 - Automatically generate, validate and specify config for Posit Public Package Manager
 
 ### Posit Connect integration

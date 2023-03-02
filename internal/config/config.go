@@ -77,8 +77,9 @@ type SAMLConfig struct {
 }
 
 type PackageManagerConfig struct {
-	Using bool
-	URL   string
+	Using     bool
+	RURL      string
+	PythonURL string
 }
 
 type ConnectConfig struct {

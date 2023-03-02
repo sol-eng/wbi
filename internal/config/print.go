@@ -70,8 +70,15 @@ func (OIDCConfig *OIDCConfig) AuthOIDCStructToText() {
 
 // Prints the Package Manager URL configuration string information to the console
 func (WBConfig *WBConfig) PackageManagerStringToText() {
-	fmt.Println("\n=== Add to config file: /etc/rstudio/repos.conf:")
-	fmt.Println("CRAN=" + WBConfig.PackageManagerConfig.URL)
+	if WBConfig.PackageManagerConfig.RURL != "" {
+		fmt.Println("\n=== Add to config file: /etc/rstudio/repos.conf:")
+		fmt.Println("CRAN=" + WBConfig.PackageManagerConfig.RURL)
+	}
+	if WBConfig.PackageManagerConfig.PythonURL != "" {
+		fmt.Println("\n=== Replace config file with: /etc/pip.conf:")
+		fmt.Println("[global]")
+		fmt.Println("index-url=" + WBConfig.PackageManagerConfig.PythonURL)
+	}
 }
 
 // Prints the ConnectURL configuration string information to the console

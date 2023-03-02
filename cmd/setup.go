@@ -61,7 +61,17 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return fmt.Errorf("issue finding R locations: %w", err)
 	}
-
+	// remove any path that starts with /usr and only offer symlinks for those that don't (i.e. /opt directories)
+	rPathsFiltered := languages.RemoveSystemRPaths(WBConfig.RConfig.Paths)
+	// check if R and Rscript has already been symlinked
+	rSymlinked := languages.CheckIfRSymlinkExists()
+	rScriptSymlinked := languages.CheckIfRscriptSymlinkExists()
+	if (len(rPathsFiltered) > 0) && !rSymlinked && !rScriptSymlinked {
+		err = languages.PromptAndSetRSymlinks(rPathsFiltered)
+		if err != nil {
+			return fmt.Errorf("issue setting R symlinks: %w", err)
+		}
+	}
 	if lo.Contains(selectedLanguages, "python") {
 		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions(osType)
 		if err != nil {
@@ -204,22 +214,25 @@ func newSetup(setupOpts setupOpts) error {
 		return fmt.Errorf("issue in prompt for Posit Package Manager choice: %w", err)
 	}
 	if WBConfig.PackageManagerConfig.Using {
+		// prompt for base URL
 		rawPackageManagerURL, err := packagemanager.PromptPackageManagerURL()
 		if err != nil {
 			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
 		}
-		repoPackageManager, err := packagemanager.PromptPackageManagerRepo()
+		// verify URL is valid first
+		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURL(rawPackageManagerURL, false)
 		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+			return fmt.Errorf("issue with reaching the Posit Package Manager URL: %w", err)
 		}
-
-		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURLAndRepo(rawPackageManagerURL, repoPackageManager)
+		// R repo
+		WBConfig.PackageManagerConfig.RURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "r")
 		if err != nil {
-			return fmt.Errorf("issue with checking the Posit Package Manager URL and repo: %w", err)
+			return fmt.Errorf("issue entering Posit Package Manager R repo and building URL: %w", err)
 		}
-		WBConfig.PackageManagerConfig.URL, err = packagemanager.BuildPackagemanagerFullURL(cleanPackageManagerURL, repoPackageManager, osType)
+		// Python repo
+		WBConfig.PackageManagerConfig.PythonURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "python")
 		if err != nil {
-			return fmt.Errorf("issue with creating the full Posit Package Manager URL: %w", err)
+			return fmt.Errorf("issue entering Posit Package Manager Python repo and building URL: %w", err)
 		}
 	} else {
 		WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPublicPackageManagerChoice()
@@ -233,7 +246,7 @@ func newSetup(setupOpts setupOpts) error {
 				return fmt.Errorf("issue with reaching the Posit Public Package Manager URL: %w", err)
 			}
 
-			WBConfig.PackageManagerConfig.URL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
+			WBConfig.PackageManagerConfig.RURL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
 			if err != nil {
 				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
 			}
