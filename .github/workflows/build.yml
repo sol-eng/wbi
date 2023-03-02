@@ -14,23 +14,16 @@ jobs:
   code-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code to a GOPATH compatible directory
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-          path: go/src/github.com/sol-eng/wbi
+      - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.20
+          go-version: '>=1.20.1'
+          cache: true
       - name: Build
         run: go build -v ./...
-        env:
-          GOPATH: /home/runner/work/wbi/go
       # - name: Test
       #   run: go test -v ./...
-      #  env:
-      #    GOPATH: /home/runner/work/wbi/go
 
   goreleaser:
     needs: code-check
