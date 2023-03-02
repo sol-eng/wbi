@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/dpastoor/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/config"
 )
 
 // Prompt users if they wish to add a default Posit Package Manager URL to Workbench
