@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sol-eng/wbi/internal/system"
 )
@@ -149,7 +150,7 @@ func (WBConfig *WBConfig) PackageManagerStringToConfigWrite() error {
 		filepath := "/etc/rstudio/repos.conf"
 
 		fmt.Println("\n=== Writing to the file " + filepath + ":")
-		err := WriteStrings(writeLines, filepath)
+		err := system.WriteStrings(writeLines, filepath, 0644)
 		if err != nil {
 			fmt.Errorf("failed to write config: %w", err)
 		}
@@ -171,7 +172,7 @@ func (WBConfig *WBConfig) PackageManagerStringToConfigWrite() error {
 		filepath := "/etc/pip.conf"
 
 		fmt.Println("\n=== Writing to the file " + filepath + ":")
-		err := WriteStrings(writeLines, filepath)
+		err := system.WriteStrings(writeLines, filepath, 0644)
 		if err != nil {
 			fmt.Errorf("failed to write config: %w", err)
 		}
