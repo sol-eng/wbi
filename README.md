@@ -22,6 +22,7 @@ sudo ./wbi setup
 - Symlinks R and Rscript
 - Scan for existing Python installations
 - Install one or more Python version from binary
+- Adds a version of Python to PATH
 
 ### Posit Workbench installation
 - Scan for an existing Workbench installation

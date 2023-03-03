@@ -2,9 +2,8 @@ package jupyter
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
 
+	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -19,21 +18,6 @@ func InstallJupyter(pythonPath string) error {
 		return fmt.Errorf("InstallAndEnableJupyterNotebookExtensions: %w", JupyterNotebookExtensionsErr)
 	}
 	return nil
-}
-
-// Remove python or python3 from the end of a path so the directory can be used for commands
-func RemovePythonFromPath(pythonPath string) (string, error) {
-	if _, err := regexp.MatchString(".*/python.*", pythonPath); err == nil {
-		i := strings.LastIndex(pythonPath, "/python")
-		excludingLast := pythonPath[:i] + strings.Replace(pythonPath[i:], "/python", "", 1)
-		return excludingLast, nil
-	} else if _, err := regexp.MatchString(".*/python3.*", pythonPath); err == nil {
-		i := strings.LastIndex(pythonPath, "/python3")
-		excludingLast := pythonPath[:i] + strings.Replace(pythonPath[i:], "/python3", "", 1)
-		return excludingLast, nil
-	} else {
-		return pythonPath, nil
-	}
 }
 
 // Install various Jupyter related packages from PyPI
@@ -52,7 +36,7 @@ func InstallJupyterAndComponents(pythonPath string) error {
 // Install and enable various Jupyter notebook extensions
 func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 
-	pythonPathShort, err := RemovePythonFromPath(pythonPath)
+	pythonPathShort, err := languages.RemovePythonFromPath(pythonPath)
 	if err != nil {
 		return fmt.Errorf("issue shortening Python path: %w", err)
 	}
