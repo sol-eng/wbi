@@ -78,7 +78,7 @@ func UpgradeApt() error {
 // Enable the CodeReady Linux Builder repository:
 func EnableCodeReadyRepo() error {
 	// TODO add support for On Premise as well as cloud (currently only cloud)
-	dnfPluginsCoreCommand := "dnf install dnf-plugins-core"
+	dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
 	err := system.RunCommand(dnfPluginsCoreCommand)
 	if err != nil {
 		return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
@@ -97,7 +97,7 @@ func EnableCodeReadyRepo() error {
 // Enable the Optional repository
 func EnableOptionalRepo() error {
 	// TODO add support for On Premise as well as cloud (currently only cloud)
-	yumUtilsCommand := "yum install yum-utils"
+	yumUtilsCommand := "yum install -y yum-utils"
 	err := system.RunCommand(yumUtilsCommand)
 	if err != nil {
 		return fmt.Errorf("issue installing yum-utils: %w", err)
