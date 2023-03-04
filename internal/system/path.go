@@ -1,6 +1,9 @@
 package system
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 // AddToPATH adds a path to the PATH environment variable in a profile.d script
 func AddToPATH(path string, filename string) error {
@@ -10,4 +13,13 @@ func AddToPATH(path string, filename string) error {
 		return fmt.Errorf("failed to add to PATH: %w", err)
 	}
 	return nil
+}
+
+func VerifyFileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return true
 }

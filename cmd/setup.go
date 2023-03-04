@@ -132,7 +132,7 @@ func newSetup(setupOpts setupOpts) error {
 		}
 
 		if jupyterChoice {
-			jupyterPythonTarget, err := jupyter.KernelPrompt(&WBConfig.PythonConfig)
+			jupyterPythonTarget, err := jupyter.KernelPrompt(WBConfig.PythonConfig.Paths)
 			if err != nil {
 				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
 			}

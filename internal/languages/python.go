@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
 	"github.com/sol-eng/wbi/internal/system"
@@ -390,4 +391,17 @@ func RemovePythonFromPathSlice(pythonPaths []string) ([]string, error) {
 		newPythonPaths = append(newPythonPaths, newPythonPath)
 	}
 	return newPythonPaths, nil
+}
+
+func ValidatePythonVersions(pythonVersions []string) error {
+	availablePythonVersions, err := RetrieveValidPythonVersions()
+	if err != nil {
+		return fmt.Errorf("error retrieving valid R versions: %w", err)
+	}
+	for _, pythonVersion := range pythonVersions {
+		if !lo.Contains(availablePythonVersions, pythonVersion) {
+			return errors.New("version " + pythonVersion + " is not a valid Python version")
+		}
+	}
+	return nil
 }

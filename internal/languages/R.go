@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
 	"github.com/sol-eng/wbi/internal/system"
@@ -332,4 +333,17 @@ func CheckIfRscriptSymlinkExists() bool {
 
 	fmt.Println("\nAn existing Rscript symlink has been detected (/usr/local/bin/Rscript)")
 	return true
+}
+
+func ValidateRVersions(rVersions []string) error {
+	availableRVersions, err := RetrieveValidRVersions()
+	if err != nil {
+		return fmt.Errorf("error retrieving valid R versions: %w", err)
+	}
+	for _, rVersion := range rVersions {
+		if !lo.Contains(availableRVersions, rVersion) {
+			return errors.New("version " + rVersion + " is not a valid R version")
+		}
+	}
+	return nil
 }

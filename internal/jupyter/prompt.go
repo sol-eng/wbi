@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/sol-eng/wbi/internal/config"
 )
 
 // Prompt asking users if they wish to install Jupyter
@@ -21,12 +20,12 @@ func InstallPrompt() (bool, error) {
 }
 
 // Prompt asking users which Python location should Jupyter be installed into
-func KernelPrompt(PythonConfig *config.PythonConfig) (string, error) {
+func KernelPrompt(pythonPaths []string) (string, error) {
 	// Allow the user to select a version of Python to target
 	target := ""
 	prompt := &survey.Select{
 		Message: "Select a Python kernel to install Jupyter into:",
-		Options: PythonConfig.Paths,
+		Options: pythonPaths,
 	}
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
