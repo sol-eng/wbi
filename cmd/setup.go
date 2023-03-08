@@ -67,10 +67,6 @@ func newSetup(setupOpts setupOpts) error {
 		if err != nil {
 			return fmt.Errorf("issue finding Python locations: %w", err)
 		}
-		err = languages.PromptAndSetPythonPATH(WBConfig.PythonConfig.Paths)
-		if err != nil {
-			return fmt.Errorf("issue setting Python PATH: %w", err)
-		}
 	}
 
 	workbenchInstalled := workbench.VerifyWorkbench()
