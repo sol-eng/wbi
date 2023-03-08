@@ -12,6 +12,8 @@ func AddToPATH(path string, filename string) error {
 	if err != nil {
 		return fmt.Errorf("failed to add to PATH: %w", err)
 	}
+
+	fmt.Println("Added " + path + " to PATH in " + fullFileName)
 	return nil
 }
 
