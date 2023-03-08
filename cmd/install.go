@@ -21,9 +21,10 @@ type installCmd struct {
 }
 
 type installOpts struct {
-	versions []string
-	path     string
-	symlink  bool
+	versions  []string
+	path      string
+	symlink   bool
+	addToPATH bool
 }
 
 func newInstall(installOpts installOpts, program string) error {
@@ -52,7 +53,8 @@ func newInstall(installOpts installOpts, program string) error {
 				rScriptSymlinked := languages.CheckIfRscriptSymlinkExists()
 				if !rSymlinked && !rScriptSymlinked {
 					// TODO symlink the latest version of R first (this just chooses the first version listed)
-					err = languages.SetRSymlinks(installOpts.versions[0])
+					fullRPath := "/opt/R/" + installOpts.versions[0] + "/bin/R"
+					err = languages.SetRSymlinks(fullRPath)
 					if err != nil {
 						return fmt.Errorf("issue setting R symlinks: %w", err)
 					}
@@ -72,6 +74,14 @@ func newInstall(installOpts installOpts, program string) error {
 				err = languages.DownloadAndInstallPython(pythonVersion, osType)
 				if err != nil {
 					return fmt.Errorf("issue installing Python versions: %w", err)
+				}
+			}
+			if installOpts.addToPATH {
+				// TODO add to PATH the latest version of Python (this just chooses the first version listed)
+				fullPythonPath := "/opt/python/" + installOpts.versions[0] + "/bin"
+				err = system.AddToPATH(fullPythonPath, "python")
+				if err != nil {
+					return fmt.Errorf("issue adding Python binary to PATH: %w", err)
 				}
 			}
 		}
@@ -126,6 +136,7 @@ func setInstallOpts(installOpts *installOpts) {
 	installOpts.versions = viper.GetStringSlice("version")
 	installOpts.path = viper.GetString("path")
 	installOpts.symlink = viper.GetBool("symlink")
+	installOpts.addToPATH = viper.GetBool("add-to-path")
 }
 
 func (opts *installOpts) Validate(args []string) error {
@@ -144,6 +155,11 @@ func (opts *installOpts) Validate(args []string) error {
 	// only the flag for symlink is supported for r
 	if opts.symlink && args[0] != "r" {
 		return fmt.Errorf("the symlink flag is only supported for r")
+	}
+
+	// only the flag for add-to-path (addToPATH) is supported for python
+	if opts.addToPATH && args[0] != "python" {
+		return fmt.Errorf("the add-to-path flag is only supported for python")
 	}
 
 	// ensure versions are valid if provided for r and python
@@ -217,6 +233,9 @@ func newInstallCmd() *installCmd {
 
 	cmd.Flags().BoolP("symlink", "s", false, "")
 	viper.BindPFlag("symlink", cmd.Flags().Lookup("symlink"))
+
+	cmd.Flags().BoolP("add-to-path", "a", false, "")
+	viper.BindPFlag("add-to-path", cmd.Flags().Lookup("add-to-path"))
 
 	root.cmd = cmd
 	return root
