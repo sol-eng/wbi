@@ -23,6 +23,7 @@ type installCmd struct {
 type installOpts struct {
 	versions []string
 	path     string
+	symlink  bool
 }
 
 func newInstall(installOpts installOpts, program string) error {
@@ -43,6 +44,20 @@ func newInstall(installOpts installOpts, program string) error {
 				err = languages.DownloadAndInstallR(rVersion, osType)
 				if err != nil {
 					return fmt.Errorf("issue installing R versions: %w", err)
+				}
+			}
+			if installOpts.symlink {
+				// check if R and Rscript has already been symlinked
+				rSymlinked := languages.CheckIfRSymlinkExists()
+				rScriptSymlinked := languages.CheckIfRscriptSymlinkExists()
+				if !rSymlinked && !rScriptSymlinked {
+					// TODO symlink the latest version of R first (this just chooses the first version listed)
+					err = languages.SetRSymlinks(installOpts.versions[0])
+					if err != nil {
+						return fmt.Errorf("issue setting R symlinks: %w", err)
+					}
+				} else {
+					log.Warn("R and Rscript symlinks already exist, skipping symlink creation")
 				}
 			}
 		}
@@ -110,6 +125,7 @@ func newInstall(installOpts installOpts, program string) error {
 func setInstallOpts(installOpts *installOpts) {
 	installOpts.versions = viper.GetStringSlice("version")
 	installOpts.path = viper.GetString("path")
+	installOpts.symlink = viper.GetBool("symlink")
 }
 
 func (opts *installOpts) Validate(args []string) error {
@@ -123,6 +139,11 @@ func (opts *installOpts) Validate(args []string) error {
 	// only the flag for path is supported for jupyter
 	if opts.path != "" && args[0] != "jupyter" {
 		return fmt.Errorf("the path flag is only supported for jupyter")
+	}
+
+	// only the flag for symlink is supported for r
+	if opts.symlink && args[0] != "r" {
+		return fmt.Errorf("the symlink flag is only supported for r")
 	}
 
 	// ensure versions are valid if provided for r and python
@@ -193,6 +214,9 @@ func newInstallCmd() *installCmd {
 
 	cmd.Flags().StringP("path", "p", "", "")
 	viper.BindPFlag("path", cmd.Flags().Lookup("path"))
+
+	cmd.Flags().BoolP("symlink", "s", false, "")
+	viper.BindPFlag("symlink", cmd.Flags().Lookup("symlink"))
 
 	root.cmd = cmd
 	return root
