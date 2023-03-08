@@ -122,6 +122,18 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) ([]string, error) {
 		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
 
+	// remove any path that starts with /usr and only offer symlinks for those that don't (i.e. /opt directories)
+	rPathsFiltered := RemoveSystemRPaths(rVersions)
+	// check if R and Rscript has already been symlinked
+	rSymlinked := CheckIfRSymlinkExists()
+	rScriptSymlinked := CheckIfRscriptSymlinkExists()
+	if (len(rPathsFiltered) > 0) && !rSymlinked && !rScriptSymlinked {
+		err = PromptAndSetRSymlinks(rPathsFiltered)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue setting R symlinks: %w", err)
+		}
+	}
+
 	fmt.Println("\nFound R versions: ", strings.Join(rVersions, ", "))
 	return rVersions, nil
 }
