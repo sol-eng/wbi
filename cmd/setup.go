@@ -206,7 +206,7 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
 		}
 		// verify URL is valid first
-		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURL(rawPackageManagerURL, false)
+		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURL(rawPackageManagerURL)
 		if err != nil {
 			return fmt.Errorf("issue with reaching the Posit Package Manager URL: %w", err)
 		}
@@ -227,7 +227,7 @@ func newSetup(setupOpts setupOpts) error {
 		}
 		if WBConfig.PackageManagerConfig.Using {
 			// validate the public package manager URL can be reached
-			_, err := packagemanager.VerifyPackageManagerURL("https://packagemanager.rstudio.com", true)
+			_, err := packagemanager.VerifyPackageManagerURL("https://packagemanager.rstudio.com")
 			if err != nil {
 				return fmt.Errorf("issue with reaching the Posit Public Package Manager URL: %w", err)
 			}
