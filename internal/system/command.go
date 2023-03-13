@@ -34,8 +34,9 @@ func RunCommandAndCaptureOutput(command string) (string, string, error) {
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Println(err)
+		return string(out), err.Error(), nil
 	}
 	fmt.Println(string(out))
 
-	return string(out), err.Error(), nil
+	return string(out), "", nil
 }
