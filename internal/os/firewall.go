@@ -10,7 +10,7 @@ import (
 
 func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 	if osType == config.Redhat7 || osType == config.Redhat8 {
-		stdout, stderr, _ := system.RunCommandAndCaptureOutput("\"rpm -q firewalld\"")
+		stdout, stderr, _ := system.RunCommandAndCaptureOutput("`rpm -q firewalld`")
 		fmt.Println("This is stdout: " + stdout)
 		fmt.Println("This is stderr: " + stderr)
 
