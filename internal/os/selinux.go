@@ -1,7 +1,6 @@
 package os
 
 import (
-	"errors"
 	"fmt"
 	"github.com/sol-eng/wbi/internal/config"
 	"strings"
@@ -16,7 +15,7 @@ func CheckSELinuxStatus(osType config.OperatingSystem) (bool, error) {
 			return false, fmt.Errorf("issue running getenforce command: %w", err)
 		}
 		if strings.Contains(stdout, "Enforcing") || strings.Contains(stdout, "Permissive") {
-			return true, errors.New("wbi must be as root. Please run wbi with sudo and try again")
+			return true, nil
 		}
 	}
 	return false, nil
