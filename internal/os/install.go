@@ -136,3 +136,24 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 	fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository has been successfully enabled!\n")
 	return nil
 }
+
+// Disable local firewall on server
+func DisableFirewall(osType config.OperatingSystem) error {
+	var FWCommand string
+
+	switch osType {
+	case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
+		FWCommand = "ufw disable"
+	case config.Redhat7, config.Redhat8:
+		FWCommand = "systemctl stop firewalld && systemctl disable firewalld"
+	default:
+		return errors.New("Unsupported OS, setting FWCommand failed")
+	}
+	err := system.RunCommand(FWCommand)
+	if err != nil {
+		return fmt.Errorf("issue disabling system firewall: %w", err)
+	}
+
+	fmt.Println("\nThe system firewall has been successfully disabled!\n")
+	return nil
+}
