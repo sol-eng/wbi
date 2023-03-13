@@ -1,7 +1,6 @@
 package os
 
 import (
-	"fmt"
 	"github.com/sol-eng/wbi/internal/config"
 	"strings"
 
@@ -10,10 +9,7 @@ import (
 
 func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 	if osType == config.Redhat7 || osType == config.Redhat8 {
-		stdout, _, err := system.RunCommandAndCaptureOutput("rpm -q firewalld")
-		if err != nil {
-			return false, fmt.Errorf("issue running firewalld installation command: %w", err)
-		}
+		stdout, _, _ := system.RunCommandAndCaptureOutput("rpm -q firewalld")
 		if strings.Contains(stdout, "not installed") {
 			return false, nil
 		}
