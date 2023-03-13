@@ -31,12 +31,13 @@ func RunCommand(command string) error {
 func RunCommandAndCaptureOutput(command string) (string, string, error) {
 	fmt.Println("Running command: " + command)
 
-	cmd := exec.Command("/bin/sh", "-c", command)
+	cmd := exec.Command("/bin/sh", "-c", "rpm", "-q", "firewalld")
 
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 
+	fmt.Println(outb.String(), errb.String())
 	err := cmd.Run()
 	if err != nil {
 		return "", "", fmt.Errorf("issue running command: %w", err)
