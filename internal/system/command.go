@@ -29,6 +29,8 @@ func RunCommand(command string) error {
 
 // Runs a command in the terminal and return stdout/stderr as seperate strings
 func RunCommandAndCaptureOutput(command string) (string, string, error) {
+	fmt.Println("Running command: " + command)
+
 	cmd := exec.Command("/bin/sh", "-c", command)
 
 	var outb, errb bytes.Buffer
