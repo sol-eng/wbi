@@ -49,36 +49,36 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return err
 	}
-	// Determine if we should disable the local firewall, then disable it
-	FWStatus, err := os.CheckFirewallStatus(osType)
+	// Determine if we should disable the local RHEL firewall, then disable it
+	firewalldEnabled, err := os.CheckFirewallStatus(osType)
 	if err != nil {
 		return err
 	}
 
-	if FWStatus {
-		firewallDisable, err := os.FirewallPrompt()
+	if firewalldEnabled {
+		disableFirewall, err := os.FirewallPrompt()
 		if err != nil {
 			return err
 		}
 
-		if firewallDisable {
+		if disableFirewall {
 			err = os.DisableFirewall(osType)
 		}
 	}
 
 	// Determine if we should disable selinux for RHEL OS's, then disable it
-	seStatus, err := os.CheckSELinuxStatus(osType)
+	selinuxEnabled, err := os.CheckSELinuxStatus(osType)
 	if err != nil {
 		return err
 	}
 
-	if seStatus {
-		selinuxDisable, err := os.SELinuxPrompt(osType)
+	if selinuxEnabled {
+		disableSELinux, err := os.SELinuxPrompt(osType)
 		if err != nil {
 			return err
 		}
 
-		if selinuxDisable {
+		if disableSELinux {
 			err = os.DisableSELinux()
 		}
 	}
