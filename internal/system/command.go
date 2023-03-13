@@ -1,6 +1,7 @@
 package system
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -29,14 +30,16 @@ func RunCommand(command string) error {
 // Runs a command in the terminal and return stdout/stderr as seperate strings
 func RunCommandAndCaptureOutput(command string) (string, string, error) {
 
-	fmt.Println("Running command: " + command)
 	cmd := exec.Command("/bin/sh", "-c", command)
-	out, err := cmd.Output()
-	if err != nil {
-		fmt.Println(err)
-		return string(out), err.Error(), nil
-	}
-	fmt.Println(string(out))
 
-	return string(out), "", nil
+	var outb, errb bytes.Buffer
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+
+	err := cmd.Run()
+	if err != nil {
+		return "", "", fmt.Errorf("issue running command: %w", err)
+	}
+
+	return outb.String(), errb.String(), nil
 }
