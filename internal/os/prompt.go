@@ -27,7 +27,7 @@ func SELinuxPrompt(osType config.OperatingSystem) (bool, error) {
 		name = true
 		prompt := &survey.Confirm{
 			Message: "SELinux is often enabled by default on Redhat Linux distributions. \nWe recommend that SELinux be" +
-				"disabled, unless you and your organization have \nspecific security requirements that require its use.\n" +
+				" disabled, unless you and your organization have \nspecific security requirements that require its use.\n" +
 				"Would you like to disable SELinux on this server?",
 		}
 		err := survey.AskOne(prompt, &name)
