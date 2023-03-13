@@ -130,9 +130,11 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue retrieving EPEL install command: %w", err)
 	}
 	err = system.RunCommand(EPELCommand)
-	if strings.Contains(err.Error(), "exit status 1") && osType == config.Redhat7 {
-		EPELUpdateCommand := "yum reinstall -y " + EPELURL
-		err = system.RunCommand(EPELUpdateCommand)
+	if err != nil {
+		if strings.Contains(err.Error(), "exit status 1") && osType == config.Redhat7 {
+			EPELUpdateCommand := "yum reinstall -y " + EPELURL
+			err = system.RunCommand(EPELUpdateCommand)
+		}
 	}
 	if err != nil {
 		return fmt.Errorf("issue enabling EPEL repo: %w", err)
