@@ -157,3 +157,21 @@ func DisableFirewall(osType config.OperatingSystem) error {
 	fmt.Println("\nThe system firewall has been successfully disabled!\n")
 	return nil
 }
+
+func DisableSELinux() error {
+
+	setenforceCommand := "setenforce 0"
+	err := system.RunCommand(setenforceCommand)
+	if err != nil {
+		return fmt.Errorf("issue stopping selinux enforcement via setenforce: %w", err)
+	}
+
+	disableSELinuxCommand := "sed -i s/^SELINUX=.*$/SELINUX=disabled/ /etc/selinux/config"
+	err = system.RunCommand(disableSELinuxCommand)
+	if err != nil {
+		return fmt.Errorf("issue disabling selinux: %w", err)
+	}
+
+	fmt.Println("\nThe SELinux has been successfully changed to permissive mode, and will be disabled on next reboot!\n")
+	return nil
+}
