@@ -14,7 +14,7 @@ func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 		fmt.Println("This is stdout: " + stdout)
 		fmt.Println("This is stderr: " + stderr)
 
-		if strings.Contains(stderr, "not installed") {
+		if strings.Contains(stdout, "not installed") {
 			return false, nil
 		}
 		return true, nil
