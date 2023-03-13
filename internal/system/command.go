@@ -33,8 +33,8 @@ func RunCommandAndCaptureOutput(command string) (string, string, error) {
 
 	cmd := exec.Command("/bin/sh", "-c", command)
 
-	var outb, errb bytes.Buffer
-	cmd.Stdout = &outb
+	var errb bytes.Buffer
+	//cmd.Stdout = &outb
 	cmd.Stderr = &errb
 	output, err := cmd.Output()
 	fmt.Println(string(output)) // when success
@@ -43,5 +43,5 @@ func RunCommandAndCaptureOutput(command string) (string, string, error) {
 		return "", "", fmt.Errorf("issue running command: %w", err)
 	}
 
-	return outb.String(), errb.String(), nil
+	return string(output), errb.String(), nil
 }
