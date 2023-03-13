@@ -36,8 +36,9 @@ func RunCommandAndCaptureOutput(command string) (string, string, error) {
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
+	output, err := cmd.Output()
+	fmt.Println(string(output)) // when success
 
-	err := cmd.Run()
 	if err != nil {
 		return "", "", fmt.Errorf("issue running command: %w", err)
 	}
