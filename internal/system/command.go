@@ -29,11 +29,11 @@ func RunCommand(command string) error {
 
 // Runs a command in the terminal and return stdout/stderr as seperate strings
 func RunCommandAndCaptureOutput(command string) (string, string, error) {
-	fmt.Println("Running command: " + command)
 
 	command = "rpm -q firewalld"
-
-	cmd := exec.Command("/bin/sh", "-c", command)
+	fmt.Println("Running command: " + command)
+	args := "-c " + command
+	cmd := exec.Command("/bin/sh", args)
 
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
