@@ -31,8 +31,7 @@ func RunCommand(command string) error {
 func RunCommandAndCaptureOutput(command string) (string, string, error) {
 	fmt.Println("Running command for output: " + command)
 
-	//testcommand := "/bin/sh -c \"" + command + "\""
-	cmd := exec.Command(command)
+	cmd := exec.Command("/bin/sh", "-c "+command)
 
 	var errb bytes.Buffer
 	//cmd.Stdout = &outb
