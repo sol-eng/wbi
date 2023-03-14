@@ -14,7 +14,18 @@ func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 		if strings.Contains(rpmOutput, "not installed") {
 			return false, nil
 		}
-		return true, nil
+
+		firewallActive, _, _ := system.RunCommandAndCaptureOutput("systemctl is-active firewalld")
+
+		if strings.Contains(firewallActive, "active") {
+			return true, nil
+		}
+
+		firewallEnabled, _, _ := system.RunCommandAndCaptureOutput("systemctl is-active firewalld")
+
+		if strings.Contains(firewallEnabled, "enabled") {
+			return true, nil
+		}
 	}
 	return false, nil
 }
