@@ -14,7 +14,7 @@ func CheckSELinuxStatus(osType config.OperatingSystem) (bool, error) {
 		if err != nil {
 			return false, fmt.Errorf("issue running getenforce command: %w", err)
 		}
-		if strings.Contains(stdout, "Enforcing") || strings.Contains(stdout, "Permissive") {
+		if strings.Contains(stdout, "Enforcing") {
 			return true, nil
 		}
 	}

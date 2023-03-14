@@ -9,9 +9,9 @@ import (
 
 func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 	if osType == config.Redhat7 || osType == config.Redhat8 {
-		stdout, _, _ := system.RunCommandAndCaptureOutput("rpm -q firewalld")
+		rpmOutput, _, _ := system.RunCommandAndCaptureOutput("rpm -q firewalld")
 
-		if strings.Contains(stdout, "not installed") {
+		if strings.Contains(rpmOutput, "not installed") {
 			return false, nil
 		}
 		return true, nil
