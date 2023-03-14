@@ -132,7 +132,8 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 	stdout, _, err := system.RunCommandAndCaptureOutput(EPELCommand)
 	if err != nil {
 		if strings.Contains(stdout, "does not update installed package") && osType == config.Redhat7 {
-			err = nil
+			fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository was already enabled.\n")
+			return nil
 		}
 	}
 	if err != nil {
