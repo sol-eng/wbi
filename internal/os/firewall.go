@@ -17,11 +17,11 @@ func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 
 		firewallActive, _, _ := system.RunCommandAndCaptureOutput("systemctl is-active firewalld")
 
-		if strings.Contains(firewallActive, "active") {
+		if !strings.Contains(firewallActive, "inactive") {
 			return true, nil
 		}
 
-		firewallEnabled, _, _ := system.RunCommandAndCaptureOutput("systemctl is-active firewalld")
+		firewallEnabled, _, _ := system.RunCommandAndCaptureOutput("systemctl is-enabled firewalld")
 
 		if strings.Contains(firewallEnabled, "enabled") {
 			return true, nil
