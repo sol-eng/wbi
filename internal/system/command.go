@@ -33,7 +33,7 @@ func RunCommandAndCaptureOutput(command string) (string, string, error) {
 	// sleep for 3 seconds to allow the user to read the command
 	time.Sleep(3 * time.Second)
 	cmd := exec.Command("/bin/sh", "-c", command)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return string(out), err.Error(), nil
 	}
