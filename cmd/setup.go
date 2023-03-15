@@ -45,7 +45,14 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return err
 	}
-	err = os.InstallPrereqs(osType)
+	ConfirmInstall, err := os.PromptInstallPrereqs()
+	if err != nil {
+		return err
+	}
+
+	if ConfirmInstall {
+		err = os.InstallPrereqs(osType)
+	}
 	if err != nil {
 		return err
 	}

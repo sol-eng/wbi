@@ -3,6 +3,7 @@ package os
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
@@ -29,7 +30,11 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 			return fmt.Errorf("EnableEPELRepo: %w", EnableEPELErr)
 		}
 		// Enable the CodeReady Linux Builder repository
-		EnableCodeReadyErr := EnableCodeReadyRepo()
+		OnCloud, err := PromptCloud(osType)
+		if err != nil {
+			return fmt.Errorf("PrompOnPremCloud: %w", err)
+		}
+		EnableCodeReadyErr := EnableCodeReadyRepo(OnCloud)
 		if EnableCodeReadyErr != nil {
 			return fmt.Errorf("EnableCodeReadyRepo: %w", EnableCodeReadyErr)
 		}
@@ -76,20 +81,26 @@ func UpgradeApt() error {
 }
 
 // Enable the CodeReady Linux Builder repository:
-func EnableCodeReadyRepo() error {
-	// TODO add support for On Premise as well as cloud (currently only cloud)
-	dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
-	err := system.RunCommand(dnfPluginsCoreCommand)
-	if err != nil {
-		return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
-	}
+func EnableCodeReadyRepo(CloudInstall bool) error {
+	if CloudInstall {
+		dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
+		err := system.RunCommand(dnfPluginsCoreCommand)
+		if err != nil {
+			return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
+		}
 
-	enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
-	err = system.RunCommand(enableCodeReadyCommand)
-	if err != nil {
-		return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
+		enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
+		err = system.RunCommand(enableCodeReadyCommand)
+		if err != nil {
+			return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
+		}
+	} else {
+		OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms\n"
+		err := system.RunCommand(OnPremCodeReadyEnableCommand)
+		if err != nil {
+			return fmt.Errorf("issue enabling codeready repo: %w", err)
+		}
 	}
-
 	fmt.Println("\nThe CodeReady Linux Builder repository has been successfully enabled!\n")
 	return nil
 }
@@ -128,7 +139,13 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("issue retrieving EPEL install command: %w", err)
 	}
-	err = system.RunCommand(EPELCommand)
+	stdout, _, err := system.RunCommandAndCaptureOutput(EPELCommand)
+	if err != nil {
+		if strings.Contains(stdout, "does not update installed package") && osType == config.Redhat7 {
+			fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository was already enabled.\n")
+			return nil
+		}
+	}
 	if err != nil {
 		return fmt.Errorf("issue enabling EPEL repo: %w", err)
 	}
