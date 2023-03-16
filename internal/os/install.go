@@ -23,7 +23,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 		if GdebiCoreErr != nil {
 			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
 		}
-	} else if osType == config.Redhat8 {
+	} else if osType == config.Redhat8 || osType == config.Redhat7 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
 		EnableEPELErr := EnableEPELRepo(osType)
 		if EnableEPELErr != nil {
@@ -34,20 +34,9 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 		if err != nil {
 			return fmt.Errorf("PrompOnPremCloud: %w", err)
 		}
-		EnableCodeReadyErr := EnableCodeReadyRepo(OnCloud)
+		EnableCodeReadyErr := EnableCodeReadyRepo(osType, OnCloud)
 		if EnableCodeReadyErr != nil {
 			return fmt.Errorf("EnableCodeReadyRepo: %w", EnableCodeReadyErr)
-		}
-	} else if osType == config.Redhat7 {
-		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
-		EnableEPELErr := EnableEPELRepo(osType)
-		if EnableEPELErr != nil {
-			return fmt.Errorf("EnableEPELRepo: %w", EnableEPELErr)
-		}
-		//Enable the Optional repository
-		EnableOptionalRepoErr := EnableOptionalRepo()
-		if EnableOptionalRepoErr != nil {
-			return fmt.Errorf("EnableOptionalRepo: %w", EnableOptionalRepoErr)
 		}
 	} else {
 		return errors.New("unsupported operating system")
@@ -81,46 +70,50 @@ func UpgradeApt() error {
 }
 
 // Enable the CodeReady Linux Builder repository:
-func EnableCodeReadyRepo(CloudInstall bool) error {
+func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error {
 	if CloudInstall {
-		dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
-		err := system.RunCommand(dnfPluginsCoreCommand)
-		if err != nil {
-			return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
-		}
+		switch osType {
+		case config.Redhat8:
+			dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
+			err := system.RunCommand(dnfPluginsCoreCommand)
+			if err != nil {
+				return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
+			}
+			enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
+			err = system.RunCommand(enableCodeReadyCommand)
+			if err != nil {
+				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
+			}
+		case config.Redhat7:
+			yumUtilsCoreCommand := "sudo yum install -y yum-utils"
+			err := system.RunCommand(yumUtilsCoreCommand)
+			if err != nil {
+				return fmt.Errorf("issue installing yum-utils: %w", err)
+			}
 
-		enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
-		err = system.RunCommand(enableCodeReadyCommand)
-		if err != nil {
-			return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
+			enableCodeReadyCommand := `sudo yum-config-manager --enable "rhel-*-optional-rpms"`
+			err = system.RunCommand(enableCodeReadyCommand)
+			if err != nil {
+				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
+			}
 		}
 	} else {
-		OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms\n"
-		err := system.RunCommand(OnPremCodeReadyEnableCommand)
-		if err != nil {
-			return fmt.Errorf("issue enabling codeready repo: %w", err)
+		switch osType {
+		case config.Redhat8:
+			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms\n"
+			err := system.RunCommand(OnPremCodeReadyEnableCommand)
+			if err != nil {
+				return fmt.Errorf("issue enabling codeready repo: %w", err)
+			}
+		case config.Redhat7:
+			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable \"rhel-*-optional-rpms\""
+			err := system.RunCommand(OnPremCodeReadyEnableCommand)
+			if err != nil {
+				return fmt.Errorf("issue enabling codeready repo: %w", err)
+			}
 		}
 	}
 	fmt.Println("\nThe CodeReady Linux Builder repository has been successfully enabled!\n")
-	return nil
-}
-
-// Enable the Optional repository
-func EnableOptionalRepo() error {
-	// TODO add support for On Premise as well as cloud (currently only cloud)
-	yumUtilsCommand := "yum install -y yum-utils"
-	err := system.RunCommand(yumUtilsCommand)
-	if err != nil {
-		return fmt.Errorf("issue installing yum-utils: %w", err)
-	}
-
-	enableOptionalCommand := `yum-config-manager --enable "rhel-*-optional-rpms"`
-	err = system.RunCommand(enableOptionalCommand)
-	if err != nil {
-		return fmt.Errorf("issue enabling the optional repo: %w", err)
-	}
-
-	fmt.Println("\nThe Optional repository has been successfully enabled!\n")
 	return nil
 }
 
