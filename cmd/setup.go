@@ -344,6 +344,24 @@ func newSetup(setupOpts setupOpts) error {
 		fmt.Println("\n=== No configuration changes are needed")
 	}
 
+	fmt.Println("\n Printing the status of RStudio Server and Launcher...")
+
+	err = workbench.StatusRStudioServerAndLauncher()
+	if err != nil {
+		return fmt.Errorf("issue running status for RStudio Server and Launcher: %w", err)
+	}
+
+	verifyChoice, err := workbench.PromptInstallVerify()
+	if err != nil {
+		return fmt.Errorf("issue selecting if verification is to be run: %w", err)
+	}
+	if verifyChoice {
+		err = workbench.VerifyInstallation()
+		if err != nil {
+			return fmt.Errorf("issue running verification: %w", err)
+		}
+	}
+
 	fmt.Println("\nThanks for using wbi! Please remember to make any needed manual configuration changes and restart RStudio Server and Launcher.")
 	return nil
 }
