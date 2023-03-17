@@ -6,6 +6,7 @@ import (
 	"github.com/sol-eng/wbi/internal/config"
 )
 
+
 func PromptCloud() (bool, error) {
 	name := false
 	prompt := &survey.Confirm{
@@ -32,6 +33,7 @@ func FirewallPrompt() (bool, error) {
 	}
 	return name, nil
 }
+
 func LinuxSecurityPrompt(osType config.OperatingSystem) (bool, error) {
 	name := false
 	if osType == config.Redhat7 || osType == config.Redhat8 {

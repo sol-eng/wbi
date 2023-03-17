@@ -57,7 +57,47 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return err
 	}
+	// Determine if we should disable the local firewall, then disable it
+	// TODO: Add support for Ubuntu ufw
+	firewalldEnabled, err := os.CheckFirewallStatus(osType)
+	if err != nil {
+		return err
+	}
 
+	if firewalldEnabled {
+		disableFirewall, err := os.FirewallPrompt()
+		if err != nil {
+			return err
+		}
+
+		if disableFirewall {
+			err = os.DisableFirewall(osType)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Determine Linux security status for the OS, then disable it
+	// TODO: Add support for Ubuntu AppArmor
+	selinuxEnabled, err := os.CheckLinuxSecurityStatus(osType)
+	if err != nil {
+		return err
+	}
+
+	if selinuxEnabled {
+		disableSELinux, err := os.LinuxSecurityPrompt(osType)
+		if err != nil {
+			return err
+		}
+
+		if disableSELinux {
+			err = os.DisableLinuxSecurity()
+			if err != nil {
+				return err
+			}
+		}
+	}
 	// Languages
 	selectedLanguages, err := languages.PromptAndRespond()
 	if err != nil {
