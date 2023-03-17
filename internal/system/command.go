@@ -27,7 +27,7 @@ func RunCommand(command string) error {
 }
 
 // Runs a command in the terminal and return stdout/stderr as seperate strings
-func RunCommandAndCaptureOutput(command string) (string, string, error) {
+func RunCommandAndCaptureOutput(command string) (string, error) {
 
 	fmt.Println("Running command: " + command)
 	// sleep for 3 seconds to allow the user to read the command
@@ -35,8 +35,8 @@ func RunCommandAndCaptureOutput(command string) (string, string, error) {
 	cmd := exec.Command("/bin/sh", "-c", command)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return string(out), err.Error(), nil
+		return "", fmt.Errorf("issue in CombinedOutput: %w", err)
 	}
 
-	return string(out), "", nil
+	return string(out), nil
 }

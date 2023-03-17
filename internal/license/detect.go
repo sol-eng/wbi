@@ -9,12 +9,12 @@ import (
 
 func CheckLicenseActivation() (bool, error) {
 
-	stdout, _, err := system.RunCommandAndCaptureOutput("rstudio-server license-manager status")
+	licenseStatus, err := system.RunCommandAndCaptureOutput("rstudio-server license-manager status")
 	if err != nil {
 		return false, fmt.Errorf("issue checking license activation: %w", err)
 	}
 
-	if strings.Contains(stdout, "Status: Activated") {
+	if strings.Contains(licenseStatus, "Status: Activated") {
 		fmt.Println("\nAn active Workbench license was detected\n")
 		return true, nil
 	}

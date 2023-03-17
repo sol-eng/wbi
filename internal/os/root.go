@@ -9,11 +9,11 @@ import (
 )
 
 func CheckIfRunningAsRoot() error {
-	stdout, _, err := system.RunCommandAndCaptureOutput("id -u")
+	idOutput, err := system.RunCommandAndCaptureOutput("id -u")
 	if err != nil {
 		return fmt.Errorf("issue running user identification command: %w", err)
 	}
-	if strings.TrimSpace(stdout) != "0" {
+	if strings.TrimSpace(idOutput) != "0" {
 		return errors.New("wbi must be as root. Please run wbi with sudo and try again")
 	}
 	return nil

@@ -163,7 +163,7 @@ func BackupAndAppendODBCConfiguration() error {
 		}
 	}
 	// append sample ODBC configuration to odbcinst.ini
-	_, _, err := system.RunCommandAndCaptureOutput("cat /opt/rstudio-drivers/odbcinst.ini.sample | tee -a /etc/odbcinst.ini")
+	_, err := system.RunCommandAndCaptureOutput("cat /opt/rstudio-drivers/odbcinst.ini.sample | tee -a /etc/odbcinst.ini")
 	if err != nil {
 		return fmt.Errorf("issue appending sample configuration to /etc/odbcinst.ini: %w", err)
 	}

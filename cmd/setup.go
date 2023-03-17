@@ -63,6 +63,9 @@ func newSetup(setupOpts setupOpts) error {
 
 		if disableFirewall {
 			err = os.DisableFirewall(osType)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -80,6 +83,9 @@ func newSetup(setupOpts setupOpts) error {
 
 		if disableSELinux {
 			err = os.DisableSELinux()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	// Languages

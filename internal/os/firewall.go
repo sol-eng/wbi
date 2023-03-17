@@ -1,6 +1,7 @@
 package os
 
 import (
+	"fmt"
 	"github.com/sol-eng/wbi/internal/config"
 	"strings"
 
@@ -8,20 +9,30 @@ import (
 )
 
 func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
+
 	if osType == config.Redhat7 || osType == config.Redhat8 {
-		rpmOutput, _, _ := system.RunCommandAndCaptureOutput("rpm -q firewalld")
+		rpmOutput, err := system.RunCommandAndCaptureOutput("rpm -q firewalld")
+		if err != nil {
+			return false, fmt.Errorf("issue in rpmOutput check: %w", err)
+		}
 
 		if strings.Contains(rpmOutput, "not installed") {
 			return false, nil
 		}
 
-		firewallActive, _, _ := system.RunCommandAndCaptureOutput("systemctl is-active firewalld")
+		firewallActive, err := system.RunCommandAndCaptureOutput("systemctl is-active firewalld")
+		if err != nil {
+			return false, fmt.Errorf("issue in firewallActive: %w", err)
+		}
 
 		if !strings.Contains(firewallActive, "inactive") {
 			return true, nil
 		}
 
-		firewallEnabled, _, _ := system.RunCommandAndCaptureOutput("systemctl is-enabled firewalld")
+		firewallEnabled, err := system.RunCommandAndCaptureOutput("systemctl is-enabled firewalld")
+		if err != nil {
+			return false, fmt.Errorf("issue in firewallEnabled check: %w", err)
+		}
 
 		if strings.Contains(firewallEnabled, "enabled") {
 			return true, nil
