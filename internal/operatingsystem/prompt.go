@@ -1,11 +1,11 @@
-package os
+package operatingsystem
 
 import (
 	"errors"
+
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sol-eng/wbi/internal/config"
 )
-
 
 func PromptCloud() (bool, error) {
 	name := false

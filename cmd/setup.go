@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
 	"github.com/sol-eng/wbi/internal/config"
@@ -9,7 +10,7 @@ import (
 	"github.com/sol-eng/wbi/internal/jupyter"
 	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/sol-eng/wbi/internal/license"
-	"github.com/sol-eng/wbi/internal/os"
+	"github.com/sol-eng/wbi/internal/operatingsystem"
 	"github.com/sol-eng/wbi/internal/packagemanager"
 	"github.com/sol-eng/wbi/internal/prodrivers"
 	"github.com/sol-eng/wbi/internal/ssl"
@@ -34,23 +35,23 @@ func newSetup(setupOpts setupOpts) error {
 	fmt.Println("Welcome to the Workbench Installer!\n")
 
 	// Check if running as root
-	err := os.CheckIfRunningAsRoot()
+	err := operatingsystem.CheckIfRunningAsRoot()
 	if err != nil {
 		return err
 	}
 
 	// Determine OS and install pre-requisites
-	osType, err := os.DetectOS()
+	osType, err := operatingsystem.DetectOS()
 	if err != nil {
 		return err
 	}
-	ConfirmInstall, err := os.PromptInstallPrereqs()
+	ConfirmInstall, err := operatingsystem.PromptInstallPrereqs()
 	if err != nil {
 		return err
 	}
 
 	if ConfirmInstall {
-		err = os.InstallPrereqs(osType)
+		err = operatingsystem.InstallPrereqs(osType)
 	} else if !ConfirmInstall {
 		log.Fatal("Exited Workbench Installer")
 	}
@@ -59,19 +60,19 @@ func newSetup(setupOpts setupOpts) error {
 	}
 	// Determine if we should disable the local firewall, then disable it
 	// TODO: Add support for Ubuntu ufw
-	firewalldEnabled, err := os.CheckFirewallStatus(osType)
+	firewalldEnabled, err := operatingsystem.CheckFirewallStatus(osType)
 	if err != nil {
 		return err
 	}
 
 	if firewalldEnabled {
-		disableFirewall, err := os.FirewallPrompt()
+		disableFirewall, err := operatingsystem.FirewallPrompt()
 		if err != nil {
 			return err
 		}
 
 		if disableFirewall {
-			err = os.DisableFirewall(osType)
+			err = operatingsystem.DisableFirewall(osType)
 			if err != nil {
 				return err
 			}
@@ -80,19 +81,19 @@ func newSetup(setupOpts setupOpts) error {
 
 	// Determine Linux security status for the OS, then disable it
 	// TODO: Add support for Ubuntu AppArmor
-	selinuxEnabled, err := os.CheckLinuxSecurityStatus(osType)
+	selinuxEnabled, err := operatingsystem.CheckLinuxSecurityStatus(osType)
 	if err != nil {
 		return err
 	}
 
 	if selinuxEnabled {
-		disableSELinux, err := os.LinuxSecurityPrompt(osType)
+		disableSELinux, err := operatingsystem.LinuxSecurityPrompt(osType)
 		if err != nil {
 			return err
 		}
 
 		if disableSELinux {
-			err = os.DisableLinuxSecurity()
+			err = operatingsystem.DisableLinuxSecurity()
 			if err != nil {
 				return err
 			}
