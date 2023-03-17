@@ -23,13 +23,13 @@ func newScan(scanOpts scanOpts, language string) error {
 		if err != nil {
 			return fmt.Errorf("issue occured in scanning for R versions: %w", err)
 		}
-		fmt.Println(strings.Join(rVersions, ", "))
+		fmt.Println(strings.Join(rVersions, "\n"))
 	} else if language == "python" {
 		pythonVersions, err := languages.ScanForPythonVersions()
 		if err != nil {
 			return fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 		}
-		fmt.Println(strings.Join(pythonVersions, ", "))
+		fmt.Println(strings.Join(pythonVersions, "\n"))
 	} else {
 		return fmt.Errorf("language %s is not supported", language)
 	}
