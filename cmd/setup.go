@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	goos "os"
-
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
 	"github.com/sol-eng/wbi/internal/config"
@@ -54,7 +52,7 @@ func newSetup(setupOpts setupOpts) error {
 	if ConfirmInstall {
 		err = os.InstallPrereqs(osType)
 	} else if !ConfirmInstall {
-		goos.Exit(0)
+		log.Fatal("Exited Workbench Installer")
 	}
 	if err != nil {
 		return err
