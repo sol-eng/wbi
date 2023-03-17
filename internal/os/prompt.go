@@ -18,7 +18,7 @@ func PromptCloud() (bool, error) {
 }
 
 func PromptInstallPrereqs() (bool, error) {
-	name := false
+	var name bool
 	prompt := &survey.Confirm{
 		Message: "In order to install Workbench from start to finish, you will need the following things\n" +
 			"1. Internet access for this server\n" +
