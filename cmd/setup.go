@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
 	"github.com/sol-eng/wbi/internal/config"
@@ -149,27 +150,9 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// Licensing
-	licenseActivationStatus, err := license.CheckLicenseActivation()
+	err = license.CheckPromptAndActivateLicense()
 	if err != nil {
-		return fmt.Errorf("issue in checking for license activation: %w", err)
-	}
-
-	if !licenseActivationStatus {
-		licenseChoice, err := license.PromptLicenseChoice()
-		if err != nil {
-			return fmt.Errorf("issue in prompt for license activate choice: %w", err)
-		}
-
-		if licenseChoice {
-			licenseKey, err := license.PromptLicense()
-			if err != nil {
-				return fmt.Errorf("issue entering license key: %w", err)
-			}
-			ActivateErr := license.ActivateLicenseKey(licenseKey)
-			if ActivateErr != nil {
-				return fmt.Errorf("issue activating license key: %w", ActivateErr)
-			}
-		}
+		return fmt.Errorf("issue activating license: %w", err)
 	}
 
 	// Jupyter
