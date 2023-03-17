@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	goos "os"
 
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
@@ -52,6 +53,8 @@ func newSetup(setupOpts setupOpts) error {
 
 	if ConfirmInstall {
 		err = os.InstallPrereqs(osType)
+	} else if !ConfirmInstall {
+		goos.Exit(0)
 	}
 	if err != nil {
 		return err
