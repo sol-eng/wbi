@@ -28,7 +28,7 @@ func StatusRStudioServer() error {
 		fmt.Println("\nrstudio-server status is active (running)! See details below:\n")
 		fmt.Println(status)
 	} else {
-		fmt.Println("\nrstudio-server status is inactive (dead)! See details below:\n")
+		fmt.Println("\nrstudio-server status is not active! See details below:\n")
 		fmt.Println(status)
 	}
 
@@ -44,7 +44,7 @@ func StatusRStudioLauncher() error {
 		fmt.Println("\nrstudio-launcher status is active (running)! See details below:\n")
 		fmt.Println(status)
 	} else {
-		fmt.Println("\nrstudio-launcher status is inactive (dead)! See details below:\n")
+		fmt.Println("\nrstudio-launcher status not active! See details below:\n")
 		fmt.Println(status)
 	}
 	return nil
