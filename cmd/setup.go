@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
 	"github.com/sol-eng/wbi/internal/config"
@@ -341,6 +342,13 @@ func newSetup(setupOpts setupOpts) error {
 		}
 	} else {
 		fmt.Println("\n=== No configuration changes are needed")
+	}
+
+	fmt.Println("\n Printing the status of RStudio Server and Launcher...")
+
+	err = workbench.StatusRStudioServerAndLauncher()
+	if err != nil {
+		return fmt.Errorf("issue running status for RStudio Server and Launcher: %w", err)
 	}
 
 	fmt.Println("\nThanks for using wbi! Please remember to make any needed manual configuration changes and restart RStudio Server and Launcher.")
