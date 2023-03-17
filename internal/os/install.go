@@ -97,7 +97,7 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
 			}
 		}
-	} else {
+	} else if !CloudInstall {
 		switch osType {
 		case config.Redhat8:
 			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms\n"
@@ -112,6 +112,8 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 				return fmt.Errorf("issue enabling codeready repo: %w", err)
 			}
 		}
+	} else {
+		return fmt.Errorf("issue enabling codeready repo: CloudInstall boolean undefined")
 	}
 	fmt.Println("\nThe CodeReady Linux Builder repository has been successfully enabled!\n")
 	return nil
