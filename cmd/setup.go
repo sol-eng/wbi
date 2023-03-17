@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
 	"github.com/sol-eng/wbi/internal/config"
@@ -45,7 +44,16 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return err
 	}
-	err = os.InstallPrereqs(osType)
+	ConfirmInstall, err := os.PromptInstallPrereqs()
+	if err != nil {
+		return err
+	}
+
+	if ConfirmInstall {
+		err = os.InstallPrereqs(osType)
+	} else if !ConfirmInstall {
+		log.Fatal("Exited Workbench Installer")
+	}
 	if err != nil {
 		return err
 	}
