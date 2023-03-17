@@ -33,3 +33,19 @@ func RestartRStudioLauncher() error {
 	}
 	return nil
 }
+
+func StopRStudioServer() error {
+	err := system.RunCommand("rstudio-server stop")
+	if err != nil {
+		return fmt.Errorf("issue stopping rstudio-server: %w", err)
+	}
+	return nil
+}
+
+func StartRStudioServer() error {
+	err := system.RunCommand("rstudio-server start")
+	if err != nil {
+		return fmt.Errorf("issue starting rstudio-server: %w", err)
+	}
+	return nil
+}
