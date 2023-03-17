@@ -21,7 +21,7 @@ func FirewallPrompt() (bool, error) {
 	return name, nil
 }
 
-func SELinuxPrompt(osType config.OperatingSystem) (bool, error) {
+func LinuxSecurityPrompt(osType config.OperatingSystem) (bool, error) {
 	name := false
 	if osType == config.Redhat7 || osType == config.Redhat8 {
 		name = true

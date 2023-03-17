@@ -165,7 +165,7 @@ func DisableFirewall(osType config.OperatingSystem) error {
 	return nil
 }
 
-func DisableSELinux() error {
+func DisableLinuxSecurity() error {
 
 	setenforceCommand := "setenforce 0"
 	err := system.RunCommand(setenforceCommand)

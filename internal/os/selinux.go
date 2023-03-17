@@ -8,7 +8,7 @@ import (
 	"github.com/sol-eng/wbi/internal/system"
 )
 
-func CheckSELinuxStatus(osType config.OperatingSystem) (bool, error) {
+func CheckLinuxSecurityStatus(osType config.OperatingSystem) (bool, error) {
 	if osType == config.Redhat7 || osType == config.Redhat8 {
 		fmt.Println("Checking to see if SELinux is active on this server")
 		enforceStatus, err := system.RunCommandAndCaptureOutput("getenforce")

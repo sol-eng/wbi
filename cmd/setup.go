@@ -49,7 +49,8 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return err
 	}
-	// Determine if we should disable the local RHEL firewall, then disable it
+	// Determine if we should disable the local firewall, then disable it
+	// TODO: Add support for Ubuntu ufw
 	firewalldEnabled, err := os.CheckFirewallStatus(osType)
 	if err != nil {
 		return err
@@ -69,20 +70,21 @@ func newSetup(setupOpts setupOpts) error {
 		}
 	}
 
-	// Determine if we should disable selinux for RHEL OS's, then disable it
-	selinuxEnabled, err := os.CheckSELinuxStatus(osType)
+	// Determine Linux security status for the OS, then disable it
+	// TODO: Add support for Ubuntu AppArmor
+	selinuxEnabled, err := os.CheckLinuxSecurityStatus(osType)
 	if err != nil {
 		return err
 	}
 
 	if selinuxEnabled {
-		disableSELinux, err := os.SELinuxPrompt(osType)
+		disableSELinux, err := os.LinuxSecurityPrompt(osType)
 		if err != nil {
 			return err
 		}
 
 		if disableSELinux {
-			err = os.DisableSELinux()
+			err = os.DisableLinuxSecurity()
 			if err != nil {
 				return err
 			}
