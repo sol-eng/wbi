@@ -3,10 +3,9 @@ package os
 import (
 	"errors"
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/sol-eng/wbi/internal/config"
 )
 
-func PromptCloud(osType config.OperatingSystem) (bool, error) {
+func PromptCloud() (bool, error) {
 	name := false
 	prompt := &survey.Confirm{
 		Message: "Is your instance of Workbench running in a public cloud(AWS, Azure, GCP, etc)?",

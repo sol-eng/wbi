@@ -30,7 +30,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 			return fmt.Errorf("EnableEPELRepo: %w", EnableEPELErr)
 		}
 		// Enable the CodeReady Linux Builder repository
-		OnCloud, err := PromptCloud(osType)
+		OnCloud, err := PromptCloud()
 		if err != nil {
 			return fmt.Errorf("PrompOnPremCloud: %w", err)
 		}
