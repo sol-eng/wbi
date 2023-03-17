@@ -27,7 +27,7 @@ type configOpts struct {
 	clientSecret  string
 }
 
-func newConfig(configOpts configOpts, item string) error {
+func NewConfig(configOpts configOpts, item string) error {
 	if item == "ssl" {
 		err := workbench.WriteSSLConfigWorkbench(configOpts.certPath, configOpts.keyPath)
 		if err != nil {
@@ -163,8 +163,8 @@ func newConfigCmd() *configCmd {
 	root := &configCmd{opts: configOpts}
 
 	cmd := &cobra.Command{
-		Use:   "config",
-		Short: "config",
+		Use:   "config [item]",
+		Short: "Configure SSL, Authentication, package repos, or a Connect server in Posit Workbench",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setConfigOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
@@ -174,7 +174,7 @@ func newConfigCmd() *configCmd {
 		},
 		RunE: func(_ *cobra.Command, args []string) error {
 			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("config-opts")
-			if err := newConfig(root.opts, strings.ToLower(args[0])); err != nil {
+			if err := NewConfig(root.opts, strings.ToLower(args[0])); err != nil {
 				return err
 			}
 			return nil

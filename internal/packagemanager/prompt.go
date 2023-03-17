@@ -90,3 +90,26 @@ func PromptPackageManagerNameAndBuildURL(cleanURL string, osType config.Operatin
 	}
 	return fullRepoURL, nil
 }
+
+// Prompt asking users which language repos they will use
+func PromptLanguageRepos() ([]string, error) {
+	var qs = []*survey.Question{
+		{
+			Name: "languages",
+			Prompt: &survey.MultiSelect{
+				Message: "What language repositories would you like to setup?",
+				Options: []string{"r", "python"},
+				Default: []string{"r", "python"},
+			},
+		},
+	}
+	languageAnswers := struct {
+		Languages []string `survey:"languages"`
+	}{}
+	err := survey.Ask(qs, &languageAnswers)
+	if err != nil {
+		return []string{}, errors.New("there was an issue with the repo languages prompt")
+	}
+
+	return languageAnswers.Languages, nil
+}

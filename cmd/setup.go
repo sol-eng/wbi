@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+
 	"github.com/sol-eng/wbi/internal/authentication"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/connect"
@@ -30,8 +31,6 @@ type setupOpts struct {
 
 func newSetup(setupOpts setupOpts) error {
 
-	var WBConfig config.WBConfig
-
 	fmt.Println("Welcome to the Workbench Installer!\n")
 
 	// Check if running as root
@@ -45,6 +44,7 @@ func newSetup(setupOpts setupOpts) error {
 	if err != nil {
 		return err
 	}
+
 	err = os.InstallPrereqs(osType)
 	if err != nil {
 		return err
@@ -57,15 +57,19 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// R
-	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions(osType)
-	if err != nil {
-		return fmt.Errorf("issue finding R locations: %w", err)
+	if lo.Contains(selectedLanguages, "r") {
+		err := NewInstall(installOpts{versions: []string{}}, "r")
+		if err != nil {
+			return fmt.Errorf("issue installing R: %w", err)
+		}
+	} else {
+		log.Fatal("R is required for Workbench")
 	}
 
 	if lo.Contains(selectedLanguages, "python") {
-		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions(osType)
+		err := NewInstall(installOpts{versions: []string{}}, "python")
 		if err != nil {
-			return fmt.Errorf("issue finding Python locations: %w", err)
+			return fmt.Errorf("issue installing Python: %w", err)
 		}
 	}
 
@@ -77,7 +81,7 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue selecting Workbench installation: %w", err)
 		}
 		if installWorkbenchChoice {
-			err := workbench.DownloadAndInstallWorkbench(osType)
+			err := NewInstall(installOpts{versions: []string{}}, "workbench")
 			if err != nil {
 				return fmt.Errorf("issue installing Workbench: %w", err)
 			}
@@ -103,38 +107,23 @@ func newSetup(setupOpts setupOpts) error {
 			if err != nil {
 				return fmt.Errorf("issue entering license key: %w", err)
 			}
-			ActivateErr := license.ActivateLicenseKey(licenseKey)
-			if ActivateErr != nil {
-				return fmt.Errorf("issue activating license key: %w", ActivateErr)
+			err = NewActivate(activateOpts{key: licenseKey})
+			if err != nil {
+				return fmt.Errorf("issue activating license: %w", err)
 			}
 		}
 	}
 
 	// Jupyter
-	if len(WBConfig.PythonConfig.Paths) > 0 {
+	if lo.Contains(selectedLanguages, "python") {
 		jupyterChoice, err := jupyter.InstallPrompt()
 		if err != nil {
 			return fmt.Errorf("issue selecting Jupyter: %w", err)
 		}
-
 		if jupyterChoice {
-			jupyterPythonTarget, err := jupyter.KernelPrompt(WBConfig.PythonConfig.Paths)
+			err := NewInstall(installOpts{versions: []string{}}, "jupyter")
 			if err != nil {
-				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
-			}
-			// the path to jupyter must be set in the config, not python
-			pythonSubPath, err := languages.RemovePythonFromPath(jupyterPythonTarget)
-			if err != nil {
-				return fmt.Errorf("issue removing Python from path: %w", err)
-			}
-			jupyterPath := pythonSubPath + "/jupyter"
-			WBConfig.PythonConfig.JupyterPath = jupyterPath
-
-			if jupyterPythonTarget != "" {
-				err := jupyter.InstallJupyter(jupyterPythonTarget)
-				if err != nil {
-					return fmt.Errorf("issue installing Jupyter: %w", err)
-				}
+				return fmt.Errorf("issue installing Jupyter: %w", err)
 			}
 		}
 	}
@@ -150,7 +139,7 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue selecting Pro Drivers installation: %w", err)
 		}
 		if installProDriversChoice {
-			err := prodrivers.DownloadAndInstallProDrivers(osType)
+			err := NewInstall(installOpts{versions: []string{}}, "prodrivers")
 			if err != nil {
 				return fmt.Errorf("issue installing Pro Drivers: %w", err)
 			}
@@ -158,130 +147,206 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// SSL
-	WBConfig.SSLConfig.Using, err = ssl.PromptSSL()
+	sslChoice, err := ssl.PromptSSL()
 	if err != nil {
 		return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 	}
-	if WBConfig.SSLConfig.Using {
-		WBConfig.SSLConfig.CertPath, err = ssl.PromptSSLFilePath()
+	if sslChoice {
+		certPath, err := ssl.PromptSSLFilePath()
 		if err != nil {
 			return fmt.Errorf("issue with the provided SSL cert path: %w", err)
 		}
-		WBConfig.SSLConfig.KeyPath, err = ssl.PromptSSLKeyFilePath()
+		keyPath, err := ssl.PromptSSLKeyFilePath()
 		if err != nil {
 			return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
 		}
-		verifySSLCert := ssl.VerifySSLCertAndKey(WBConfig.SSLConfig.CertPath, WBConfig.SSLConfig.KeyPath)
-		if verifySSLCert != nil {
-			return fmt.Errorf("could not verify the SSL cert: %w", err)
+		err = NewVerify(verifyOpts{certPath: certPath, keyPath: keyPath}, "ssl")
+		if err != nil {
+			return fmt.Errorf("issue verifying SSL: %w", err)
 		}
+		err = NewConfig(configOpts{certPath: certPath, keyPath: keyPath}, "ssl")
+		if err != nil {
+			return fmt.Errorf("issue configuring SSL: %w", err)
+		}
+
 		fmt.Println("SSL successfully setup and verified")
 	}
 
 	// Authentication
-	WBConfig.AuthConfig.Using, err = authentication.PromptAuth()
+	authChoice, err := authentication.PromptAuth()
 	if err != nil {
 		return fmt.Errorf("issue selecting if Authentication is to be setup: %w", err)
 	}
-	if WBConfig.AuthConfig.Using {
-		WBConfig.AuthConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+	if authChoice {
+		authType, err := authentication.PromptAndConvertAuthType()
 		if err != nil {
 			return fmt.Errorf("issue entering and converting AuthType: %w", err)
 		}
-		AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
-		if AuthErr != nil {
-			return fmt.Errorf("issue handling authentication: %w", AuthErr)
+		switch authType {
+		case config.SAML:
+			idpURL, err := authentication.PromptSAMLMetadataURL()
+			if err != nil {
+				return fmt.Errorf("issue entering SAML metadata URL: %w", err)
+			}
+			err = NewConfig(configOpts{authType: "saml", idpURL: idpURL}, "auth")
+			if err != nil {
+				return fmt.Errorf("issue configuring SAML: %w", err)
+			}
+
+			fmt.Println("Setting up SAML based authentication is a 2 step process. Step 1 was just completed by wbi writing the configuration file, however your SAML setup may require further configuration. \n\nTo complete step 2, you must configure your identify provider with Workbench following steps outlined here: https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html#step-2.-configure-your-identity-provider-with-workbench")
+		case config.OIDC:
+			fmt.Println("Setting up OpenID Connect based authentication is a 2 step process. First configure your OpenID provider with the steps outlined here to complete step 1: https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html#configuring-your-openid-provider \n\n As you register Workbench in the IdP, save the client-id and client-secret. Follow the next prompts to complete step 2.")
+
+			clientID, err := authentication.PromptOIDCClientID()
+			if err != nil {
+				return fmt.Errorf("issue entering OIDC client ID: %w", err)
+			}
+			clientSecret, err := authentication.PromptOIDCClientSecret()
+			if err != nil {
+				return fmt.Errorf("issue entering OIDC client secret: %w", err)
+			}
+			idpURL, err := authentication.PromptOIDCIssuerURL()
+			if err != nil {
+				return fmt.Errorf("issue entering OIDC issuer URL: %w", err)
+			}
+			err = NewConfig(configOpts{authType: "oidc", idpURL: idpURL, clientID: clientID, clientSecret: clientSecret}, "auth")
+			if err != nil {
+				return fmt.Errorf("issue configuring OIDC: %w", err)
+			}
+		case config.LDAP:
+			switch osType {
+			case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
+				fmt.Println("Posit Workbench connects to LDAP via PAM. Please follow this article for more details on configuration: \nhttps://support.posit.co/hc/en-us/articles/360024137174-Integrating-Ubuntu-with-Active-Directory-for-RStudio-Workbench-RStudio-Server-Pro")
+			case config.Redhat7, config.Redhat8:
+				fmt.Println("Posit Workbench connects to LDAP via PAM. Please follow this article for more details on configuration: \nhttps://support.posit.co/hc/en-us/articles/360016587973-Integrating-RStudio-Workbench-RStudio-Server-Pro-with-Active-Directory-using-CentOS-RHEL")
+			default:
+				log.Fatal("Unsupported operating system")
+			}
+		case config.PAM:
+			fmt.Println("PAM requires no additional configuration, however there are some username considerations and home directory provisioning steps that can be taken. To learn more please visit: https://docs.posit.co/ide/server-pro/authenticating_users/pam_authentication.html")
+		case config.Other:
+			fmt.Println("To learn about configuring your desired method of authentication please visit: https://docs.posit.co/ide/server-pro/authenticating_users/authenticating_users.html")
 		}
 	}
 
 	// Package Manager URL
-	WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPackageManagerChoice()
+	packageManagerChoice, err := packagemanager.PromptPackageManagerChoice()
 	if err != nil {
 		return fmt.Errorf("issue in prompt for Posit Package Manager choice: %w", err)
 	}
-	if WBConfig.PackageManagerConfig.Using {
+	if packageManagerChoice {
+		// prompt for which languages to setup
+		languageChoices, err := packagemanager.PromptLanguageRepos()
+		if err != nil {
+			return fmt.Errorf("issue in prompt for Posit Package Manager language choices: %w", err)
+		}
+
 		// prompt for base URL
 		rawPackageManagerURL, err := packagemanager.PromptPackageManagerURL()
 		if err != nil {
 			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
 		}
-		// verify URL is valid first
-		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURL(rawPackageManagerURL)
-		if err != nil {
-			return fmt.Errorf("issue with reaching the Posit Package Manager URL: %w", err)
+
+		// r repo
+		if lo.Contains(languageChoices, "r") {
+			repoPackageManager, err := packagemanager.PromptPackageManagerRepo("r")
+			if err != nil {
+				return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+			}
+			cleanURL := packagemanager.CleanPackageManagerURL(rawPackageManagerURL)
+			err = NewVerify(verifyOpts{url: cleanURL, repo: repoPackageManager, language: "r"}, "packagemanager")
+			if err != nil {
+				return fmt.Errorf("issue verifying Posit Package Manager URL: %w", err)
+			}
+			rPackageManagerURL, err := packagemanager.BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "r")
+			if err != nil {
+				return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
+			}
+			err = NewConfig(configOpts{url: rPackageManagerURL, source: "cran"}, "repo")
+			if err != nil {
+				return fmt.Errorf("issue configuring Posit Package Manager CRAN URL: %w", err)
+			}
 		}
-		// R repo
-		WBConfig.PackageManagerConfig.RURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "r")
-		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager R repo and building URL: %w", err)
-		}
-		// Python repo
-		WBConfig.PackageManagerConfig.PythonURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "python")
-		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager Python repo and building URL: %w", err)
+
+		// python repo
+		if lo.Contains(languageChoices, "python") {
+			repoPackageManager, err := packagemanager.PromptPackageManagerRepo("python")
+			if err != nil {
+				return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+			}
+			cleanURL := packagemanager.CleanPackageManagerURL(rawPackageManagerURL)
+			err = NewVerify(verifyOpts{url: cleanURL, repo: repoPackageManager, language: "python"}, "packagemanager")
+			if err != nil {
+				return fmt.Errorf("issue verifying Posit Package Manager URL: %w", err)
+			}
+			pythonPackageManagerURL, err := packagemanager.BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "python")
+			if err != nil {
+				return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
+			}
+			err = NewConfig(configOpts{url: pythonPackageManagerURL, source: "pypi"}, "repo")
+			if err != nil {
+				return fmt.Errorf("issue configuring Posit Package Manager PyPI URL: %w", err)
+			}
 		}
 	} else {
-		WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPublicPackageManagerChoice()
+		publicPackageManagerChoice, err := packagemanager.PromptPublicPackageManagerChoice()
 		if err != nil {
 			return fmt.Errorf("issue in prompt for Posit Public Package Manager choice: %w", err)
 		}
-		if WBConfig.PackageManagerConfig.Using {
-			// validate the public package manager URL can be reached
-			_, err := packagemanager.VerifyPackageManagerURL("https://packagemanager.rstudio.com")
+		if publicPackageManagerChoice {
+			publicPackageManagerURL := "https://packagemanager.rstudio.com"
+			err = NewVerify(verifyOpts{url: publicPackageManagerURL}, "packagemanager")
 			if err != nil {
-				return fmt.Errorf("issue with reaching the Posit Public Package Manager URL: %w", err)
+				return fmt.Errorf("issue verifying Posit Public Package Manager URL: %w", err)
 			}
 
-			WBConfig.PackageManagerConfig.RURL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
+			rPackageManagerURL, err := packagemanager.BuildPackagemanagerFullURL(publicPackageManagerURL, "cran", osType, "r")
 			if err != nil {
-				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
+				return fmt.Errorf("issue building Posit Public Package Manager URL: %w", err)
+			}
+			err = NewConfig(configOpts{url: rPackageManagerURL, source: "cran"}, "repo")
+			if err != nil {
+				return fmt.Errorf("issue configuring Posit Package Manager CRAN URL: %w", err)
 			}
 		}
 	}
 
 	// Connect URL
-	WBConfig.ConnectConfig.Using, err = connect.PromptConnectChoice()
+	connectChoice, err := connect.PromptConnectChoice()
 	if err != nil {
 		return fmt.Errorf("issue in prompt for Connect URL choice: %w", err)
 	}
-	if WBConfig.ConnectConfig.Using {
+	if connectChoice {
 		rawConnectURL, err := connect.PromptConnectURL()
 		if err != nil {
 			return fmt.Errorf("issue entering Connect URL: %w", err)
 		}
-		WBConfig.ConnectConfig.URL, err = connect.VerifyConnectURL(rawConnectURL)
+		err = NewVerify(verifyOpts{url: rawConnectURL}, "connect-url")
 		if err != nil {
-			return fmt.Errorf("issue with checking the Connect URL: %w", err)
+			return fmt.Errorf("issue verifying Connect URL: %w", err)
+		}
+		cleanConnectURL := connect.CleanConnectURL(rawConnectURL)
+		err = NewConfig(configOpts{url: cleanConnectURL}, "connect-url")
+		if err != nil {
+			return fmt.Errorf("issue configuring Connect URL: %w", err)
 		}
 	}
 
-	// Config
-	// first check if there are any config changes needed
-	configChangesNeeded := WBConfig.DetectConfigChange()
-	if configChangesNeeded {
-		// print out the changes needed
-		fmt.Println("\n=== The following configuration changes are needed:")
-		WBConfig.ConfigStructToText()
-		// ask the user if they want to write the config automatically
-		configWriteChoice, err := config.PromptWriteConfig()
-		if err != nil {
-			return fmt.Errorf("issue selecting if config changes are to be written: %w", err)
-		}
-		if configWriteChoice {
-			err := config.WriteConfig(WBConfig)
-			if err != nil {
-				return fmt.Errorf("issue writing config: %w", err)
-			}
-			err = workbench.RestartRStudioServerAndLauncher()
-			if err != nil {
-				return fmt.Errorf("issue restarting RStudio Server and Launcher: %w", err)
-			}
-		}
-	} else {
-		fmt.Println("\n=== No configuration changes are needed")
+	fmt.Println("\n Restarting RStudio Server and Launcher...")
+
+	err = workbench.RestartRStudioServerAndLauncher()
+	if err != nil {
+		return fmt.Errorf("issue restarting RStudio Server and Launcher: %w", err)
 	}
 
-	fmt.Println("\nThanks for using wbi! Please remember to make any needed manual configuration changes and restart RStudio Server and Launcher.")
+	fmt.Println("\n Printing the status of RStudio Server and Launcher...")
+
+	err = workbench.StatusRStudioServerAndLauncher()
+	if err != nil {
+		return fmt.Errorf("issue running status for RStudio Server and Launcher: %w", err)
+	}
+
+	fmt.Println("\nThanks for using wbi!")
 	return nil
 }
 
@@ -298,7 +363,7 @@ func newSetupCmd() *setupCmd {
 
 	cmd := &cobra.Command{
 		Use:   "setup",
-		Short: "setup",
+		Short: "A series of interactive prompts to setup Posit Workbench",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setSetupOpts(&root.opts)
 			if err := root.opts.Validate(); err != nil {

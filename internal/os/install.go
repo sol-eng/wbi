@@ -13,14 +13,24 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 	fmt.Println("Installing prerequisites...\n")
 	// Update apt and install gdebi-core if an Ubuntu system
 	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
-		AptErr := UpgradeApt()
-		if AptErr != nil {
-			return fmt.Errorf("UpgradeApt: %w", AptErr)
+		// check if gdebi-core is installed
+		gdebiInstalled, err := DetectGdebiCore()
+		if err != nil {
+			return fmt.Errorf("DetectGdebiCore: %w", err)
 		}
+		if !gdebiInstalled {
+			AptErr := UpgradeApt()
+			if AptErr != nil {
+				return fmt.Errorf("UpgradeApt: %w", AptErr)
+			}
 
-		GdebiCoreErr := InstallGdebiCore()
-		if GdebiCoreErr != nil {
-			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
+			GdebiCoreErr := InstallGdebiCore()
+			if GdebiCoreErr != nil {
+				return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
+			}
+			fmt.Println("\nPrerequisites successfully installed!\n")
+		} else {
+			fmt.Println("\nPrerequisites already installed!\n")
 		}
 	} else if osType == config.Redhat8 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
@@ -33,6 +43,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 		if EnableCodeReadyErr != nil {
 			return fmt.Errorf("EnableCodeReadyRepo: %w", EnableCodeReadyErr)
 		}
+		fmt.Println("\nPrerequisites successfully installed!\n")
 	} else if osType == config.Redhat7 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
 		EnableEPELErr := EnableEPELRepo(osType)
@@ -44,10 +55,11 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 		if EnableOptionalRepoErr != nil {
 			return fmt.Errorf("EnableOptionalRepo: %w", EnableOptionalRepoErr)
 		}
+		fmt.Println("\nPrerequisites successfully installed!\n")
 	} else {
 		return errors.New("unsupported operating system")
 	}
-	fmt.Println("\nPrerequisites successfully installed!\n")
+
 	return nil
 }
 

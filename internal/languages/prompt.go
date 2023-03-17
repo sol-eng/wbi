@@ -14,8 +14,8 @@ func PromptAndRespond() ([]string, error) {
 			Name: "languages",
 			Prompt: &survey.MultiSelect{
 				Message: "What languages will you use",
-				Options: []string{"R", "python"},
-				Default: []string{"R", "python"},
+				Options: []string{"r", "python"},
+				Default: []string{"r", "python"},
 			},
 		},
 	}
@@ -26,7 +26,7 @@ func PromptAndRespond() ([]string, error) {
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the languages prompt")
 	}
-	if !lo.Contains(languageAnswers.Languages, "R") {
+	if !lo.Contains(languageAnswers.Languages, "r") {
 		return []string{}, errors.New("R must be a select language to install Workbench")
 	}
 	return languageAnswers.Languages, nil

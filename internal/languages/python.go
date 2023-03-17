@@ -231,9 +231,13 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) ([]string, error
 		return []string{}, fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 	}
 
-	err = PromptAndSetPythonPATH(pythonVersions)
-	if err != nil {
-		return []string{}, fmt.Errorf("issue setting Python PATH: %w", err)
+	// check if a wbi_python.sh file exists already and skip asking if it does
+	pythonPathSet := CheckIfPythonProfileDExists()
+	if !pythonPathSet {
+		err = PromptAndSetPythonPATH(pythonVersions)
+		if err != nil {
+			return []string{}, fmt.Errorf("issue setting Python PATH: %w", err)
+		}
 	}
 
 	fmt.Println("\nFound Python versions: ", strings.Join(pythonVersions, ", "))
@@ -409,4 +413,14 @@ func ValidatePythonVersions(pythonVersions []string) error {
 		}
 	}
 	return nil
+}
+
+func CheckIfPythonProfileDExists() bool {
+	_, err := os.Stat("/etc/profile.d/wbi_python.sh")
+	if err != nil {
+		return false
+	}
+
+	fmt.Println("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.\n")
+	return true
 }

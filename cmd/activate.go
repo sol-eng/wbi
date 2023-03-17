@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/license"
@@ -19,11 +18,18 @@ type activateOpts struct {
 	key string
 }
 
-func newActivate(activateOpts activateOpts, item string) error {
-
-	err := license.ActivateLicenseKey(activateOpts.key)
+func NewActivate(activateOpts activateOpts) error {
+	licenseActivationStatus, err := license.CheckLicenseActivation()
 	if err != nil {
-		return fmt.Errorf("issue activating license: %w", err)
+		return fmt.Errorf("issue in checking for license activation: %w", err)
+	}
+	if !licenseActivationStatus {
+		err := license.ActivateLicenseKey(activateOpts.key)
+		if err != nil {
+			return fmt.Errorf("issue activating license: %w", err)
+		}
+	} else {
+		return fmt.Errorf("license is already activated")
 	}
 	return nil
 }
@@ -58,8 +64,8 @@ func newActivateCmd() *activateCmd {
 	root := &activateCmd{opts: activateOpts}
 
 	cmd := &cobra.Command{
-		Use:   "activate",
-		Short: "activate",
+		Use:   "activate license --key [license key]",
+		Short: "Activate Workbench with a license key",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setActivateOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
@@ -69,7 +75,7 @@ func newActivateCmd() *activateCmd {
 		},
 		RunE: func(_ *cobra.Command, args []string) error {
 			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("activate-opts")
-			if err := newActivate(root.opts, strings.ToLower(args[0])); err != nil {
+			if err := NewActivate(root.opts); err != nil {
 				return err
 			}
 			return nil

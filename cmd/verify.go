@@ -27,7 +27,7 @@ type verifyOpts struct {
 	keyPath  string
 }
 
-func newVerify(verifyOpts verifyOpts, item string) error {
+func NewVerify(verifyOpts verifyOpts, item string) error {
 
 	if item == "packagemanager" {
 		if verifyOpts.url != "" {
@@ -45,7 +45,7 @@ func newVerify(verifyOpts verifyOpts, item string) error {
 		} else {
 			return fmt.Errorf("the url flag is required for packagemanager")
 		}
-	} else if item == "connect" {
+	} else if item == "connect-url" {
 		if verifyOpts.url != "" {
 			_, err := connect.VerifyConnectURL(verifyOpts.url)
 			if err != nil {
@@ -90,8 +90,8 @@ func (opts *verifyOpts) Validate(args []string) error {
 		return fmt.Errorf("too many arguments provided, please provide only one argument")
 	}
 
-	// only the url flag is supported for packagemanager and connect
-	if opts.url != "" && (args[0] != "packagemanager" && args[0] != "connect") {
+	// only the url flag is supported for packagemanager and connect-url
+	if opts.url != "" && (args[0] != "packagemanager" && args[0] != "connect-url") {
 		return fmt.Errorf("the url flag is only supported for packagemanager and connect")
 	}
 	// only the repo flag is supported for packagemanager
@@ -124,9 +124,9 @@ func (opts *verifyOpts) Validate(args []string) error {
 		return fmt.Errorf("the repo flag is required when the language flag is provided")
 	}
 
-	// the url flag is required for connect
-	if opts.url == "" && args[0] == "connect" {
-		return fmt.Errorf("the url flag is required for connect")
+	// the url flag is required for connect-url
+	if opts.url == "" && args[0] == "connect-url" {
+		return fmt.Errorf("the url flag is required for connect-url")
 	}
 
 	// the cert-path flag is required for ssl
@@ -147,8 +147,8 @@ func newVerifyCmd() *verifyCmd {
 	root := &verifyCmd{opts: verifyOpts}
 
 	cmd := &cobra.Command{
-		Use:   "verify",
-		Short: "verify",
+		Use:   "verify [item]",
+		Short: "Verify that an item is installed, configured correctly and/or has network connectivity",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setVerifyOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
@@ -159,7 +159,7 @@ func newVerifyCmd() *verifyCmd {
 		RunE: func(_ *cobra.Command, args []string) error {
 			//TODO: Add your logic to gather config to pass code here
 			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("verify-opts")
-			if err := newVerify(root.opts, strings.ToLower(args[0])); err != nil {
+			if err := NewVerify(root.opts, strings.ToLower(args[0])); err != nil {
 				return err
 			}
 			return nil

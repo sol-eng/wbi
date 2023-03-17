@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // Detect which operating system WBI is running on
@@ -46,4 +47,14 @@ func DetectOS() (config.OperatingSystem, error) {
 	} else {
 		return config.Unknown, errors.New("unsupported operating system")
 	}
+}
+
+// Detect if gdebi-core is installed
+func DetectGdebiCore() (bool, error) {
+	stdout, _, _ := system.RunCommandAndCaptureOutput("dpkg -s gdebi-core | grep Status")
+
+	if strings.Contains(stdout, "install ok installed") {
+		return true, nil
+	}
+	return false, nil
 }

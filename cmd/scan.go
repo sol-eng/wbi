@@ -62,8 +62,8 @@ func newScanCmd() *scanCmd {
 	root := &scanCmd{opts: scanOpts}
 
 	cmd := &cobra.Command{
-		Use:   "scan",
-		Short: "scan",
+		Use:   "scan [lanaguage]",
+		Short: "Scan for installed versions of R or Python",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setScanOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {

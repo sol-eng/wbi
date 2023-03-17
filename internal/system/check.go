@@ -17,7 +17,7 @@ func CheckStringExists(text string, filepath string) (bool, error) {
 			return true, nil
 		}
 	} else {
-		return false, errors.New("failed to check if file exists")
+		return false, nil
 	}
 	return false, nil
 }

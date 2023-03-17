@@ -13,7 +13,7 @@ type RepoInformation []struct {
 	Name string `json:"name"`
 }
 
-func cleanPackageManagerURL(packageManagerURL string) string {
+func CleanPackageManagerURL(packageManagerURL string) string {
 	// remove trailing slash if present
 	if packageManagerURL[len(packageManagerURL)-1] == '/' {
 		packageManagerURL = packageManagerURL[:len(packageManagerURL)-1]
@@ -22,7 +22,7 @@ func cleanPackageManagerURL(packageManagerURL string) string {
 }
 
 func VerifyPackageManagerURL(packageManagerURL string) (string, error) {
-	cleanPackageManagerURL := cleanPackageManagerURL(packageManagerURL)
+	cleanPackageManagerURL := CleanPackageManagerURL(packageManagerURL)
 	fullTestURL := cleanPackageManagerURL + "/__ping__"
 
 	client := &http.Client{

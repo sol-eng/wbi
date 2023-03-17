@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func cleanConnectURL(connectURL string) string {
+func CleanConnectURL(connectURL string) string {
 	// remove trailing slash if present
 	if connectURL[len(connectURL)-1] == '/' {
 		connectURL = connectURL[:len(connectURL)-1]
@@ -19,7 +19,7 @@ func cleanConnectURL(connectURL string) string {
 // VerifyConnectURL checks if the Connect URL is valid
 func VerifyConnectURL(connectURL string) (string, error) {
 
-	cleanConnectURL := cleanConnectURL(connectURL)
+	cleanConnectURL := CleanConnectURL(connectURL)
 	fullTestURL := cleanConnectURL + "/__ping__"
 
 	client := &http.Client{

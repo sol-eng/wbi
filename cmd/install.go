@@ -27,7 +27,7 @@ type installOpts struct {
 	addToPATH bool
 }
 
-func newInstall(installOpts installOpts, program string) error {
+func NewInstall(installOpts installOpts, program string) error {
 	// Determine OS
 	osType, err := os.DetectOS()
 	if err != nil {
@@ -206,8 +206,8 @@ func newInstallCmd() *installCmd {
 	root := &installCmd{opts: installOpts}
 
 	cmd := &cobra.Command{
-		Use:   "install",
-		Short: "install",
+		Use:   "install [program]",
+		Short: "Install R, Python, Workbench, Pro Drivers, or Jupyter",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setInstallOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
@@ -218,7 +218,7 @@ func newInstallCmd() *installCmd {
 		RunE: func(_ *cobra.Command, args []string) error {
 			//TODO: Add your logic to gather config to pass code here
 			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("install-opts")
-			if err := newInstall(root.opts, strings.ToLower(args[0])); err != nil {
+			if err := NewInstall(root.opts, strings.ToLower(args[0])); err != nil {
 				return err
 			}
 			return nil
