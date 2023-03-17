@@ -1,9 +1,10 @@
-package os
+package operatingsystem
 
 import (
 	"fmt"
-	"github.com/sol-eng/wbi/internal/config"
 	"strings"
+
+	"github.com/sol-eng/wbi/internal/config"
 
 	"github.com/sol-eng/wbi/internal/system"
 )
