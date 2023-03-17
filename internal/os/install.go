@@ -3,6 +3,7 @@ package os
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
@@ -128,11 +129,57 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("issue retrieving EPEL install command: %w", err)
 	}
-	err = system.RunCommand(EPELCommand)
+	commandOutput, err := system.RunCommandAndCaptureOutput(EPELCommand)
+	if err != nil {
+		if strings.Contains(commandOutput, "does not update installed package") && osType == config.Redhat7 {
+			fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository was already enabled.\n")
+			return nil
+		}
+		return fmt.Errorf("issue enabling EPEL repo: %w", err)
+	}
 	if err != nil {
 		return fmt.Errorf("issue enabling EPEL repo: %w", err)
 	}
 
 	fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository has been successfully enabled!\n")
+	return nil
+}
+
+// Disable local firewall on server
+func DisableFirewall(osType config.OperatingSystem) error {
+	var FWCommand string
+
+	switch osType {
+	case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
+		FWCommand = "ufw disable"
+	case config.Redhat7, config.Redhat8:
+		FWCommand = "systemctl stop firewalld && systemctl disable firewalld"
+	default:
+		return errors.New("Unsupported OS, setting FWCommand failed")
+	}
+	err := system.RunCommand(FWCommand)
+	if err != nil {
+		return fmt.Errorf("issue disabling system firewall: %w", err)
+	}
+
+	fmt.Println("\nThe system firewall has been successfully disabled!\n")
+	return nil
+}
+
+func DisableLinuxSecurity() error {
+
+	setenforceCommand := "setenforce 0"
+	err := system.RunCommand(setenforceCommand)
+	if err != nil {
+		return fmt.Errorf("issue stopping selinux enforcement via setenforce: %w", err)
+	}
+
+	disableSELinuxCommand := "sed -i s/^SELINUX=.*$/SELINUX=disabled/ /etc/selinux/config"
+	err = system.RunCommand(disableSELinuxCommand)
+	if err != nil {
+		return fmt.Errorf("issue disabling selinux: %w", err)
+	}
+
+	fmt.Println("\nThe SELinux has been successfully changed to permissive mode, and will be disabled on next reboot!\n")
 	return nil
 }
