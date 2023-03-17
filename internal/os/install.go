@@ -135,6 +135,7 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 			fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository was already enabled.\n")
 			return nil
 		}
+		return fmt.Errorf("issue enabling EPEL repo: %w", err)
 	}
 	if err != nil {
 		return fmt.Errorf("issue enabling EPEL repo: %w", err)
