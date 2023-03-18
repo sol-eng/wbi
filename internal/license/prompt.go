@@ -32,3 +32,29 @@ func PromptLicense() (string, error) {
 	}
 	return target, nil
 }
+
+func CheckPromptAndActivateLicense() error {
+	licenseActivationStatus, err := CheckLicenseActivation()
+	if err != nil {
+		return fmt.Errorf("issue in checking for license activation: %w", err)
+	}
+
+	if !licenseActivationStatus {
+		licenseChoice, err := PromptLicenseChoice()
+		if err != nil {
+			return fmt.Errorf("issue in prompt for license activate choice: %w", err)
+		}
+
+		if licenseChoice {
+			licenseKey, err := PromptLicense()
+			if err != nil {
+				return fmt.Errorf("issue entering license key: %w", err)
+			}
+			ActivateErr := ActivateLicenseKey(licenseKey)
+			if ActivateErr != nil {
+				return fmt.Errorf("issue activating license key: %w", ActivateErr)
+			}
+		}
+	}
+	return nil
+}

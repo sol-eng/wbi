@@ -18,3 +18,20 @@ func ActivateLicenseKey(licenseKey string) error {
 	fmt.Println("\nWorkbench has been successfully activated")
 	return nil
 }
+
+// Check if Workbench is activated and if not perform the activation
+func DetectAndActivateLicense(licenseKey string) error {
+	licenseActivationStatus, err := CheckLicenseActivation()
+	if err != nil {
+		return fmt.Errorf("issue in checking for license activation: %w", err)
+	}
+	if !licenseActivationStatus {
+		err := ActivateLicenseKey(licenseKey)
+		if err != nil {
+			return fmt.Errorf("issue activating license: %w", err)
+		}
+	} else {
+		return fmt.Errorf("license is already activated")
+	}
+	return nil
+}

@@ -18,3 +18,15 @@ func WorkbenchInstallPrompt() (bool, error) {
 	}
 	return name, nil
 }
+
+func PromptInstallVerify() (bool, error) {
+	name := false
+	prompt := &survey.Confirm{
+		Message: "Would you like to verify the installation of Workbench?",
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with verify Workbench install prompt")
+	}
+	return name, nil
+}
