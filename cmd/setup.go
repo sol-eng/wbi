@@ -103,118 +103,40 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// R
-	WBConfig.RConfig.Paths, err = languages.ScanAndHandleRVersions(osType)
+	err = languages.ScanAndHandleRVersions(osType)
 	if err != nil {
-		return fmt.Errorf("issue finding R locations: %w", err)
+		return fmt.Errorf("issue scanning, prompting or installing R: %w", err)
 	}
-	// remove any path that starts with /usr and only offer symlinks for those that don't (i.e. /opt directories)
-	rPathsFiltered := languages.RemoveSystemRPaths(WBConfig.RConfig.Paths)
-	// check if R and Rscript has already been symlinked
-	rSymlinked := languages.CheckIfRSymlinkExists()
-	rScriptSymlinked := languages.CheckIfRscriptSymlinkExists()
-	if (len(rPathsFiltered) > 0) && !rSymlinked && !rScriptSymlinked {
-		err = languages.PromptAndSetRSymlinks(rPathsFiltered)
-		if err != nil {
-			return fmt.Errorf("issue setting R symlinks: %w", err)
-		}
-	}
+	// Python
 	if lo.Contains(selectedLanguages, "python") {
-		WBConfig.PythonConfig.Paths, err = languages.ScanAndHandlePythonVersions(osType)
+		err := languages.ScanAndHandlePythonVersions(osType)
 		if err != nil {
-			return fmt.Errorf("issue finding Python locations: %w", err)
-		}
-		err = languages.PromptAndSetPythonPATH(WBConfig.PythonConfig.Paths)
-		if err != nil {
-			return fmt.Errorf("issue setting Python PATH: %w", err)
+			return fmt.Errorf("issue scanning, prompting or installing Python: %w", err)
 		}
 	}
 
-	workbenchInstalled := workbench.VerifyWorkbench()
-	// If Workbench is not detected then prompt to install
-	if !workbenchInstalled {
-		installWorkbenchChoice, err := workbench.WorkbenchInstallPrompt()
-		if err != nil {
-			return fmt.Errorf("issue selecting Workbench installation: %w", err)
-		}
-		if installWorkbenchChoice {
-			err := workbench.DownloadAndInstallWorkbench(osType)
-			if err != nil {
-				return fmt.Errorf("issue installing Workbench: %w", err)
-			}
-		} else {
-			log.Fatal("Workbench installation is required to continue")
-		}
+	// Workbench
+	err = workbench.CheckPromptDownloadAndInstallWorkbench(osType)
+	if err != nil {
+		return fmt.Errorf("issue checking, prompting, downloading or installing Workbench: %w", err)
 	}
 
 	// Licensing
-	licenseActivationStatus, err := license.CheckLicenseActivation()
+	err = license.CheckPromptAndActivateLicense()
 	if err != nil {
-		return fmt.Errorf("issue in checking for license activation: %w", err)
-	}
-
-	if !licenseActivationStatus {
-		licenseChoice, err := license.PromptLicenseChoice()
-		if err != nil {
-			return fmt.Errorf("issue in prompt for license activate choice: %w", err)
-		}
-
-		if licenseChoice {
-			licenseKey, err := license.PromptLicense()
-			if err != nil {
-				return fmt.Errorf("issue entering license key: %w", err)
-			}
-			ActivateErr := license.ActivateLicenseKey(licenseKey)
-			if ActivateErr != nil {
-				return fmt.Errorf("issue activating license key: %w", ActivateErr)
-			}
-		}
+		return fmt.Errorf("issue checking, prompting or activating license: %w", err)
 	}
 
 	// Jupyter
-	if len(WBConfig.PythonConfig.Paths) > 0 {
-		jupyterChoice, err := jupyter.InstallPrompt()
-		if err != nil {
-			return fmt.Errorf("issue selecting Jupyter: %w", err)
-		}
-
-		if jupyterChoice {
-			jupyterPythonTarget, err := jupyter.KernelPrompt(&WBConfig.PythonConfig)
-			if err != nil {
-				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
-			}
-			// the path to jupyter must be set in the config, not python
-			pythonSubPath, err := languages.RemovePythonFromPath(jupyterPythonTarget)
-			if err != nil {
-				return fmt.Errorf("issue removing Python from path: %w", err)
-			}
-			jupyterPath := pythonSubPath + "/jupyter"
-			WBConfig.PythonConfig.JupyterPath = jupyterPath
-
-			if jupyterPythonTarget != "" {
-				err := jupyter.InstallJupyter(jupyterPythonTarget)
-				if err != nil {
-					return fmt.Errorf("issue installing Jupyter: %w", err)
-				}
-			}
-		}
+	err = jupyter.ScanPromptInstallAndConfigJupyter()
+	if err != nil {
+		return fmt.Errorf("issue scanning, prompting, installing or configuring Jupyter: %w", err)
 	}
 
 	// Pro Drivers
-	proDriversExistingStatus, err := prodrivers.CheckExistingProDrivers()
+	err = prodrivers.CheckPromptDownloadAndInstallProDrivers(osType)
 	if err != nil {
-		return fmt.Errorf("issue in checking for prior pro driver installation: %w", err)
-	}
-	if !proDriversExistingStatus {
-		installProDriversChoice, err := prodrivers.ProDriversInstallPrompt()
-		if err != nil {
-			return fmt.Errorf("issue selecting Pro Drivers installation: %w", err)
-		}
-		if installProDriversChoice {
-			err := prodrivers.DownloadAndInstallProDrivers(osType)
-			if err != nil {
-				return fmt.Errorf("issue installing Pro Drivers: %w", err)
-			}
-		}
+		return fmt.Errorf("issue checking, prompting, downloading or installing Pro Drivers: %w", err)
 	}
 
 	// SSL

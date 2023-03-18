@@ -21,3 +21,12 @@ func CheckStringExists(text string, filepath string) (bool, error) {
 	}
 	return false, nil
 }
+
+func VerifyFileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return true
+}

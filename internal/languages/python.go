@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
 	"github.com/sol-eng/wbi/internal/system"
@@ -118,28 +119,32 @@ func isPythonDir(path string) (string, bool) {
 	return pythonPath, false
 }
 
-// PromptAndSetPythonPATH prompts user to set Python PATH
-func PromptAndSetPythonPATH(pythonPaths []string) error {
-	setPathPythonChoice, err := PythonPATHPrompt()
-	if err != nil {
-		return fmt.Errorf("issue selecting adding Python to PATH: %w", err)
-	}
-	if setPathPythonChoice {
-		// Remove python/python3 from each path so other binaries will be available in path such as pip, jupyter, etc.
-		pythonPathsBin, err := RemovePythonFromPathSlice(pythonPaths)
+// CheckPromptAndSetPythonPATH prompts user to set Python PATH
+func CheckPromptAndSetPythonPATH(pythonPaths []string) error {
+	// check if a wbi_python.sh file exists already and skip asking if it does
+	pythonPathSet := CheckIfPythonProfileDExists()
+	if !pythonPathSet {
+		setPathPythonChoice, err := PythonPATHPrompt()
 		if err != nil {
-			return fmt.Errorf("issue removing python from slice of locations: %w", err)
+			return fmt.Errorf("issue selecting adding Python to PATH: %w", err)
 		}
-		pythonPathChoice, err := PythonLocationPATHPrompt(pythonPathsBin)
-		if err != nil {
-			return fmt.Errorf("issue selecting Python binary to add to PATH: %w", err)
-		}
-		err = system.AddToPATH(pythonPathChoice, "python")
-		if err != nil {
-			return fmt.Errorf("issue adding Python binary to PATH: %w", err)
-		}
+		if setPathPythonChoice {
+			// Remove python/python3 from each path so other binaries will be available in path such as pip, jupyter, etc.
+			pythonPathsBin, err := RemovePythonFromPathSlice(pythonPaths)
+			if err != nil {
+				return fmt.Errorf("issue removing python from slice of locations: %w", err)
+			}
+			pythonPathChoice, err := PythonLocationPATHPrompt(pythonPathsBin)
+			if err != nil {
+				return fmt.Errorf("issue selecting Python binary to add to PATH: %w", err)
+			}
+			err = system.AddToPATH(pythonPathChoice, "python")
+			if err != nil {
+				return fmt.Errorf("issue adding Python binary to PATH: %w", err)
+			}
 
-		fmt.Println("\nThe selected Python directory  " + pythonPathChoice + " has been successfully added to PATH in the /etc/profile.d/wbi_python.sh file.\n")
+			fmt.Println("\nThe selected Python directory  " + pythonPathChoice + " has been successfully added to PATH in the /etc/profile.d/wbi_python.sh file.\n")
+		}
 	}
 	return nil
 }
@@ -189,10 +194,10 @@ func PromptAndInstallPython(osType config.OperatingSystem) ([]string, error) {
 }
 
 // ScanAndHandlePythonVersions scans for Python versions, handles result/errors and creates PythonConfig
-func ScanAndHandlePythonVersions(osType config.OperatingSystem) ([]string, error) {
+func ScanAndHandlePythonVersions(osType config.OperatingSystem) error {
 	pythonVersionsOrig, err := ScanForPythonVersions()
 	if err != nil {
-		return []string{}, fmt.Errorf("issue occured in scanning for Python versions: %w", err)
+		return fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 	}
 
 	fmt.Println("\nFound Python versions: ", strings.Join(pythonVersionsOrig, ", "), "\n")
@@ -203,10 +208,10 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) ([]string, error
 
 		installedPythonVersion, err := PromptAndInstallPython(osType)
 		if err != nil {
-			return []string{}, fmt.Errorf("issue installing Python: %w", err)
+			return fmt.Errorf("issue installing Python: %w", err)
 		}
 		if len(installedPythonVersion) == 0 {
-			return []string{}, errors.New("no Python versions have been installed")
+			return errors.New("no Python versions have been installed")
 		}
 	} else {
 		anyOptLocations := []string{}
@@ -221,17 +226,22 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) ([]string, error
 		}
 		_, err := PromptAndInstallPython(osType)
 		if err != nil {
-			return []string{}, fmt.Errorf("issue installing Python: %w", err)
+			return fmt.Errorf("issue installing Python: %w", err)
 		}
 	}
 
 	pythonVersions, err := ScanForPythonVersions()
 	if err != nil {
-		return []string{}, fmt.Errorf("issue occured in scanning for Python versions: %w", err)
+		return fmt.Errorf("issue occured in scanning for Python versions: %w", err)
+	}
+
+	err = CheckPromptAndSetPythonPATH(pythonVersions)
+	if err != nil {
+		return fmt.Errorf("issue setting Python PATH: %w", err)
 	}
 
 	fmt.Println("\nFound Python versions: ", strings.Join(pythonVersions, ", "))
-	return pythonVersions, nil
+	return nil
 }
 
 // ScanForPythonVersions scans for Python versions in locations workbench will also look
@@ -390,4 +400,27 @@ func RemovePythonFromPathSlice(pythonPaths []string) ([]string, error) {
 		newPythonPaths = append(newPythonPaths, newPythonPath)
 	}
 	return newPythonPaths, nil
+}
+
+func ValidatePythonVersions(pythonVersions []string) error {
+	availablePythonVersions, err := RetrieveValidPythonVersions()
+	if err != nil {
+		return fmt.Errorf("error retrieving valid R versions: %w", err)
+	}
+	for _, pythonVersion := range pythonVersions {
+		if !lo.Contains(availablePythonVersions, pythonVersion) {
+			return errors.New("version " + pythonVersion + " is not a valid Python version")
+		}
+	}
+	return nil
+}
+
+func CheckIfPythonProfileDExists() bool {
+	_, err := os.Stat("/etc/profile.d/wbi_python.sh")
+	if err != nil {
+		return false
+	}
+
+	fmt.Println("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.\n")
+	return true
 }

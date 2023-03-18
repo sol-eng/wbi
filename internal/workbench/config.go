@@ -229,3 +229,20 @@ func WriteOIDCAuthConfig(idpURL string, usernameClaim string, clientID string, c
 
 	return nil
 }
+
+// WriteJupyterConfig writes the Jupyter config to the Workbench config file
+func WriteJupyterConfig(jupyterPath string) error {
+	// TODO check to ensure line doesn't already exist and ideally take out the default commented out line to reduce confusion
+	writeLines := []string{
+		"jupyter-exe=" + jupyterPath,
+	}
+	filepath := "/etc/rstudio/jupyter.conf"
+
+	fmt.Println("\n=== Writing to the file " + filepath + ":")
+	err := system.WriteStrings(writeLines, filepath, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write config: %w", err)
+	}
+
+	return nil
+}
