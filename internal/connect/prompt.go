@@ -20,6 +20,19 @@ func PromptConnectChoice() (bool, error) {
 	return name, nil
 }
 
+func PromptVerifyAndConfigConnect() error {
+	rawConnectURL, err := PromptConnectURL()
+	if err != nil {
+		return fmt.Errorf("issue entering Connect URL: %w", err)
+	}
+	_, err = VerifyConnectURL(rawConnectURL)
+	if err != nil {
+		return fmt.Errorf("issue with checking the Connect URL: %w", err)
+	}
+	// TODO add config
+	return nil
+}
+
 // Prompt users for a default Connect URL
 func PromptConnectURL() (string, error) {
 	target := ""

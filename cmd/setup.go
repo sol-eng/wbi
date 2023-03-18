@@ -258,63 +258,37 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// Package Manager URL
-	WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPackageManagerChoice()
+	packageManagerChoice, err := packagemanager.PromptPackageManagerChoice()
 	if err != nil {
 		return fmt.Errorf("issue in prompt for Posit Package Manager choice: %w", err)
 	}
-	if WBConfig.PackageManagerConfig.Using {
-		// prompt for base URL
-		rawPackageManagerURL, err := packagemanager.PromptPackageManagerURL()
+	if packageManagerChoice {
+		err = packagemanager.InteractivePackageManagerPrompts(osType)
 		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
-		}
-		// verify URL is valid first
-		cleanPackageManagerURL, err := packagemanager.VerifyPackageManagerURL(rawPackageManagerURL, false)
-		if err != nil {
-			return fmt.Errorf("issue with reaching the Posit Package Manager URL: %w", err)
-		}
-		// R repo
-		WBConfig.PackageManagerConfig.RURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "r")
-		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager R repo and building URL: %w", err)
-		}
-		// Python repo
-		WBConfig.PackageManagerConfig.PythonURL, err = packagemanager.PromptPackageManagerNameAndBuildURL(cleanPackageManagerURL, osType, "python")
-		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager Python repo and building URL: %w", err)
+			return fmt.Errorf("issue in interactive Posit Package Manager repo verification steps: %w", err)
 		}
 	} else {
-		WBConfig.PackageManagerConfig.Using, err = packagemanager.PromptPublicPackageManagerChoice()
+		publicPackageManagerChoice, err := packagemanager.PromptPublicPackageManagerChoice()
 		if err != nil {
 			return fmt.Errorf("issue in prompt for Posit Public Package Manager choice: %w", err)
 		}
-		if WBConfig.PackageManagerConfig.Using {
-			// validate the public package manager URL can be reached
-			_, err := packagemanager.VerifyPackageManagerURL("https://packagemanager.rstudio.com", true)
+		if publicPackageManagerChoice {
+			err = packagemanager.VerifyAndBuildPublicPackageManager(osType)
 			if err != nil {
-				return fmt.Errorf("issue with reaching the Posit Public Package Manager URL: %w", err)
-			}
-
-			WBConfig.PackageManagerConfig.RURL, err = packagemanager.BuildPublicPackageManagerFullURL(osType)
-			if err != nil {
-				return fmt.Errorf("issue with creating the full Posit Public Package Manager URL: %w", err)
+				return fmt.Errorf("issue in verifying and building Public Posit Package Manager URL and repo: %w", err)
 			}
 		}
 	}
 
 	// Connect URL
-	WBConfig.ConnectConfig.Using, err = connect.PromptConnectChoice()
+	connectChoice, err := connect.PromptConnectChoice()
 	if err != nil {
 		return fmt.Errorf("issue in prompt for Connect URL choice: %w", err)
 	}
-	if WBConfig.ConnectConfig.Using {
-		rawConnectURL, err := connect.PromptConnectURL()
+	if connectChoice {
+		err = connect.PromptVerifyAndConfigConnect()
 		if err != nil {
-			return fmt.Errorf("issue entering Connect URL: %w", err)
-		}
-		WBConfig.ConnectConfig.URL, err = connect.VerifyConnectURL(rawConnectURL)
-		if err != nil {
-			return fmt.Errorf("issue with checking the Connect URL: %w", err)
+			return fmt.Errorf("issue in prompting, verifying and saving Connect URL: %w", err)
 		}
 	}
 

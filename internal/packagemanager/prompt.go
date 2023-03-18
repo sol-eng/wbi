@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 )
 
@@ -20,6 +21,87 @@ func PromptPackageManagerChoice() (bool, error) {
 		return false, errors.New("there was an issue with the Posit Package Manager choice prompt")
 	}
 	return name, nil
+}
+
+func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
+	// prompt for which languages to setup
+	languageChoices, err := PromptLanguageRepos()
+	if err != nil {
+		return fmt.Errorf("issue in prompt for Posit Package Manager language choices: %w", err)
+	}
+
+	// prompt for base URL
+	rawPackageManagerURL, err := PromptPackageManagerURL()
+	if err != nil {
+		return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
+	}
+
+	// verify URL
+	cleanURL, err := VerifyPackageManagerURL(rawPackageManagerURL)
+	if err != nil {
+		return fmt.Errorf("issue verifying Posit Package Manager URL: %w", err)
+	}
+
+	// r repo
+	if lo.Contains(languageChoices, "r") {
+		repoPackageManager, err := PromptPackageManagerRepo("r")
+		if err != nil {
+			return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+		}
+
+		err = VerifyPackageManagerRepo(cleanURL, repoPackageManager, "r")
+		if err != nil {
+			return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
+		}
+
+		_, err = BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "r")
+		if err != nil {
+			return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
+		}
+		// TODO add config here
+	}
+
+	// python repo
+	if lo.Contains(languageChoices, "python") {
+		repoPackageManager, err := PromptPackageManagerRepo("python")
+		if err != nil {
+			return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+		}
+
+		err = VerifyPackageManagerRepo(cleanURL, repoPackageManager, "python")
+		if err != nil {
+			return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
+		}
+
+		_, err = BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "python")
+		if err != nil {
+			return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
+		}
+		// TODO add config here
+	}
+	return nil
+}
+
+func VerifyAndBuildPublicPackageManager(osType config.OperatingSystem) error {
+	publicPackageManagerURL := "https://packagemanager.posit.co"
+
+	// verify URL
+	_, err := VerifyPackageManagerURL(publicPackageManagerURL)
+	if err != nil {
+		return fmt.Errorf("issue verifying Posit Package Manager URL: %w", err)
+	}
+
+	err = VerifyPackageManagerRepo(publicPackageManagerURL, "cran", "r")
+	if err != nil {
+		return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
+	}
+
+	_, err = BuildPackagemanagerFullURL(publicPackageManagerURL, "cran", osType, "r")
+	if err != nil {
+		return fmt.Errorf("issue building Posit Public Package Manager URL: %w", err)
+	}
+	// TODO add config here
+	return nil
 }
 
 // Prompt users for a default Posit Package Manager URL
@@ -89,4 +171,27 @@ func PromptPackageManagerNameAndBuildURL(cleanURL string, osType config.Operatin
 		return "", fmt.Errorf("issue with creating the full Posit Package Manager URL: %w", err)
 	}
 	return fullRepoURL, nil
+}
+
+// Prompt asking users which language repos they will use
+func PromptLanguageRepos() ([]string, error) {
+	var qs = []*survey.Question{
+		{
+			Name: "languages",
+			Prompt: &survey.MultiSelect{
+				Message: "What language repositories would you like to setup?",
+				Options: []string{"r", "python"},
+				Default: []string{"r", "python"},
+			},
+		},
+	}
+	languageAnswers := struct {
+		Languages []string `survey:"languages"`
+	}{}
+	err := survey.Ask(qs, &languageAnswers)
+	if err != nil {
+		return []string{}, errors.New("there was an issue with the repo languages prompt")
+	}
+
+	return languageAnswers.Languages, nil
 }

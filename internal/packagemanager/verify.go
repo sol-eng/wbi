@@ -21,7 +21,7 @@ func cleanPackageManagerURL(packageManagerURL string) string {
 	return packageManagerURL
 }
 
-func VerifyPackageManagerURL(packageManagerURL string, public bool) (string, error) {
+func VerifyPackageManagerURL(packageManagerURL string) (string, error) {
 	cleanPackageManagerURL := cleanPackageManagerURL(packageManagerURL)
 	fullTestURL := cleanPackageManagerURL + "/__ping__"
 
@@ -42,11 +42,7 @@ func VerifyPackageManagerURL(packageManagerURL string, public bool) (string, err
 		return "", errors.New("error in HTTP status code")
 	}
 
-	if public {
-		fmt.Println("\nPosit Public Package Manager URL has been successfull validated.\n")
-	} else {
-		fmt.Println("\nPosit Package Manager URL has been successfull validated.\n")
-	}
+	fmt.Println("\nPosit Package Manager URL has been successfull validated.\n")
 
 	return cleanPackageManagerURL, nil
 }
