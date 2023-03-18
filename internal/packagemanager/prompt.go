@@ -8,6 +8,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // Prompt users if they wish to add a default Posit Package Manager URL to Workbench
@@ -54,11 +55,14 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
 		}
 
-		_, err = BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "r")
+		packageManagerURLFull, err := BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "r")
 		if err != nil {
 			return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
 		}
-		// TODO add config here
+		err = workbench.WriteRepoConfig(packageManagerURLFull, "cran")
+		if err != nil {
+			return fmt.Errorf("failed to write CRAN repo config: %w", err)
+		}
 	}
 
 	// python repo
@@ -73,11 +77,14 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
 		}
 
-		_, err = BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "python")
+		packageManagerURLFull, err := BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "python")
 		if err != nil {
 			return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
 		}
-		// TODO add config here
+		err = workbench.WriteRepoConfig(packageManagerURLFull, "pypi")
+		if err != nil {
+			return fmt.Errorf("failed to write PyPI repo config: %w", err)
+		}
 	}
 	return nil
 }

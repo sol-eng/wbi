@@ -5,7 +5,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
-	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/connect"
 	"github.com/sol-eng/wbi/internal/jupyter"
 	"github.com/sol-eng/wbi/internal/languages"
@@ -29,8 +28,6 @@ type setupOpts struct {
 }
 
 func newSetup(setupOpts setupOpts) error {
-
-	var WBConfig config.WBConfig
 
 	fmt.Println("Welcome to the Workbench Installer!\n")
 
@@ -221,39 +218,26 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	// SSL
-	WBConfig.SSLConfig.Using, err = ssl.PromptSSL()
+	sslChoice, err := ssl.PromptSSL()
 	if err != nil {
 		return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 	}
-	if WBConfig.SSLConfig.Using {
-		WBConfig.SSLConfig.CertPath, err = ssl.PromptSSLFilePath()
+	if sslChoice {
+		err = ssl.PromptVerifyAndConfigSSL()
 		if err != nil {
-			return fmt.Errorf("issue with the provided SSL cert path: %w", err)
+			return fmt.Errorf("issue verifying and configuring SSL: %w", err)
 		}
-		WBConfig.SSLConfig.KeyPath, err = ssl.PromptSSLKeyFilePath()
-		if err != nil {
-			return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
-		}
-		verifySSLCert := ssl.VerifySSLCertAndKey(WBConfig.SSLConfig.CertPath, WBConfig.SSLConfig.KeyPath)
-		if verifySSLCert != nil {
-			return fmt.Errorf("could not verify the SSL cert: %w", err)
-		}
-		fmt.Println("SSL successfully setup and verified")
 	}
 
 	// Authentication
-	WBConfig.AuthConfig.Using, err = authentication.PromptAuth()
+	authChoice, err := authentication.PromptAuth()
 	if err != nil {
 		return fmt.Errorf("issue selecting if Authentication is to be setup: %w", err)
 	}
-	if WBConfig.AuthConfig.Using {
-		WBConfig.AuthConfig.AuthType, err = authentication.PromptAndConvertAuthType()
+	if authChoice {
+		err = authentication.PromptAndConfigAuth(osType)
 		if err != nil {
-			return fmt.Errorf("issue entering and converting AuthType: %w", err)
-		}
-		AuthErr := authentication.HandleAuthChoice(&WBConfig, osType)
-		if AuthErr != nil {
-			return fmt.Errorf("issue handling authentication: %w", AuthErr)
+			return fmt.Errorf("issue prompting and configuring Authentication: %w", err)
 		}
 	}
 
@@ -292,30 +276,11 @@ func newSetup(setupOpts setupOpts) error {
 		}
 	}
 
-	// Config
-	// first check if there are any config changes needed
-	configChangesNeeded := WBConfig.DetectConfigChange()
-	if configChangesNeeded {
-		// print out the changes needed
-		fmt.Println("\n=== The following configuration changes are needed:")
-		WBConfig.ConfigStructToText()
-		// ask the user if they want to write the config automatically
-		configWriteChoice, err := config.PromptWriteConfig()
-		if err != nil {
-			return fmt.Errorf("issue selecting if config changes are to be written: %w", err)
-		}
-		if configWriteChoice {
-			err := config.WriteConfig(WBConfig)
-			if err != nil {
-				return fmt.Errorf("issue writing config: %w", err)
-			}
-			err = workbench.RestartRStudioServerAndLauncher()
-			if err != nil {
-				return fmt.Errorf("issue restarting RStudio Server and Launcher: %w", err)
-			}
-		}
-	} else {
-		fmt.Println("\n=== No configuration changes are needed")
+	fmt.Println("\n Restarting RStudio Server and Launcher...")
+
+	err = workbench.RestartRStudioServerAndLauncher()
+	if err != nil {
+		return fmt.Errorf("issue restarting RStudio Server and Launcher: %w", err)
 	}
 
 	fmt.Println("\n Printing the status of RStudio Server and Launcher...")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // Prompt users if they wish to add a default Connect URL to Workbench
@@ -25,11 +26,14 @@ func PromptVerifyAndConfigConnect() error {
 	if err != nil {
 		return fmt.Errorf("issue entering Connect URL: %w", err)
 	}
-	_, err = VerifyConnectURL(rawConnectURL)
+	connectURLFull, err := VerifyConnectURL(rawConnectURL)
 	if err != nil {
 		return fmt.Errorf("issue with checking the Connect URL: %w", err)
 	}
-	// TODO add config
+	err = workbench.WriteConnectURLConfig(connectURLFull)
+	if err != nil {
+		return fmt.Errorf("failed to write Connect URL config: %w", err)
+	}
 	return nil
 }
 
