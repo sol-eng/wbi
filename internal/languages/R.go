@@ -84,7 +84,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
-	fmt.Println("\nFound R versions: ", strings.Join(rVersionsOrig, ", "))
+	fmt.Println("\nFound R versions:\n", strings.Join(rVersionsOrig, "\n"))
 
 	if len(rVersionsOrig) == 0 {
 		scanMessage := "no R versions found at locations: \n" + strings.Join(GetRRootDirs(), "\n")
@@ -113,7 +113,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 			return fmt.Errorf("issue installing R: %w", err)
 		}
 		if len(installedRVersion) > 0 {
-			fmt.Println("\nThe following R versions have been installed: ", strings.Join(installedRVersion, ", "))
+			fmt.Println("\nThe following R versions have been installed:\n", strings.Join(installedRVersion, "\n"))
 		}
 	}
 
@@ -127,7 +127,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue setting R symlinks: %w", err)
 	}
 
-	fmt.Println("\nFound R versions: ", strings.Join(rVersions, ", "))
+	fmt.Println("\nFound R versions: ", strings.Join(rVersions, "\n"))
 	return nil
 }
 
