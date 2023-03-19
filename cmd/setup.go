@@ -223,7 +223,7 @@ func newSetup(setupOpts setupOpts) error {
 		}
 	}
 
-	fmt.Println("\nThanks for using wbi! Please remember to make any needed manual configuration changes and restart RStudio Server and Launcher.")
+	fmt.Println("\nThanks for using wbi!")
 	return nil
 }
 
