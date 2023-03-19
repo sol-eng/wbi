@@ -2,41 +2,9 @@ package authentication
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/sol-eng/wbi/internal/config"
 )
-
-// Run functions and store values in the OIDCConfig
-func HandleOIDCConfig(OIDCConfig *config.OIDCConfig) error {
-	OIDCConfig.AuthOpenID = 1
-
-	ClientID, err := PromptOIDCClientID()
-	OIDCConfig.ClientID = ClientID
-	if err != nil {
-		return fmt.Errorf("PromptOIDCClientID: %w", err)
-	}
-
-	ClientSecret, err := PromptOIDCClientSecret()
-	OIDCConfig.ClientSecret = ClientSecret
-	if err != nil {
-		return fmt.Errorf("PromptOIDCClientSecret: %w", err)
-	}
-
-	AuthOpenIDIssuer, err := PromptOIDCIssuerURL()
-	OIDCConfig.AuthOpenIDIssuer = AuthOpenIDIssuer
-	if err != nil {
-		return fmt.Errorf("PromptOIDCIssuerURL: %w", err)
-	}
-
-	AuthOpenIDUsernameClaim, err := PromptOIDCUsernameClaim()
-	OIDCConfig.AuthOpenIDUsernameClaim = AuthOpenIDUsernameClaim
-	if err != nil {
-		return fmt.Errorf("PromptOIDCUsernameClaim: %w", err)
-	}
-	return nil
-}
 
 // Prompt asking users to provide a client-id for OIDC
 func PromptOIDCClientID() (string, error) {
