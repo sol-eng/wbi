@@ -5,6 +5,7 @@ import (
 
 	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/sol-eng/wbi/internal/system"
+	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // InstallJupyter installs jupypter pip stuff
@@ -59,5 +60,23 @@ func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 
 	// TODO add some proper tests to ensure Jupyter notebook extensions are working
 	fmt.Println("\nJupyter notebook extensions have been successfully installed and enabled!\n")
+	return nil
+}
+
+func InstallAndConfigJupyter(pythonPath string) error {
+	err := InstallJupyter(pythonPath)
+	if err != nil {
+		return fmt.Errorf("issue installing Jupyter: %w", err)
+	}
+	// the path to jupyter must be set in the config, not python
+	pythonSubPath, err := languages.RemovePythonFromPath(pythonPath)
+	if err != nil {
+		return fmt.Errorf("issue removing Python from path: %w", err)
+	}
+	jupyterPath := pythonSubPath + "/jupyter"
+	err = workbench.WriteJupyterConfig(jupyterPath)
+	if err != nil {
+		return fmt.Errorf("issue writing Jupyter config: %w", err)
+	}
 	return nil
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // Prompt asking users if they wish to setup Authentication
@@ -20,6 +21,18 @@ func PromptAuth() (bool, error) {
 		return false, errors.New("there was an issue with the Authentication prompt")
 	}
 	return name, nil
+}
+
+func PromptAndConfigAuth(osType config.OperatingSystem) error {
+	authType, err := PromptAndConvertAuthType()
+	if err != nil {
+		return fmt.Errorf("issue entering and converting AuthType: %w", err)
+	}
+	err = HandleAuthChoice(authType, osType)
+	if err != nil {
+		return fmt.Errorf("issue handling authentication: %w", err)
+	}
+	return nil
 }
 
 func PromptAndConvertAuthType() (config.AuthType, error) {
@@ -67,21 +80,37 @@ func ConvertAuthType(authChoice string) (config.AuthType, error) {
 }
 
 // Route an authentication choice to the proper prompts/information
-func HandleAuthChoice(WBConfig *config.WBConfig, targetOS config.OperatingSystem) error {
-	switch WBConfig.AuthConfig.AuthType {
+func HandleAuthChoice(authType config.AuthType, targetOS config.OperatingSystem) error {
+	switch authType {
 	case config.SAML:
-		err := HandleSAMLConfig(&WBConfig.AuthConfig.SAMLConfig)
+		idpURL, err := PromptSAMLMetadataURL()
 		if err != nil {
-			return fmt.Errorf("HandleSAMLConfig: %w", err)
+			return fmt.Errorf("issue entering SAML metadata URL: %w", err)
+		}
+		err = workbench.WriteSAMLAuthConfig(idpURL)
+		if err != nil {
+			return fmt.Errorf("failed to write SAML auth config: %w", err)
 		}
 
-		fmt.Println("Setting up SAML based authentication is a 2 step process. The configurations just entered will be setup on Workbench to complete step 1. \n\nTo complete step 2, you must configure your identify provider with Workbench following steps outlined here: https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html#step-2.-configure-your-identity-provider-with-workbench")
+		fmt.Println("Setting up SAML based authentication is a 2 step process. Step 1 was just completed by wbi writing the configuration file, however your SAML setup may require further configuration. \n\nTo complete step 2, you must configure your identify provider with Workbench following steps outlined here: https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html#step-2.-configure-your-identity-provider-with-workbench")
 	case config.OIDC:
-		fmt.Println("Setting up OpenID Connect based authentication is a 2 step process. First configure your OpenID provider with the steps outlined here to complete step 1: https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html#configuring-your-openid-provider \n\n As you register Workbench in the IdP, save the client-id and client-secret. Follow the next step of prompts to configure Workbench to complete step 2.")
+		fmt.Println("Setting up OpenID Connect based authentication is a 2 step process. First configure your OpenID provider with the steps outlined here to complete step 1: https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html#configuring-your-openid-provider \n\n As you register Workbench in the IdP, save the client-id and client-secret. Follow the next prompts to complete step 2.")
 
-		err := HandleOIDCConfig(&WBConfig.AuthConfig.OIDCConfig)
+		clientID, err := PromptOIDCClientID()
 		if err != nil {
-			return fmt.Errorf("HandleOIDCConfig: %w", err)
+			return fmt.Errorf("issue entering OIDC client ID: %w", err)
+		}
+		clientSecret, err := PromptOIDCClientSecret()
+		if err != nil {
+			return fmt.Errorf("issue entering OIDC client secret: %w", err)
+		}
+		idpURL, err := PromptOIDCIssuerURL()
+		if err != nil {
+			return fmt.Errorf("issue entering OIDC issuer URL: %w", err)
+		}
+		err = workbench.WriteOIDCAuthConfig(idpURL, "", clientID, clientSecret)
+		if err != nil {
+			return fmt.Errorf("failed to write OIDC auth config: %w", err)
 		}
 	case config.LDAP:
 		switch targetOS {

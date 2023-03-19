@@ -2,6 +2,7 @@ package ssl
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
 )
@@ -17,6 +18,23 @@ func PromptSSL() (bool, error) {
 		return false, errors.New("there was an issue with the SSL prompt")
 	}
 	return name, nil
+}
+
+func PromptVerifyAndConfigSSL() error {
+	certPath, err := PromptSSLFilePath()
+	if err != nil {
+		return fmt.Errorf("issue with the provided SSL cert path: %w", err)
+	}
+	keyPath, err := PromptSSLKeyFilePath()
+	if err != nil {
+		return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
+	}
+	verifySSLCert := VerifySSLCertAndKey(certPath, keyPath)
+	if verifySSLCert != nil {
+		return fmt.Errorf("could not verify the SSL cert: %w", err)
+	}
+	fmt.Println("SSL successfully setup and verified")
+	return nil
 }
 
 // Prompt asking users for a filepath to their SSL cert

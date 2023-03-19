@@ -148,3 +148,16 @@ func RetrieveWorkbenchInstallerInfo() (RStudio, error) {
 	}
 	return rstudio, nil
 }
+
+func CheckDownloadAndInstallWorkbench(osType config.OperatingSystem) error {
+	workbenchInstalled := VerifyWorkbench()
+	if !workbenchInstalled {
+		err := DownloadAndInstallWorkbench(osType)
+		if err != nil {
+			return fmt.Errorf("issue installing Workbench: %w", err)
+		}
+	} else {
+		return fmt.Errorf("workbench is already installed")
+	}
+	return nil
+}

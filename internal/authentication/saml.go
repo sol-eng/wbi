@@ -2,29 +2,9 @@ package authentication
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/sol-eng/wbi/internal/config"
 )
-
-// Run functions and store values in the SAMLConfig
-func HandleSAMLConfig(SAMLConfig *config.SAMLConfig) error {
-	SAMLConfig.AuthSAML = 1
-
-	AuthSamlSpAttributeUsername, err := PromptSAMLAttribute()
-	SAMLConfig.AuthSamlSpAttributeUsername = AuthSamlSpAttributeUsername
-	if err != nil {
-		return fmt.Errorf("PromptSAMLAttribute: %w", err)
-	}
-
-	AuthSamlMetadataURL, err := PromptSAMLMetadataURL()
-	SAMLConfig.AuthSamlMetadataURL = AuthSamlMetadataURL
-	if err != nil {
-		return fmt.Errorf("PromptSAMLMetadataURL: %w", err)
-	}
-	return nil
-}
 
 // Prompt asking users to provide a username attribute for SAML
 func PromptSAMLAttribute() (string, error) {

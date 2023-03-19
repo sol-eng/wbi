@@ -2,8 +2,11 @@ package workbench
 
 import (
 	"errors"
+	"fmt"
+	"log"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/sol-eng/wbi/internal/config"
 )
 
 // Prompt users if they would like to install Workbench
@@ -29,4 +32,23 @@ func PromptInstallVerify() (bool, error) {
 		return false, errors.New("there was an issue with verify Workbench install prompt")
 	}
 	return name, nil
+}
+
+func CheckPromptDownloadAndInstallWorkbench(osType config.OperatingSystem) error {
+	workbenchInstalled := VerifyWorkbench()
+	if !workbenchInstalled {
+		installWorkbenchChoice, err := WorkbenchInstallPrompt()
+		if err != nil {
+			return fmt.Errorf("issue selecting Workbench installation: %w", err)
+		}
+		if installWorkbenchChoice {
+			err := DownloadAndInstallWorkbench(osType)
+			if err != nil {
+				return fmt.Errorf("issue installing Workbench: %w", err)
+			}
+		} else {
+			log.Fatal("Workbench installation is required to continue")
+		}
+	}
+	return nil
 }

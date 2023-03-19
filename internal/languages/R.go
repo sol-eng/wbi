@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
 	"github.com/sol-eng/wbi/internal/system"
@@ -78,10 +79,10 @@ func PromptAndInstallR(osType config.OperatingSystem) ([]string, error) {
 }
 
 // ScanAndHandleRVersions scans for R versions, handles result/errors and creates RConfig
-func ScanAndHandleRVersions(osType config.OperatingSystem) ([]string, error) {
+func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 	rVersionsOrig, err := ScanForRVersions()
 	if err != nil {
-		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)
+		return fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
 	fmt.Println("\nFound R versions:\n", strings.Join(rVersionsOrig, "\n"))
 
@@ -91,7 +92,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) ([]string, error) {
 
 		installedRVersion, err := PromptAndInstallR(osType)
 		if err != nil {
-			return []string{}, fmt.Errorf("issue installing R: %w", err)
+			return fmt.Errorf("issue installing R: %w", err)
 		}
 		if len(installedRVersion) == 0 {
 			log.Fatal("R must be installed to continue. Please install R and try again.")
@@ -109,7 +110,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) ([]string, error) {
 		}
 		installedRVersion, err := PromptAndInstallR(osType)
 		if err != nil {
-			return []string{}, fmt.Errorf("issue installing R: %w", err)
+			return fmt.Errorf("issue installing R: %w", err)
 		}
 		if len(installedRVersion) > 0 {
 			fmt.Println("\nThe following R versions have been installed:\n", strings.Join(installedRVersion, "\n"))
@@ -118,11 +119,16 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) ([]string, error) {
 
 	rVersions, err := ScanForRVersions()
 	if err != nil {
-		return []string{}, fmt.Errorf("issue occured in scanning for R versions: %w", err)
+		return fmt.Errorf("issue occured in scanning for R versions: %w", err)
+	}
+
+	err = CheckPromtAndSetRSymlinks(rVersions)
+	if err != nil {
+		return fmt.Errorf("issue setting R symlinks: %w", err)
 	}
 
 	fmt.Println("\nFound R versions: ", strings.Join(rVersions, "\n"))
-	return rVersions, nil
+	return nil
 }
 
 // Append to a string slice only if the string is not yet in the slice
@@ -332,4 +338,47 @@ func CheckIfRscriptSymlinkExists() bool {
 
 	fmt.Println("\nAn existing Rscript symlink has been detected (/usr/local/bin/Rscript)")
 	return true
+}
+
+func CheckAndSetRSymlinks(rPath string) error {
+	// check if R and Rscript has already been symlinked
+	rSymlinked := CheckIfRSymlinkExists()
+	rScriptSymlinked := CheckIfRscriptSymlinkExists()
+	if !rSymlinked && !rScriptSymlinked {
+		err := SetRSymlinks(rPath)
+		if err != nil {
+			return fmt.Errorf("issue setting R symlinks: %w", err)
+		}
+	} else {
+		fmt.Println("R and Rscript symlinks already exist, skipping symlink creation")
+	}
+	return nil
+}
+
+func CheckPromtAndSetRSymlinks(rPaths []string) error {
+	// remove any path that starts with /usr and only offer symlinks for those that don't (i.e. /opt directories)
+	rPathsFiltered := RemoveSystemRPaths(rPaths)
+	// check if R and Rscript has already been symlinked
+	rSymlinked := CheckIfRSymlinkExists()
+	rScriptSymlinked := CheckIfRscriptSymlinkExists()
+	if (len(rPathsFiltered) > 0) && !rSymlinked && !rScriptSymlinked {
+		err := PromptAndSetRSymlinks(rPathsFiltered)
+		if err != nil {
+			return fmt.Errorf("issue setting R symlinks: %w", err)
+		}
+	}
+	return nil
+}
+
+func ValidateRVersions(rVersions []string) error {
+	availableRVersions, err := RetrieveValidRVersions()
+	if err != nil {
+		return fmt.Errorf("error retrieving valid R versions: %w", err)
+	}
+	for _, rVersion := range rVersions {
+		if !lo.Contains(availableRVersions, rVersion) {
+			return errors.New("version " + rVersion + " is not a valid R version")
+		}
+	}
+	return nil
 }
