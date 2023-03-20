@@ -335,7 +335,9 @@ func newSetupCmd() *setupCmd {
 		},
 	}
 
-	cmd.Flags().StringP("step", "s", "", "")
+	stepHelp := `The step to start at. Valid steps are: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, auth, packagemanager, connect, restart, status, verify.`
+
+	cmd.Flags().StringP("step", "s", "", stepHelp)
 	viper.BindPFlag("step", cmd.Flags().Lookup("step"))
 
 	root.cmd = cmd
