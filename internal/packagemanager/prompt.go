@@ -195,7 +195,7 @@ func PromptLanguageRepos() ([]string, error) {
 	languageAnswers := struct {
 		Languages []string `survey:"languages"`
 	}{}
-	err := survey.Ask(qs, &languageAnswers)
+	err := survey.Ask(qs, &languageAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the repo languages prompt")
 	}

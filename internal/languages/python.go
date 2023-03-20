@@ -325,7 +325,7 @@ func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, err
 	pythonVersionsAnswers := struct {
 		PythonVersions []string `survey:"pythonVersions"`
 	}{}
-	err := survey.Ask(qs, &pythonVersionsAnswers)
+	err := survey.Ask(qs, &pythonVersionsAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the Python versions selection prompt")
 	}

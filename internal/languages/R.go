@@ -210,7 +210,7 @@ func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	rVersionsAnswers := struct {
 		RVersions []string `survey:"rversions"`
 	}{}
-	err := survey.Ask(qs, &rVersionsAnswers)
+	err := survey.Ask(qs, &rVersionsAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the R versions selection prompt")
 	}
