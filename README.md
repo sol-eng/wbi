@@ -11,7 +11,7 @@ To get started run the setup command as root and follow the prompts:
 sudo ./wbi setup
 ```
 
-You can also pass the `--step` flag to begin at a certain spot in the interactive flow. For example to start at Workbench installation:
+You can also pass the `--step` flag to begin at a certain spot in the interactive flow. For example to start at the Workbench installation step:
 ```
 sudo ./wbi setup --step workbench
 ```
