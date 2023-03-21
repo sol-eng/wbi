@@ -116,7 +116,7 @@ func HandleAuthChoice(authType config.AuthType, targetOS config.OperatingSystem)
 		switch targetOS {
 		case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
 			fmt.Println("Posit Workbench connects to LDAP via PAM. Please follow this article for more details on configuration: \nhttps://support.posit.co/hc/en-us/articles/360024137174-Integrating-Ubuntu-with-Active-Directory-for-RStudio-Workbench-RStudio-Server-Pro")
-		case config.Redhat7, config.Redhat8:
+		case config.Redhat7, config.Redhat8, config.Redhat9:
 			fmt.Println("Posit Workbench connects to LDAP via PAM. Please follow this article for more details on configuration: \nhttps://support.posit.co/hc/en-us/articles/360016587973-Integrating-RStudio-Workbench-RStudio-Server-Pro-with-Active-Directory-using-CentOS-RHEL")
 		default:
 			log.Fatal("Unsupported operating system")
