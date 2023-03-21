@@ -24,10 +24,5 @@ jobs:
           cache: true
       - name: Build
         run: go build -v ./...
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@1.59.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
       # - name: Test
       #   run: go test -v ./...
