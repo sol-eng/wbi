@@ -181,31 +181,31 @@ func newConfigCmd() *configCmd {
 		},
 	}
 
-	cmd.Flags().StringP("cert-path", "c", "", "")
+	cmd.Flags().StringP("cert-path", "c", "", "TLS/SSL certificate path")
 	viper.BindPFlag("cert-path", cmd.Flags().Lookup("cert-path"))
 
-	cmd.Flags().StringP("key-path", "k", "", "")
+	cmd.Flags().StringP("key-path", "k", "", "TLS/SSL key path")
 	viper.BindPFlag("key-path", cmd.Flags().Lookup("key-path"))
 
-	cmd.Flags().StringP("url", "u", "", "")
+	cmd.Flags().StringP("url", "u", "", "Package Manager or Connect base URL")
 	viper.BindPFlag("url", cmd.Flags().Lookup("url"))
 
-	cmd.Flags().StringP("source", "s", "", "")
+	cmd.Flags().StringP("source", "s", "", "Repository source (cran or pypi)")
 	viper.BindPFlag("source", cmd.Flags().Lookup("source"))
 
-	cmd.Flags().StringP("auth-type", "a", "", "")
+	cmd.Flags().StringP("auth-type", "a", "", "Authentication type (saml or oidc)")
 	viper.BindPFlag("auth-type", cmd.Flags().Lookup("auth-type"))
 
 	cmd.Flags().StringP("idp-url", "i", "", "")
 	viper.BindPFlag("idp-url", cmd.Flags().Lookup("idp-url"))
 
-	cmd.Flags().StringP("username-claim", "", "", "")
+	cmd.Flags().StringP("username-claim", "", "", "IdP Metdata URL for SAML or OIDC")
 	viper.BindPFlag("username-claim", cmd.Flags().Lookup("username-claim"))
 
-	cmd.Flags().StringP("client-id", "", "", "")
+	cmd.Flags().StringP("client-id", "", "", "OIDC Client ID")
 	viper.BindPFlag("client-id", cmd.Flags().Lookup("client-id"))
 
-	cmd.Flags().StringP("client-secret", "", "", "")
+	cmd.Flags().StringP("client-secret", "", "", "OIDC Client Secret")
 	viper.BindPFlag("client-secret", cmd.Flags().Lookup("client-secret"))
 
 	root.cmd = cmd

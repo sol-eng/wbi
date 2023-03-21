@@ -166,19 +166,19 @@ func newVerifyCmd() *verifyCmd {
 		},
 	}
 
-	cmd.Flags().StringP("url", "u", "", "")
+	cmd.Flags().StringP("url", "u", "", "Package Manager or Connect base URL")
 	viper.BindPFlag("url", cmd.Flags().Lookup("url"))
 
-	cmd.Flags().StringP("repo", "r", "", "")
+	cmd.Flags().StringP("repo", "r", "", "Name of the Package Manager repository")
 	viper.BindPFlag("repo", cmd.Flags().Lookup("repo"))
 
-	cmd.Flags().StringP("language", "l", "", "")
+	cmd.Flags().StringP("language", "l", "", "The type of Package Manager repository, r or python")
 	viper.BindPFlag("language", cmd.Flags().Lookup("language"))
 
-	cmd.Flags().StringP("cert-path", "c", "", "")
+	cmd.Flags().StringP("cert-path", "c", "", "TLS/SSL certificate path")
 	viper.BindPFlag("cert-path", cmd.Flags().Lookup("cert-path"))
 
-	cmd.Flags().StringP("key-path", "k", "", "")
+	cmd.Flags().StringP("key-path", "k", "", "TLS/SSL key path")
 	viper.BindPFlag("key-path", cmd.Flags().Lookup("key-path"))
 
 	root.cmd = cmd

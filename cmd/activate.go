@@ -74,7 +74,7 @@ func newActivateCmd() *activateCmd {
 		},
 	}
 
-	cmd.Flags().StringP("key", "k", "", "")
+	cmd.Flags().StringP("key", "k", "", "License key to activate Workbench with")
 	viper.BindPFlag("key", cmd.Flags().Lookup("key"))
 
 	root.cmd = cmd

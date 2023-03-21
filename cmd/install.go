@@ -197,16 +197,16 @@ func newInstallCmd() *installCmd {
 		},
 	}
 
-	cmd.Flags().StringSliceP("version", "v", []string{}, "")
+	cmd.Flags().StringSliceP("version", "v", []string{}, "Version(s) of R or Python to install. Multiple values can be passed by seperating each version with a comma.")
 	viper.BindPFlag("version", cmd.Flags().Lookup("version"))
 
-	cmd.Flags().StringP("path", "p", "", "")
+	cmd.Flags().StringP("path", "p", "", "Python location to install Jupyter to.")
 	viper.BindPFlag("path", cmd.Flags().Lookup("path"))
 
-	cmd.Flags().BoolP("symlink", "s", false, "")
+	cmd.Flags().BoolP("symlink", "s", false, "Symlinks both R and Rscript for the first version of R specified to /usr/local/bin/.")
 	viper.BindPFlag("symlink", cmd.Flags().Lookup("symlink"))
 
-	cmd.Flags().BoolP("add-to-path", "a", false, "")
+	cmd.Flags().BoolP("add-to-path", "a", false, "Adds the first Python version specified to users PATH by adding a file in /etc/profile.d/.")
 	viper.BindPFlag("add-to-path", cmd.Flags().Lookup("add-to-path"))
 
 	root.cmd = cmd
