@@ -1,9 +1,11 @@
 name: Build, Test and Release
 
 on:
-  push:
-    tags:
-      - '*'
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -26,6 +28,12 @@ jobs:
         run: go build -v ./...
       # - name: Test
       #   run: go test -v ./...
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.59.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
 
   goreleaser:
     needs: code-check
@@ -45,5 +53,5 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.ACTIONS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
