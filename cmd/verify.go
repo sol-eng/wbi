@@ -148,7 +148,7 @@ func newVerifyCmd() *verifyCmd {
 
 	cmd := &cobra.Command{
 		Use:   "verify [item]",
-		Short: "Verify that an item is installed, configured correctly and/or has network connectivity",
+		Short: "Verify an item is installed, configured correctly and has network connectivity",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setVerifyOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {

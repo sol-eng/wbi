@@ -317,7 +317,7 @@ func newSetupCmd() *setupCmd {
 
 	cmd := &cobra.Command{
 		Use:   "setup",
-		Short: "setup",
+		Short: "Launch an interactive setup process for Workbench",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setSetupOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
