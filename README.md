@@ -11,6 +11,13 @@ To get started run the setup command as root and follow the prompts:
 sudo ./wbi setup
 ```
 
+You can also pass the `--step` flag to begin at a certain spot in the interactive flow. For example to start at Workbench installation:
+```
+sudo ./wbi setup --step workbench
+```
+
+The following steps are valid options: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, auth, packagemanager, connect, restart, status, verify.
+
 ## Assumptions
 - Single server
 - SQLite database
