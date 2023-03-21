@@ -4,6 +4,8 @@
 
 wbi is a CLI tool aimed at streamlining the installation and configuration of Posit Workbench. Please read through the assumptions below to ensure that your target architecture matches the current capabilities of wbi. Also note wbi requires to be run as root.
 
+### Interactive Setup
+
 To get started run the setup command as root and follow the prompts:
 ```
 sudo ./wbi setup
