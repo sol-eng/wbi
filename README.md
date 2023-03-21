@@ -23,6 +23,14 @@ The following steps are valid options: start, prereqs, firewall, security, langu
 - SQLite database
 - Internet access (online installation)
 
+## Supported Operating Systems
+- RHEL 9
+- RHEL 8
+- RHEL 7/CentOS 7
+- Ubuntu 22.04
+- Ubuntu 20.04
+- Ubuntu 18.04
+
 ## Functionality
 
 ### R and Python installations
