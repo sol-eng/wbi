@@ -27,6 +27,7 @@ type OperatingSystems struct {
 	Jammy   InstallerInfo `json:"jammy"`
 	Redhat7 InstallerInfo `json:"redhat7_64"`
 	Redhat8 InstallerInfo `json:"rhel8"`
+	Redhat9 InstallerInfo `json:"rhel9"`
 }
 
 // Installer contains the installer information for a product
@@ -100,7 +101,7 @@ func RetrieveInstallCommandForWorkbench(filepath string, osType config.Operating
 	switch osType {
 	case config.Ubuntu22, config.Ubuntu20, config.Ubuntu18:
 		return "gdebi -n " + filepath, nil
-	case config.Redhat7, config.Redhat8:
+	case config.Redhat7, config.Redhat8, config.Redhat9:
 		return "yum install -y " + filepath, nil
 	default:
 		return "", errors.New("operating system not supported")
@@ -118,6 +119,8 @@ func (r *RStudio) GetInstallerInfo(osType config.OperatingSystem) (InstallerInfo
 		return r.Rstudio.Pro.Stable.Server.Installer.Redhat7, nil
 	case config.Redhat8:
 		return r.Rstudio.Pro.Stable.Server.Installer.Redhat8, nil
+	case config.Redhat9:
+		return r.Rstudio.Pro.Stable.Server.Installer.Redhat9, nil
 	default:
 		return InstallerInfo{}, errors.New("operating system not supported")
 	}
