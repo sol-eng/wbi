@@ -36,7 +36,7 @@ func FirewallPrompt() (bool, error) {
 
 func LinuxSecurityPrompt(osType config.OperatingSystem) (bool, error) {
 	name := false
-	if osType == config.Redhat7 || osType == config.Redhat8 {
+	if osType == config.Redhat7 || osType == config.Redhat8 || osType == config.Redhat9 {
 		name = true
 		prompt := &survey.Confirm{
 			Message: "SELinux is often enabled by default on Redhat Linux distributions. \nWe recommend that SELinux be" +
