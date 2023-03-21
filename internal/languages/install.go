@@ -64,6 +64,21 @@ func PopulateInstallerInfo(language string, version string, osType config.Operat
 				Version: version,
 			}, nil
 		}
+	case config.Redhat9:
+		// Redhat 9 R URL uses lowercase "r" in the beginning but then "R" in the 2nd occurance
+		if language == "r" {
+			return InstallerInfo{
+				Name:    strings.ToUpper(language) + "-" + version + "-1-1.x86_64.rpm",
+				URL:     "https://cdn.rstudio.com/" + language + "/rhel-9/pkgs/" + strings.ToUpper(language) + "-" + version + "-1-1.x86_64.rpm",
+				Version: version,
+			}, nil
+		} else {
+			return InstallerInfo{
+				Name:    language + "-" + version + "-1-1.x86_64.rpm",
+				URL:     "https://cdn.rstudio.com/" + language + "/rhel-9/pkgs/" + language + "-" + version + "-1-1.x86_64.rpm",
+				Version: version,
+			}, nil
+		}
 	default:
 		return InstallerInfo{}, errors.New("operating system not supported")
 	}

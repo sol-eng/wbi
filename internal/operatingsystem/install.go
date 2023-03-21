@@ -23,7 +23,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 		if GdebiCoreErr != nil {
 			return fmt.Errorf("InstallGdebiCore: %w", GdebiCoreErr)
 		}
-	} else if osType == config.Redhat8 || osType == config.Redhat7 {
+	} else if osType == config.Redhat9 || osType == config.Redhat8 || osType == config.Redhat7 {
 		// Enable the Extra Packages for Enterprise Linux (EPEL) repository
 		EnableEPELErr := EnableEPELRepo(osType)
 		if EnableEPELErr != nil {
@@ -73,6 +73,17 @@ func UpgradeApt() error {
 func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error {
 	if CloudInstall {
 		switch osType {
+		case config.Redhat9:
+			dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
+			err := system.RunCommand(dnfPluginsCoreCommand)
+			if err != nil {
+				return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
+			}
+			enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-9-*-rpms"`
+			err = system.RunCommand(enableCodeReadyCommand)
+			if err != nil {
+				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
+			}
 		case config.Redhat8:
 			dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
 			err := system.RunCommand(dnfPluginsCoreCommand)
@@ -99,6 +110,12 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 		}
 	} else if !CloudInstall {
 		switch osType {
+		case config.Redhat9:
+			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms\n"
+			err := system.RunCommand(OnPremCodeReadyEnableCommand)
+			if err != nil {
+				return fmt.Errorf("issue enabling codeready repo: %w", err)
+			}
 		case config.Redhat8:
 			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms\n"
 			err := system.RunCommand(OnPremCodeReadyEnableCommand)
@@ -122,7 +139,9 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 // Enable the Extra Packages for Enterprise Linux (EPEL) repository
 func EnableEPELRepo(osType config.OperatingSystem) error {
 	var EPELURL string
-	if osType == config.Redhat8 {
+	if osType == config.Redhat9 {
+		EPELURL = "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+	} else if osType == config.Redhat8 {
 		EPELURL = "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
 	} else if osType == config.Redhat7 {
 		EPELURL = "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
@@ -157,7 +176,7 @@ func DisableFirewall(osType config.OperatingSystem) error {
 	switch osType {
 	case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
 		FWCommand = "ufw disable"
-	case config.Redhat7, config.Redhat8:
+	case config.Redhat7, config.Redhat8, config.Redhat9:
 		FWCommand = "systemctl stop firewalld && systemctl disable firewalld"
 	default:
 		return errors.New("Unsupported OS, setting FWCommand failed")
