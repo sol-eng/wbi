@@ -28,7 +28,7 @@ func VerifyInstallation() error {
 		return fmt.Errorf("issue stopping rstudio-server: %w", err)
 	}
 	// run verify-installation
-	err = system.RunCommand("rstudio-server verify-installation")
+	err = system.RunCommand("rstudio-server verify-installation", true, 1)
 	if err != nil {
 		return fmt.Errorf("issue running verify-installation command: %w", err)
 	}

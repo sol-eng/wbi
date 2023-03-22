@@ -12,7 +12,7 @@ import (
 func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 
 	if osType == config.Redhat7 || osType == config.Redhat8 {
-		rpmOutput, err := system.RunCommandAndCaptureOutput("rpm -q firewalld || true")
+		rpmOutput, err := system.RunCommandAndCaptureOutput("rpm -q firewalld || true", false, 0)
 		if err != nil {
 			return false, fmt.Errorf("issue in rpmOutput check: %w", err)
 		}
@@ -21,7 +21,7 @@ func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 			return false, nil
 		}
 
-		firewallActive, err := system.RunCommandAndCaptureOutput("systemctl is-active firewalld")
+		firewallActive, err := system.RunCommandAndCaptureOutput("systemctl is-active firewalld", false, 0)
 		if err != nil {
 			return false, fmt.Errorf("issue in firewallActive: %w", err)
 		}
@@ -30,7 +30,7 @@ func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 			return true, nil
 		}
 
-		firewallEnabled, err := system.RunCommandAndCaptureOutput("systemctl is-enabled firewalld")
+		firewallEnabled, err := system.RunCommandAndCaptureOutput("systemctl is-enabled firewalld", false, 0)
 		if err != nil {
 			return false, fmt.Errorf("issue in firewallEnabled check: %w", err)
 		}

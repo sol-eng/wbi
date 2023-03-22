@@ -9,7 +9,7 @@ import (
 )
 
 func CheckIfRunningAsRoot() error {
-	idOutput, err := system.RunCommandAndCaptureOutput("id -u")
+	idOutput, err := system.RunCommandAndCaptureOutput("id -u", false, 0)
 	if err != nil {
 		return fmt.Errorf("issue running user identification command: %w", err)
 	}

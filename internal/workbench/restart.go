@@ -19,7 +19,7 @@ func RestartRStudioServerAndLauncher() error {
 }
 
 func RestartRStudioServer() error {
-	err := system.RunCommand("rstudio-server restart")
+	err := system.RunCommand("rstudio-server restart", true, 1)
 	if err != nil {
 		return fmt.Errorf("issue restarting rstudio-server: %w", err)
 	}
@@ -27,7 +27,7 @@ func RestartRStudioServer() error {
 }
 
 func RestartRStudioLauncher() error {
-	err := system.RunCommand("rstudio-launcher restart")
+	err := system.RunCommand("rstudio-launcher restart", true, 1)
 	if err != nil {
 		return fmt.Errorf("issue restarting rstudio-launcher: %w", err)
 	}
@@ -35,7 +35,7 @@ func RestartRStudioLauncher() error {
 }
 
 func StopRStudioServer() error {
-	err := system.RunCommand("rstudio-server stop")
+	err := system.RunCommand("rstudio-server stop", true, 1)
 	if err != nil {
 		return fmt.Errorf("issue stopping rstudio-server: %w", err)
 	}
@@ -43,7 +43,7 @@ func StopRStudioServer() error {
 }
 
 func StartRStudioServer() error {
-	err := system.RunCommand("rstudio-server start")
+	err := system.RunCommand("rstudio-server start", true, 1)
 	if err != nil {
 		return fmt.Errorf("issue starting rstudio-server: %w", err)
 	}

@@ -12,7 +12,7 @@ import (
 func CheckLinuxSecurityStatus(osType config.OperatingSystem) (bool, error) {
 	if osType == config.Redhat7 || osType == config.Redhat8 {
 		fmt.Println("Checking to see if SELinux is active on this server")
-		enforceStatus, err := system.RunCommandAndCaptureOutput("getenforce")
+		enforceStatus, err := system.RunCommandAndCaptureOutput("getenforce", false, 0)
 		if err != nil {
 			return false, fmt.Errorf("issue running getenforce command: %w", err)
 		}

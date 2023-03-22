@@ -48,7 +48,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 // Installs Gdebi Core
 func InstallGdebiCore() error {
 	gdebiCoreCommand := "apt-get install -y gdebi-core"
-	err := system.RunCommand(gdebiCoreCommand)
+	err := system.RunCommand(gdebiCoreCommand, true, 1)
 	if err != nil {
 		return fmt.Errorf("issue installing gdebi-core: %w", err)
 	}
@@ -60,7 +60,7 @@ func InstallGdebiCore() error {
 // Upgrades Apt
 func UpgradeApt() error {
 	aptUpgradeCommand := "apt-get update"
-	err := system.RunCommand(aptUpgradeCommand)
+	err := system.RunCommand(aptUpgradeCommand, true, 1)
 	if err != nil {
 		return fmt.Errorf("issue upgrading apt: %w", err)
 	}
@@ -75,24 +75,24 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 		switch osType {
 		case config.Redhat8:
 			dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
-			err := system.RunCommand(dnfPluginsCoreCommand)
+			err := system.RunCommand(dnfPluginsCoreCommand, true, 1)
 			if err != nil {
 				return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
 			}
 			enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
-			err = system.RunCommand(enableCodeReadyCommand)
+			err = system.RunCommand(enableCodeReadyCommand, true, 1)
 			if err != nil {
 				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
 			}
 		case config.Redhat7:
 			yumUtilsCoreCommand := "sudo yum install -y yum-utils"
-			err := system.RunCommand(yumUtilsCoreCommand)
+			err := system.RunCommand(yumUtilsCoreCommand, true, 1)
 			if err != nil {
 				return fmt.Errorf("issue installing yum-utils: %w", err)
 			}
 
 			enableCodeReadyCommand := `sudo yum-config-manager --enable "rhel-*-optional-rpms"`
-			err = system.RunCommand(enableCodeReadyCommand)
+			err = system.RunCommand(enableCodeReadyCommand, true, 1)
 			if err != nil {
 				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
 			}
@@ -101,13 +101,13 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 		switch osType {
 		case config.Redhat8:
 			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms\n"
-			err := system.RunCommand(OnPremCodeReadyEnableCommand)
+			err := system.RunCommand(OnPremCodeReadyEnableCommand, true, 1)
 			if err != nil {
 				return fmt.Errorf("issue enabling codeready repo: %w", err)
 			}
 		case config.Redhat7:
 			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable \"rhel-*-optional-rpms\""
-			err := system.RunCommand(OnPremCodeReadyEnableCommand)
+			err := system.RunCommand(OnPremCodeReadyEnableCommand, true, 1)
 			if err != nil {
 				return fmt.Errorf("issue enabling codeready repo: %w", err)
 			}
@@ -134,7 +134,7 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("issue retrieving EPEL install command: %w", err)
 	}
-	commandOutput, err := system.RunCommandAndCaptureOutput(EPELCommand)
+	commandOutput, err := system.RunCommandAndCaptureOutput(EPELCommand, true, 1)
 	if err != nil {
 		if strings.Contains(commandOutput, "does not update installed package") && osType == config.Redhat7 {
 			fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository was already enabled.\n")
@@ -162,7 +162,7 @@ func DisableFirewall(osType config.OperatingSystem) error {
 	default:
 		return errors.New("Unsupported OS, setting FWCommand failed")
 	}
-	err := system.RunCommand(FWCommand)
+	err := system.RunCommand(FWCommand, true, 1)
 	if err != nil {
 		return fmt.Errorf("issue disabling system firewall: %w", err)
 	}
@@ -174,13 +174,13 @@ func DisableFirewall(osType config.OperatingSystem) error {
 func DisableLinuxSecurity() error {
 
 	setenforceCommand := "setenforce 0"
-	err := system.RunCommand(setenforceCommand)
+	err := system.RunCommand(setenforceCommand, true, 1)
 	if err != nil {
 		return fmt.Errorf("issue stopping selinux enforcement via setenforce: %w", err)
 	}
 
 	disableSELinuxCommand := "sed -i s/^SELINUX=.*$/SELINUX=disabled/ /etc/selinux/config"
-	err = system.RunCommand(disableSELinuxCommand)
+	err = system.RunCommand(disableSELinuxCommand, true, 1)
 	if err != nil {
 		return fmt.Errorf("issue disabling selinux: %w", err)
 	}
