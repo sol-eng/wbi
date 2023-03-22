@@ -177,9 +177,37 @@ func newInstallCmd() *installCmd {
 
 	root := &installCmd{opts: installOpts}
 
+	// adding two spaces to have consistent formatting
+	exampleText := []string{
+		"To start an interactive prompt to select R or Python version(s):",
+		"  wbi install r",
+		"  wbi install python",
+		"",
+		"To install a specific R or Python version:",
+		"  wbi install r --version 4.2.2",
+		"  wbi install python --version 3.11.2",
+		"",
+		"To install multiple R or Python versions:",
+		"  wbi install r --version 4.2.2,4.1.3",
+		"  wbi install python --version 3.11.2,3.10.10",
+		"",
+		"To install Workbench:",
+		"  wbi install workbench",
+		"",
+		"To install Pro Drivers:",
+		"  wbi install prodrivers",
+		"",
+		"To start an interactive prompt to select Jupyter install location:",
+		"  wbi install jupyter",
+		"",
+		"To install Jupyter to a specific Python location:",
+		"  wbi install jupyter --path /path/to/python",
+	}
+
 	cmd := &cobra.Command{
-		Use:   "install [program]",
-		Short: "Install R, Python, Workbench, Pro Drivers, or Jupyter",
+		Use:     "install [program]",
+		Short:   "Install R, Python, Workbench, Pro Drivers, or Jupyter",
+		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setInstallOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {

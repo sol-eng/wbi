@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/authentication"
@@ -315,9 +316,19 @@ func (opts *setupOpts) Validate(args []string) error {
 func newSetupCmd() *setupCmd {
 	root := &setupCmd{opts: setupOpts{}}
 
+	// adding two spaces to have consistent formatting
+	exampleText := []string{
+		"To start an interactive setup process for Workbench:",
+		"  wbi setup",
+		"",
+		"To start an interactive setup process for Workbench at a certain step:",
+		"  wbi setup --step [STEP]",
+	}
+
 	cmd := &cobra.Command{
-		Use:   "setup",
-		Short: "Launch an interactive setup process for Workbench",
+		Use:     "setup",
+		Short:   "Launch an interactive setup process for Workbench",
+		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setSetupOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {

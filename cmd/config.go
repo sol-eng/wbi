@@ -162,9 +162,29 @@ func newConfigCmd() *configCmd {
 
 	root := &configCmd{opts: configOpts}
 
+	// adding two spaces to have consistent formatting
+	exampleText := []string{
+		"To configure TLS/SSL:",
+		"  wbi config ssl --cert-path [PATH-TO-CERTIFICATE-FILE] --key-path [PATH-TO-KEY-FILE]",
+		"",
+		"To configure SAML Authentication:",
+		"  wbi config auth --auth-type saml --idp-url [IDP-SAML-METADATA-URL]",
+		"",
+		"To configure OIDC Authentication:",
+		"  wbi config auth --auth-type oidc --idp-url [IDP-OIC-ISSUER-URL] --client-id [CLIENT-ID] --client-secret [CLIENT-SECRET]",
+		"",
+		"To configure a default package repository:",
+		"  wbi config repo --url [REPO-BASE-URL] --source cran",
+		"  wbi config repo --url [REPO-BASE-URL] --source pypi",
+		"",
+		"To configure a default Posit Connect server:",
+		"  wbi config connect-url --url [CONNECT-SERVER-URL]",
+	}
+
 	cmd := &cobra.Command{
-		Use:   "config [item]",
-		Short: "Configure SSL, Authentication, package repos, or a Connect server in Posit Workbench",
+		Use:     "config [item]",
+		Short:   "Configure SSL, Authentication, package repos, or a Connect server in Posit Workbench",
+		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setConfigOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {

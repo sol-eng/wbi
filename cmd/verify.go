@@ -146,9 +146,32 @@ func newVerifyCmd() *verifyCmd {
 
 	root := &verifyCmd{opts: verifyOpts}
 
+	// adding two spaces to have consistent formatting
+	exampleText := []string{
+		"To verify a Package Manager URL is valid:",
+		"  wbi verify packagemanager --url [URL]",
+		"",
+		"To verify a Package Manager URL is valid and the repo is valid:",
+		"  wbi verify packagemanager --url [URL] --repo [REPO-NAME] --language r",
+		"  wbi verify packagemanager --url [URL] --repo [REPO-NAME] --language python",
+		"",
+		"To verify a Connect URL is valid:",
+		"  wbi verify connect-url --url [URL]",
+		"",
+		"To verify Workbench is installed:",
+		"  wbi verify workbench",
+		"",
+		"To verify TLS/SSL cert and key are valid:",
+		"  wbi verify ssl --cert-path [CERT-PATH] --key-path [KEY-PATH]",
+		"",
+		"To verify a license is activated:",
+		"  wbi verify license",
+	}
+
 	cmd := &cobra.Command{
-		Use:   "verify [item]",
-		Short: "Verify an item is installed, configured correctly and has network connectivity",
+		Use:     "verify [item]",
+		Short:   "Verify an item is installed, configured correctly and has network connectivity",
+		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setVerifyOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {

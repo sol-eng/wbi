@@ -61,9 +61,17 @@ func newScanCmd() *scanCmd {
 
 	root := &scanCmd{opts: scanOpts}
 
+	// adding two spaces to have consistent formatting
+	exampleText := []string{
+		"To scan for existing R and Python installations:",
+		"  wbi scan r",
+		"  wbi scan python",
+	}
+
 	cmd := &cobra.Command{
-		Use:   "scan [lanaguage]",
-		Short: "Scan for installed versions of R or Python",
+		Use:     "scan [lanaguage]",
+		Short:   "Scan for installed versions of R or Python",
+		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setScanOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
