@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/license"
@@ -55,9 +56,16 @@ func newActivateCmd() *activateCmd {
 
 	root := &activateCmd{opts: activateOpts}
 
+	// adding two spaces to have consistent formatting
+	exampleText := []string{
+		"To activate Workbench with a license key:",
+		"  wbi activate license --key XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+	}
+
 	cmd := &cobra.Command{
-		Use:   "activate license --key [license key]",
-		Short: "Activate Workbench with a license key",
+		Use:     "activate license",
+		Short:   "Activate Workbench with a license key",
+		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setActivateOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
@@ -74,7 +82,7 @@ func newActivateCmd() *activateCmd {
 		},
 	}
 
-	cmd.Flags().StringP("key", "k", "", "")
+	cmd.Flags().StringP("key", "k", "", "License key to activate Workbench with")
 	viper.BindPFlag("key", cmd.Flags().Lookup("key"))
 
 	root.cmd = cmd

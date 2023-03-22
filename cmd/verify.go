@@ -146,9 +146,32 @@ func newVerifyCmd() *verifyCmd {
 
 	root := &verifyCmd{opts: verifyOpts}
 
+	// adding two spaces to have consistent formatting
+	exampleText := []string{
+		"To verify a Package Manager URL is valid:",
+		"  wbi verify packagemanager --url [URL]",
+		"",
+		"To verify a Package Manager URL is valid and the repo is valid:",
+		"  wbi verify packagemanager --url [URL] --repo [REPO-NAME] --language r",
+		"  wbi verify packagemanager --url [URL] --repo [REPO-NAME] --language python",
+		"",
+		"To verify a Connect URL is valid:",
+		"  wbi verify connect-url --url [URL]",
+		"",
+		"To verify Workbench is installed:",
+		"  wbi verify workbench",
+		"",
+		"To verify TLS/SSL cert and key are valid:",
+		"  wbi verify ssl --cert-path [CERT-PATH] --key-path [KEY-PATH]",
+		"",
+		"To verify a license is activated:",
+		"  wbi verify license",
+	}
+
 	cmd := &cobra.Command{
-		Use:   "verify [item]",
-		Short: "Verify that an item is installed, configured correctly and/or has network connectivity",
+		Use:     "verify [item]",
+		Short:   "Verify an item is installed, configured correctly and has network connectivity",
+		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setVerifyOpts(&root.opts)
 			if err := root.opts.Validate(args); err != nil {
@@ -166,19 +189,19 @@ func newVerifyCmd() *verifyCmd {
 		},
 	}
 
-	cmd.Flags().StringP("url", "u", "", "")
+	cmd.Flags().StringP("url", "u", "", "Package Manager or Connect base URL")
 	viper.BindPFlag("url", cmd.Flags().Lookup("url"))
 
-	cmd.Flags().StringP("repo", "r", "", "")
+	cmd.Flags().StringP("repo", "r", "", "Name of the Package Manager repository")
 	viper.BindPFlag("repo", cmd.Flags().Lookup("repo"))
 
-	cmd.Flags().StringP("language", "l", "", "")
+	cmd.Flags().StringP("language", "l", "", "The type of Package Manager repository, r or python")
 	viper.BindPFlag("language", cmd.Flags().Lookup("language"))
 
-	cmd.Flags().StringP("cert-path", "c", "", "")
+	cmd.Flags().StringP("cert-path", "c", "", "TLS/SSL certificate path")
 	viper.BindPFlag("cert-path", cmd.Flags().Lookup("cert-path"))
 
-	cmd.Flags().StringP("key-path", "k", "", "")
+	cmd.Flags().StringP("key-path", "k", "", "TLS/SSL key path")
 	viper.BindPFlag("key-path", cmd.Flags().Lookup("key-path"))
 
 	root.cmd = cmd
