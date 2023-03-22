@@ -291,7 +291,7 @@ func newSetup(setupOpts setupOpts) error {
 		step = "done"
 	}
 
-	fmt.Println("\nThanks for using wbi!")
+	fmt.Println("\nThanks for using wbi! If you are intending to Authenticate users with local Linux users (the default) then please create the accounts and home directories before logging into Workbench.")
 	return nil
 }
 
