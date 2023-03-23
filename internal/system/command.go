@@ -23,7 +23,8 @@ func RunCommand(command string, displayCommand bool, delay time.Duration) error 
 
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("issue running command: %w", err)
+		errorString := "issue running the command (" + command + "): %w"
+		return fmt.Errorf(errorString, err)
 	}
 
 	return nil
@@ -42,7 +43,8 @@ func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("issue running command: %w", err)
+		errorString := "issue running the command (" + command + "): %w"
+		return "", fmt.Errorf(errorString, err)
 	}
 
 	return string(out), nil
