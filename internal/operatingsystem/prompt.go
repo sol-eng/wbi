@@ -57,10 +57,13 @@ func PromptInstallPrereqs() (bool, error) {
 		Message: "In order to install Workbench from start to finish, you will need the following things\n" +
 			"1. Internet access for this server\n" +
 			"2. The versions of R and Python you would like to install\n" +
-			"3. Your Workbench license key string in this form: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX\n" +
-			"4. The location on this server of your SSL key and certificate files (optional)\n" +
-			"5. The URL for your instance of Posit Package Manager (optional)\n" +
-			"6. The URL for your instance of Posit Connect (optional)\n\n" +
+			"3. The version of R and Python you would like to set as defaults\n" +
+			"4. Your Workbench license key string in this form: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX\n" +
+			"5. The location on this server of your SSL key and certificate files (optional)\n" +
+			"6. The IdP Metadata URL (optional, only for SAML SSO integration)\n" +
+			"7. The IdP Issuer URL, client id and client secret (optional, only for OIDC SSO integration)\n" +
+			"8. The URL and repo name for your instance of Posit Package Manager (optional)\n" +
+			"9. The URL for your instance of Posit Connect (optional)\n\n" +
 			"Please confirm that you're ready to install Workbench",
 	}
 	err := survey.AskOne(prompt, &name)
