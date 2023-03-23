@@ -23,4 +23,5 @@ const (
 	Ubuntu22
 	Redhat7
 	Redhat8
+	Redhat9
 )

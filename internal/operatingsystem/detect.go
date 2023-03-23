@@ -23,6 +23,8 @@ func DetectOS() (config.OperatingSystem, error) {
 				return config.Redhat7, nil
 			} else if strings.Contains(string(releaseVersionRHEL), "release 8") {
 				return config.Redhat8, nil
+			} else if strings.Contains(string(releaseVersionRHEL), "release 9") {
+				return config.Redhat9, nil
 			} else {
 				return config.Unknown, errors.New("unsupported operating system")
 			}
