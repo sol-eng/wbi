@@ -1,13 +1,17 @@
 package languages
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
@@ -16,72 +20,8 @@ import (
 	"github.com/sol-eng/wbi/internal/system"
 )
 
-var availablePythonVersions = []string{
-	"3.11.2",
-	"3.11.1",
-	"3.11.0",
-	"3.10.10",
-	"3.10.9",
-	"3.10.8",
-	"3.10.7",
-	"3.10.6",
-	"3.10.5",
-	"3.10.4",
-	"3.10.3",
-	"3.10.2",
-	"3.10.1",
-	"3.10.0",
-	"3.9.16",
-	"3.9.15",
-	"3.9.14",
-	"3.9.13",
-	"3.9.12",
-	"3.9.11",
-	"3.9.10",
-	"3.9.9",
-	"3.9.8",
-	"3.9.7",
-	"3.9.6",
-	"3.9.5",
-	"3.9.4",
-	"3.9.3",
-	"3.9.2",
-	"3.9.1",
-	"3.9.0",
-	"3.8.16",
-	"3.8.15",
-	"3.8.14",
-	"3.8.13",
-	"3.8.12",
-	"3.8.11",
-	"3.8.10",
-	"3.8.9",
-	"3.8.8",
-	"3.8.7",
-	"3.8.6",
-	"3.8.5",
-	"3.8.4",
-	"3.8.3",
-	"3.8.2",
-	"3.8.1",
-	"3.8.0",
-	"3.7.16",
-	"3.7.15",
-	"3.7.14",
-	"3.7.13",
-	"3.7.12",
-	"3.7.11",
-	"3.7.10",
-	"3.7.9",
-	"3.7.8",
-	"3.7.7",
-	"3.7.6",
-	"3.7.5",
-	"3.7.4",
-	"3.7.3",
-	"3.7.2",
-	"3.7.1",
-	"3.7.0",
+type availablePythonVersions struct {
+	PythonVersions []string `json:"python_versions"`
 }
 
 var globalPythonPaths = []string{
@@ -167,14 +107,14 @@ func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
 	return target, nil
 }
 
-// Prompts user if they want to install Python and does the installation
+// PromptAndInstallPython Prompts user if they want to install Python and does the installation
 func PromptAndInstallPython(osType config.OperatingSystem) ([]string, error) {
 	installPythonChoice, err := PythonInstallPrompt()
 	if err != nil {
 		return []string{}, fmt.Errorf("issue selecting Python installation: %w", err)
 	}
 	if installPythonChoice {
-		validPythonVersions, err := RetrieveValidPythonVersions()
+		validPythonVersions, err := RetrieveValidPythonVersions(osType)
 		if err != nil {
 			return []string{}, fmt.Errorf("issue retrieving Python versions: %w", err)
 		}
@@ -281,7 +221,7 @@ func ScanForPythonVersions() ([]string, error) {
 	return foundVersions, nil
 }
 
-// Prompt users if they would like to install Python versions
+// PythonInstallPrompt Prompt users if they would like to install Python versions
 func PythonInstallPrompt() (bool, error) {
 	name := true
 	prompt := &survey.Confirm{
@@ -307,12 +247,64 @@ func PythonPATHPrompt() (bool, error) {
 	return name, nil
 }
 
-func RetrieveValidPythonVersions() ([]string, error) {
-	// TODO make this dynamic based on https://cdn.posit.co/python/versions.json
-	return availablePythonVersions, nil
+//func RetrieveValidPythonVersions() ([]string, error) {
+//	// TODO make this dynamic based on https://cdn.posit.co/python/versions.json
+//	return availablePythonVersions, nil
+//}
+
+func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error) {
+	pythonVersionURL := "https://cdn.posit.co/python/versions.json"
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	req, err := http.NewRequestWithContext(context.Background(),
+		http.MethodGet, pythonVersionURL, nil)
+	if err != nil {
+		return nil, errors.New("error creating request")
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, errors.New("error retrieving JSON data")
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.New("error in HTTP status code")
+	}
+
+	var availVersions availablePythonVersions
+	err = json.NewDecoder(res.Body).Decode(&availVersions)
+	if err != nil {
+		return nil, errors.New("error unmarshalling JSON data")
+	}
+
+	versions := ConvertStringSlicetoVersionSlice(availVersions.PythonVersions)
+	var greatestPythonVersions []string
+
+	switch osType {
+	case config.Redhat7:
+		greatestPythonVersions = []string{"3.10.0", "3.11.0", "3.8.16", "3.9.15"}
+	case config.Redhat9:
+		greatestPythonVersions = []string{"3.7.3"}
+	}
+
+	for _, v := range greatestPythonVersions {
+		versions, err = removeNewerVersions(versions, v)
+	}
+
+	if err != nil {
+		return nil, errors.New("failed removing newer versions")
+	}
+	sortedVersions, err := SortVersions(versions)
+	if err != nil {
+		return nil, errors.New("failed to sort versions")
+	}
+
+	return sortedVersions, nil
+
 }
 
-// Prompt asking users which Python version(s) they would like to install
+// PythonSelectVersionsPrompt Prompt asking users which Python version(s) they would like to install
 func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, error) {
 	var qs = []*survey.Question{
 		{
@@ -337,7 +329,7 @@ func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, err
 	return pythonVersionsAnswers.PythonVersions, nil
 }
 
-// Downloads the Python installer, and installs Python
+// DownloadAndInstallPython Downloads the Python installer, and installs Python
 func DownloadAndInstallPython(pythonVersion string, osType config.OperatingSystem) error {
 	// Create InstallerInfoPython with the proper information
 	installerInfo, err := PopulateInstallerInfo("python", pythonVersion, osType)
@@ -345,12 +337,12 @@ func DownloadAndInstallPython(pythonVersion string, osType config.OperatingSyste
 		return fmt.Errorf("PopulateInstallerInfoPython: %w", err)
 	}
 	// Download installer
-	filepath, err := install.DownloadFile("Python", installerInfo.URL, installerInfo.Name)
+	installerPath, err := install.DownloadFile("Python", installerInfo.URL, installerInfo.Name)
 	if err != nil {
 		return fmt.Errorf("DownloadPython: %w", err)
 	}
 	// Install Python
-	err = install.InstallLanguage("python", filepath, osType, pythonVersion)
+	err = install.InstallLanguage("python", installerPath, osType, pythonVersion)
 	if err != nil {
 		return fmt.Errorf("InstallLanguage: %w", err)
 	}
@@ -404,8 +396,8 @@ func RemovePythonFromPathSlice(pythonPaths []string) ([]string, error) {
 	return newPythonPaths, nil
 }
 
-func ValidatePythonVersions(pythonVersions []string) error {
-	availablePythonVersions, err := RetrieveValidPythonVersions()
+func ValidatePythonVersions(pythonVersions []string, osType config.OperatingSystem) error {
+	availablePythonVersions, err := RetrieveValidPythonVersions(osType)
 	if err != nil {
 		return fmt.Errorf("error retrieving valid R versions: %w", err)
 	}

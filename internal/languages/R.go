@@ -25,7 +25,7 @@ var nonNumericRVersions = []string{
 	"next", "devel",
 }
 
-type availableVersions struct {
+type availableRVersions struct {
 	RVersions []string `json:"r_versions"`
 }
 
@@ -226,14 +226,19 @@ func RetrieveValidRVersions() ([]string, error) {
 		return nil, errors.New("error in HTTP status code")
 	}
 
-	var availVersions availableVersions
+	var availVersions availableRVersions
 	err = json.NewDecoder(res.Body).Decode(&availVersions)
 	if err != nil {
 		return nil, errors.New("error unmarshalling JSON data")
 	}
 
-	numericVersions := removeElements(availVersions.RVersions, nonNumericRVersions)
-	sortedVersions, err := SortVersions(numericVersions)
+	numericVersions, err := removeElements(availVersions.RVersions, nonNumericRVersions)
+	if err != nil {
+		return nil, err
+	}
+	versions := ConvertStringSlicetoVersionSlice(numericVersions)
+
+	sortedVersions, err := SortVersions(versions)
 	if err != nil {
 		return nil, errors.New("failed to sort versions")
 	}
