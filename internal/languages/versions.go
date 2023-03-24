@@ -54,18 +54,33 @@ func removeNewerVersions(versions []*version.Version, maxVersion string) ([]*ver
 	return result, nil
 }
 
-func removeOlderVersions(versions []*version.Version, maxVersion string) ([]*version.Version, error) {
-	maxV, err := version.NewVersion(maxVersion)
+func removeOlderVersions(versions []*version.Version, minVersion string) ([]*version.Version, error) {
+	minV, err := version.NewVersion(minVersion)
 	if err != nil {
 		return nil, err
 	}
 	var result []*version.Version
 	for _, v := range versions {
-		if v.Segments()[0] == maxV.Segments()[0] && v.Segments()[1] == maxV.Segments()[1] && v.Segments()[2] > maxV.Segments()[2] {
+		if v.Segments()[0] == minV.Segments()[0] && v.Segments()[1] == minV.Segments()[1] && v.Segments()[2] > minV.Segments()[2] {
 			// Version is newer across Major.Minor versions
 			result = append(result, v)
-		} else if v.Segments()[0] != maxV.Segments()[0] || v.Segments()[1] != maxV.Segments()[1] {
+		} else if v.Segments()[0] != minV.Segments()[0] || v.Segments()[1] != minV.Segments()[1] {
 			// Version is newer only within the same Major.Minor version line
+			result = append(result, v)
+		}
+	}
+	return result, nil
+}
+
+func removeSpecificVersions(versions []*version.Version, specificVersion string) ([]*version.Version, error) {
+	specificV, err := version.NewVersion(specificVersion)
+	if err != nil {
+		return nil, err
+	}
+	var result []*version.Version
+	for _, v := range versions {
+		if v.Segments()[0] != specificV.Segments()[0] || v.Segments()[1] != specificV.Segments()[1] || v.Segments()[2] != specificV.Segments()[2] {
+			// Version is newer across Major.Minor versions
 			result = append(result, v)
 		}
 	}

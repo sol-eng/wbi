@@ -25,8 +25,9 @@ type availablePythonVersions struct {
 }
 
 type unavailablePythonVersions struct {
-	NewestPythonVersions []string
-	OldestPythonVersions []string
+	NewestPythonVersions   []string
+	OldestPythonVersions   []string
+	SpecificPythonVersions []string
 }
 
 var globalPythonPaths = []string{
@@ -284,14 +285,21 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 	}
 
 	versions := ConvertStringSlicetoVersionSlice(availVersions.PythonVersions)
-	greatestPythonVersions := UnavailablePythonVersionsByOS(osType)
-
-	for _, v := range greatestPythonVersions.NewestPythonVersions {
-		versions, err = removeNewerVersions(versions, v)
+	unavailPythonVersions := unavailablePythonVersionsByOS(osType)
+	if len(unavailPythonVersions.NewestPythonVersions) != 0 {
+		for _, v := range unavailPythonVersions.NewestPythonVersions {
+			versions, err = removeNewerVersions(versions, v)
+		}
 	}
-
-	for _, v := range greatestPythonVersions.OldestPythonVersions {
-		versions, err = removeOlderVersions(versions, v)
+	if len(unavailPythonVersions.OldestPythonVersions) != 0 {
+		for _, v := range unavailPythonVersions.OldestPythonVersions {
+			versions, err = removeOlderVersions(versions, v)
+		}
+	}
+	if len(unavailPythonVersions.SpecificPythonVersions) != 0 {
+		for _, v := range unavailPythonVersions.SpecificPythonVersions {
+			versions, err = removeSpecificVersions(versions, v)
+		}
 	}
 
 	if err != nil {
@@ -420,7 +428,7 @@ func CheckIfPythonProfileDExists() bool {
 	fmt.Println("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.\n")
 	return true
 }
-func UnavailablePythonVersionsByOS(osType config.OperatingSystem) unavailablePythonVersions {
+func unavailablePythonVersionsByOS(osType config.OperatingSystem) unavailablePythonVersions {
 
 	var pythonVersions unavailablePythonVersions
 	switch osType {
@@ -428,7 +436,7 @@ func UnavailablePythonVersionsByOS(osType config.OperatingSystem) unavailablePyt
 		pythonVersions.NewestPythonVersions = []string{"3.10.0", "3.11.0", "3.8.16", "3.9.15"}
 		return pythonVersions
 	case config.Redhat9:
-		pythonVersions.OldestPythonVersions = []string{"3.7.3"}
+		pythonVersions.SpecificPythonVersions = []string{"3.7.3", "3.7.4", "3.7.5"}
 		return pythonVersions
 	}
 	return pythonVersions
