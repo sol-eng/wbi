@@ -285,26 +285,34 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 	}
 
 	versions := ConvertStringSlicetoVersionSlice(availVersions.PythonVersions)
+
 	unavailPythonVersions := unavailablePythonVersionsByOS(osType)
+
 	if len(unavailPythonVersions.NewestPythonVersions) != 0 {
 		for _, v := range unavailPythonVersions.NewestPythonVersions {
 			versions, err = removeNewerVersions(versions, v)
+			if err != nil {
+				return nil, errors.New("failed removing newer unsupported versions of Python")
+			}
 		}
 	}
 	if len(unavailPythonVersions.OldestPythonVersions) != 0 {
 		for _, v := range unavailPythonVersions.OldestPythonVersions {
 			versions, err = removeOlderVersions(versions, v)
+			if err != nil {
+				return nil, errors.New("failed removing older unsupported versions of Python")
+			}
 		}
 	}
 	if len(unavailPythonVersions.SpecificPythonVersions) != 0 {
 		for _, v := range unavailPythonVersions.SpecificPythonVersions {
 			versions, err = removeSpecificVersions(versions, v)
+			if err != nil {
+				return nil, errors.New("failed removing specific unsupported versions of Python")
+			}
 		}
 	}
 
-	if err != nil {
-		return nil, errors.New("failed removing newer versions")
-	}
 	sortedVersions, err := SortVersions(versions)
 	if err != nil {
 		return nil, errors.New("failed to sort versions")
