@@ -24,6 +24,11 @@ type availablePythonVersions struct {
 	PythonVersions []string `json:"python_versions"`
 }
 
+type unavailablePythonVersions struct {
+	NewestPythonVersions []string
+	OldestPythonVersions []string
+}
+
 var globalPythonPaths = []string{
 	"/usr/bin/python",
 	"/usr/bin/Python",
@@ -279,17 +284,14 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 	}
 
 	versions := ConvertStringSlicetoVersionSlice(availVersions.PythonVersions)
-	var greatestPythonVersions []string
+	greatestPythonVersions := UnavailablePythonVersionsByOS(osType)
 
-	switch osType {
-	case config.Redhat7:
-		greatestPythonVersions = []string{"3.10.0", "3.11.0", "3.8.16", "3.9.15"}
-	case config.Redhat9:
-		greatestPythonVersions = []string{"3.7.3"}
+	for _, v := range greatestPythonVersions.NewestPythonVersions {
+		versions, err = removeNewerVersions(versions, v)
 	}
 
-	for _, v := range greatestPythonVersions {
-		versions, err = removeNewerVersions(versions, v)
+	for _, v := range greatestPythonVersions.OldestPythonVersions {
+		versions, err = removeOlderVersions(versions, v)
 	}
 
 	if err != nil {
@@ -417,4 +419,17 @@ func CheckIfPythonProfileDExists() bool {
 
 	fmt.Println("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.\n")
 	return true
+}
+func UnavailablePythonVersionsByOS(osType config.OperatingSystem) unavailablePythonVersions {
+
+	var pythonVersions unavailablePythonVersions
+	switch osType {
+	case config.Redhat7:
+		pythonVersions.NewestPythonVersions = []string{"3.10.0", "3.11.0", "3.8.16", "3.9.15"}
+		return pythonVersions
+	case config.Redhat9:
+		pythonVersions.OldestPythonVersions = []string{"3.7.3"}
+		return pythonVersions
+	}
+	return pythonVersions
 }
