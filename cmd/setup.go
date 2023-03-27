@@ -39,7 +39,7 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	if step == "start" {
-		fmt.Println("Welcome to the Workbench Installer!\n")
+		fmt.Println("Welcome to the Workbench Installer!")
 		step = "prereqs"
 	}
 
