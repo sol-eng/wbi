@@ -5,4 +5,4 @@ Sleep 3s
 Type "y"
 Sleep 500ms
 Enter
-Sleep 12.5s
+Sleep 13s
