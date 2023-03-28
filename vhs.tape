@@ -16,7 +16,7 @@ Sleep 500ms
 Show
 
 Sleep 500ms
-Type "sudo wbi setup"
+Type "sudo ./wbi setup"
 Enter
 Sleep 3s
 Type "y"
