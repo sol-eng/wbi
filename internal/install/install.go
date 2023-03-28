@@ -20,7 +20,7 @@ func InstallLanguage(language string, filepath string, osType config.OperatingSy
 
 	err = system.RunCommand(installCommand, false, 0)
 	if err != nil {
-		return fmt.Errorf("RunCommand: %w", err)
+		return fmt.Errorf("the command '%s' failed to run: %w", installCommand, err)
 	}
 
 	successMessage := "\n" + languageTitleCase + " version " + version + " successfully installed!\n"

@@ -14,7 +14,7 @@ func CheckLinuxSecurityStatus(osType config.OperatingSystem) (bool, error) {
 		fmt.Println("Checking to see if SELinux is active on this server")
 		enforceStatus, err := system.RunCommandAndCaptureOutput("getenforce", false, 0)
 		if err != nil {
-			return false, fmt.Errorf("issue running getenforce command: %w", err)
+			return false, fmt.Errorf("issue running the getenforce command: %w", err)
 		}
 		fmt.Println("SELinux Status: " + enforceStatus)
 		if strings.Contains(enforceStatus, "Enforcing") {

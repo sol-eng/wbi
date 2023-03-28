@@ -38,7 +38,7 @@ func StatusRStudioServer() error {
 func StatusRStudioLauncher() error {
 	status, err := system.RunCommandAndCaptureOutput("rstudio-launcher status | cat", true, 1)
 	if err != nil {
-		return fmt.Errorf("issue running status for rstudio-launcher: %w", err)
+		return fmt.Errorf("issue running status for rstudio-launcher with the command 'rstudio-launcher status | cat': %w", err)
 	}
 	if strings.Contains(status, "active (running)") {
 		fmt.Println(status)

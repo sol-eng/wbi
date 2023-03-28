@@ -299,12 +299,12 @@ func SetRSymlinks(rPath string) error {
 	rCommand := "ln -s " + rPath + " /usr/local/bin/R"
 	err := system.RunCommand(rCommand, true, 0)
 	if err != nil {
-		return fmt.Errorf("error setting R symlink: %w", err)
+		return fmt.Errorf("error setting R symlink with the command '%s': %w", rCommand, err)
 	}
 	rScriptCommand := "ln -s " + rPath + "script /usr/local/bin/Rscript"
 	err = system.RunCommand(rScriptCommand, true, 0)
 	if err != nil {
-		return fmt.Errorf("error setting Rscript symlink: %w", err)
+		return fmt.Errorf("error setting Rscript symlink with the command '%s': %w", rScriptCommand, err)
 	}
 	return nil
 }
