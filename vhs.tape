@@ -3,13 +3,15 @@ Output vhs.gif
 # Setup
 Hide
 Type "go build && clear"
+Sleep 2s
 Enter
+Sleep 2s
 Show
 
 Sleep 2s
 Type "sudo ./wbi setup"
 Enter
-Sleep 3s
+Sleep 5s
 Type "y"
 Sleep 500ms
 Enter
