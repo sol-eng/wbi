@@ -6,15 +6,11 @@ import (
 	"sort"
 )
 
-func SortVersions(versions []*version.Version) ([]string, error) {
+func SortVersionsDesc(versions []*version.Version) []*version.Version {
 	// After this, the versions are sorted in descending order properly sorted
 	sort.Sort(sort.Reverse(version.Collection(versions)))
 
-	var versionStrings []string
-	for _, v := range versions {
-		versionStrings = append(versionStrings, v.String())
-	}
-	return versionStrings, nil
+	return versions
 }
 
 func removeElements(originalElements []string, elementsToRemove []string) ([]string, error) {
@@ -87,12 +83,22 @@ func removeSpecificVersions(versions []*version.Version, specificVersion string)
 	return result, nil
 }
 
-func ConvertStringSlicetoVersionSlice(strings []string) []*version.Version {
+func ConvertStringSliceToVersionSlice(strings []string) []*version.Version {
 
 	versions := make([]*version.Version, len(strings))
 	for i, raw := range strings {
 		v, _ := version.NewVersion(raw)
 		versions[i] = v
 	}
+
 	return versions
+}
+
+func ConvertVersionSliceToStringSlice(versions []*version.Version) []string {
+
+	var versionStrings []string
+	for _, v := range versions {
+		versionStrings = append(versionStrings, v.String())
+	}
+	return versionStrings
 }

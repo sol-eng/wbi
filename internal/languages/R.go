@@ -200,12 +200,6 @@ func RInstallPrompt() (bool, error) {
 	return name, nil
 }
 
-//func RetrieveValidRVersions() ([]string, error) {
-//	// TODO make this dynamic based on https://cran.r-project.org/src/base/R-4/ and https://cran.r-project.org/src/base/R-3/
-//
-//	return availableRVersions, nil
-//}
-
 func RetrieveValidRVersions() ([]string, error) {
 	rVersionURL := "https://cdn.posit.co/r/versions.json"
 
@@ -236,14 +230,15 @@ func RetrieveValidRVersions() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	versions := ConvertStringSlicetoVersionSlice(numericVersions)
+	versions := ConvertStringSliceToVersionSlice(numericVersions)
 
-	sortedVersions, err := SortVersions(versions)
+	sortedVersions := SortVersionsDesc(versions)
 	if err != nil {
 		return nil, errors.New("failed to sort versions")
 	}
+	stringVersions := ConvertVersionSliceToStringSlice(sortedVersions)
 
-	return sortedVersions, nil
+	return stringVersions, nil
 
 }
 
@@ -423,12 +418,12 @@ func CheckPromtAndSetRSymlinks(rPaths []string) error {
 }
 
 func ValidateRVersions(rVersions []string) error {
-	availableRVersions, err := RetrieveValidRVersions()
+	availRVersions, err := RetrieveValidRVersions()
 	if err != nil {
 		return fmt.Errorf("error retrieving valid R versions: %w", err)
 	}
 	for _, rVersion := range rVersions {
-		if !lo.Contains(availableRVersions, rVersion) {
+		if !lo.Contains(availRVersions, rVersion) {
 			return errors.New("version " + rVersion + " is not a valid R version")
 		}
 	}

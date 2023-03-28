@@ -253,11 +253,6 @@ func PythonPATHPrompt() (bool, error) {
 	return name, nil
 }
 
-//func RetrieveValidPythonVersions() ([]string, error) {
-//	// TODO make this dynamic based on https://cdn.posit.co/python/versions.json
-//	return availablePythonVersions, nil
-//}
-
 func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error) {
 	pythonVersionURL := "https://cdn.posit.co/python/versions.json"
 
@@ -284,7 +279,7 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 		return nil, errors.New("error unmarshalling JSON data")
 	}
 
-	versions := ConvertStringSlicetoVersionSlice(availVersions.PythonVersions)
+	versions := ConvertStringSliceToVersionSlice(availVersions.PythonVersions)
 
 	unavailPythonVersions := unavailablePythonVersionsByOS(osType)
 
@@ -313,12 +308,13 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 		}
 	}
 
-	sortedVersions, err := SortVersions(versions)
+	sortedVersions := SortVersionsDesc(versions)
 	if err != nil {
 		return nil, errors.New("failed to sort versions")
 	}
+	stringVersions := ConvertVersionSliceToStringSlice(sortedVersions)
 
-	return sortedVersions, nil
+	return stringVersions, nil
 
 }
 
