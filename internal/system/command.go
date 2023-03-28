@@ -8,10 +8,13 @@ import (
 )
 
 // Runs a command in the terminal and streams the output
-func RunCommand(command string) error {
-	fmt.Println("Running command: " + command)
-	// sleep for 3 seconds to allow the user to read the command
-	time.Sleep(3 * time.Second)
+func RunCommand(command string, displayCommand bool, delay time.Duration) error {
+	if displayCommand {
+		fmt.Println("Running command: " + command)
+	}
+
+	// sleep for X seconds to allow the user to read the command
+	time.Sleep(delay * time.Second)
 
 	cmd := exec.Command("/bin/sh", "-c", command)
 
@@ -20,22 +23,26 @@ func RunCommand(command string) error {
 
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("issue running command: %w", err)
+		return fmt.Errorf("issue running the command '%s': %w", command, err)
 	}
 
 	return nil
 }
 
 // Runs a command in the terminal and return stdout/stderr as seperate strings
-func RunCommandAndCaptureOutput(command string) (string, error) {
+func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.Duration) (string, error) {
+	if displayCommand {
+		fmt.Println("Running command: " + command)
+	}
 
-	fmt.Println("Running command: " + command)
-	// sleep for 3 seconds to allow the user to read the command
-	time.Sleep(3 * time.Second)
+	// sleep for X seconds to allow the user to read the command
+	time.Sleep(delay * time.Second)
+
 	cmd := exec.Command("/bin/sh", "-c", command)
+
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("issue in CombinedOutput: %w", err)
+		return "", fmt.Errorf("issue running the command '%s': %w", command, err)
 	}
 
 	return string(out), nil

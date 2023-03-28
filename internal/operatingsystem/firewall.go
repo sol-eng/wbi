@@ -10,29 +10,31 @@ import (
 )
 
 func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
-
 	if osType == config.Redhat7 || osType == config.Redhat8 || osType == config.Redhat9 {
-		rpmOutput, err := system.RunCommandAndCaptureOutput("rpm -q firewalld || true")
+		firewallCheckCommand := "rpm -q firewalld || true"
+		rpmOutput, err := system.RunCommandAndCaptureOutput(firewallCheckCommand, false, 0)
 		if err != nil {
-			return false, fmt.Errorf("issue in rpmOutput check: %w", err)
+			return false, fmt.Errorf("issue in rpmOutput check with command '%s': %w", firewallCheckCommand, err)
 		}
 
 		if strings.Contains(rpmOutput, "not installed") {
 			return false, nil
 		}
 
-		firewallActive, err := system.RunCommandAndCaptureOutput("systemctl is-active firewalld || true")
+		firewallIsActiveCommand := "systemctl is-active firewalld || true"
+		firewallActive, err := system.RunCommandAndCaptureOutput(firewallIsActiveCommand, false, 0)
 		if err != nil {
-			return false, fmt.Errorf("issue in firewallActive: %w", err)
+			return false, fmt.Errorf("issue in firewallActive with the command '%s': %w", firewallIsActiveCommand, err)
 		}
 
 		if !strings.Contains(firewallActive, "inactive") {
 			return true, nil
 		}
 
-		firewallEnabled, err := system.RunCommandAndCaptureOutput("systemctl is-enabled firewalld || true")
+		firewallEnabledCommand := "systemctl is-enabled firewalld || true"
+		firewallEnabled, err := system.RunCommandAndCaptureOutput(firewallEnabledCommand, false, 0)
 		if err != nil {
-			return false, fmt.Errorf("issue in firewallEnabled check: %w", err)
+			return false, fmt.Errorf("issue in firewallEnabled check with the command '%s': %w", firewallEnabledCommand, err)
 		}
 
 		if strings.Contains(firewallEnabled, "enabled") {
