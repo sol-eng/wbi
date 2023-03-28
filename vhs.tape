@@ -1,10 +1,17 @@
 Output vhs.gif
 
+Set FontSize 26
+Set Width 1200
+Set Height 800
+
 # Setup
 Hide
-Type "go build && clear"
+Type "go build"
 Enter
-Sleep 5s
+Sleep 10s
+Type "clear"
+Enter
+Sleep 2
 Show
 
 Sleep 2s
