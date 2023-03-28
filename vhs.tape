@@ -1,9 +1,9 @@
-Output vhs.mp4
+Output vhs.gif
 
 Set FontSize 16
 Set Width 1200
 Set Height 800
-Set PlaybackSpeed 2.0
+Set PlaybackSpeed 1
 
 # Setup
 Hide
@@ -22,7 +22,10 @@ Sleep 3s
 Type "y"
 Sleep 500ms
 Enter
-Sleep 13s
+Hide
+Sleep 12s
+Show
+Sleep 1s
 Enter
 Sleep 500ms
 Type "y"
@@ -36,19 +39,28 @@ Sleep 500ms
 Down
 Type " "
 Enter
-Sleep 38s
+Hide
+Sleep 37s
+Show
+Sleep 1s
 Type "y"
 Enter
 Sleep 1.5s
 Down
 Enter
-Sleep 8s
+Hide
+Sleep 7s
+Show
+Sleep 1s
 Type "y"
 Enter
 Sleep 500ms
 Type " "
 Enter
-Sleep 25s
+Hide
+Sleep 24s
+Show
+Sleep 1s
 Type "y"
 Enter
 Sleep 500ms
@@ -56,18 +68,30 @@ Enter
 Sleep 500ms
 Type "y"
 Enter
-Sleep 58s
+Hide
+Sleep 57s
+Show
+Sleep 1s
 Type "N"
 Enter
 Sleep 500ms
 Type "y"
 Enter 2
-Sleep 52s
+Hide
+Sleep 51s
+Show
+Sleep 1s
 Type "y"
 Enter
-Sleep 23s
+Hide
+Sleep 22s
+Show
+Sleep 1s
 Enter
-Sleep 45s
+Hide
+Sleep 44s
+Show
+Sleep 1s
 Type "N"
 Enter
 Type "N"
