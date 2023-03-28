@@ -46,6 +46,8 @@ func ConvertOSTypeToOSName(osType config.OperatingSystem) (string, error) {
 		osName = "centos7"
 	case config.Redhat8:
 		osName = "centos8"
+	case config.Redhat9:
+		osName = "rhel9"
 	default:
 		return "", errors.New("operating system not supported")
 	}

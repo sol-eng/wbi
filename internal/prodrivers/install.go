@@ -100,7 +100,8 @@ func (pd *ProDrivers) GetInstallerInfo(osType config.OperatingSystem) (Installer
 		return pd.ProDrivers.Installer.Focal, nil
 	case config.Redhat7:
 		return pd.ProDrivers.Installer.Redhat7, nil
-	case config.Redhat8:
+	// Posit Pro Drivers are the same for RHEL 8 and RHEL 9
+	case config.Redhat8, config.Redhat9:
 		return pd.ProDrivers.Installer.Redhat8, nil
 	default:
 		return InstallerInfo{}, errors.New("operating system not supported")
@@ -141,7 +142,7 @@ func InstallUnixODBC(osType config.OperatingSystem) error {
 		if err != nil {
 			return fmt.Errorf("issue installing unixodbc and unixodbc-dev with the command '%s': %w", prereqCommand, err)
 		}
-	} else if osType == config.Redhat7 || osType == config.Redhat8 {
+	} else if osType == config.Redhat7 || osType == config.Redhat8 || osType == config.Redhat9 {
 		prereqCommand := "yum -y install unixODBC unixODBC-devel"
 		err := system.RunCommand(prereqCommand, true, 1)
 		if err != nil {

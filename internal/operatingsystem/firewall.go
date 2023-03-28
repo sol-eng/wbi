@@ -10,8 +10,7 @@ import (
 )
 
 func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
-
-	if osType == config.Redhat7 || osType == config.Redhat8 {
+	if osType == config.Redhat7 || osType == config.Redhat8 || osType == config.Redhat9 {
 		firewallCheckCommand := "rpm -q firewalld || true"
 		rpmOutput, err := system.RunCommandAndCaptureOutput(firewallCheckCommand, false, 0)
 		if err != nil {
