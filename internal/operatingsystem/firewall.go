@@ -21,7 +21,7 @@ func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 			return false, nil
 		}
 
-		firewallIsActiveCommand := "systemctl is-active firewalld"
+		firewallIsActiveCommand := "systemctl is-active firewalld || true"
 		firewallActive, err := system.RunCommandAndCaptureOutput(firewallIsActiveCommand, false, 0)
 		if err != nil {
 			return false, fmt.Errorf("issue in firewallActive with the command '%s': %w", firewallIsActiveCommand, err)
@@ -31,7 +31,7 @@ func CheckFirewallStatus(osType config.OperatingSystem) (bool, error) {
 			return true, nil
 		}
 
-		firewallEnabledCommand := "systemctl is-enabled firewalld"
+		firewallEnabledCommand := "systemctl is-enabled firewalld || true"
 		firewallEnabled, err := system.RunCommandAndCaptureOutput(firewallEnabledCommand, false, 0)
 		if err != nil {
 			return false, fmt.Errorf("issue in firewallEnabled check with the command '%s': %w", firewallEnabledCommand, err)

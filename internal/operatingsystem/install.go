@@ -79,10 +79,10 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 			if err != nil {
 				return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
 			}
-			enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-9-*-rpms"`
-			err = system.RunCommand(enableCodeReadyCommand)
+			enableCodeReadyCommand := `dnf config-manager --set-enabled "*codeready-builder-for-rhel-9-*-rpms"`
+			err = system.RunCommand(enableCodeReadyCommand, true, 1)
 			if err != nil {
-				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo: %w", err)
+				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo with the command '%s': %w", enableCodeReadyCommand, err)
 			}
 		case config.Redhat8:
 			dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
@@ -90,7 +90,8 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 			if err != nil {
 				return fmt.Errorf("issue installing dnf-plugins-core with the command '%s': %w", dnfPluginsCoreCommand, err)
 			}
-			enableCodeReadyCommand := `dnf config-manager --set-enabled "codeready-builder-for-rhel-8-*-rpms"`
+
+			enableCodeReadyCommand := `dnf config-manager --set-enabled "*codeready-builder-for-rhel-8-*-rpms"`
 			err = system.RunCommand(enableCodeReadyCommand, true, 1)
 			if err != nil {
 				return fmt.Errorf("issue enabling the CodeReady Linux Builder repo with the command '%s': %w", enableCodeReadyCommand, err)
