@@ -3,7 +3,7 @@ Output vhs.gif
 # Setup
 Hide
 Type "go build && clear"
-Sleep 2s
+Sleep 10s
 Enter
 Sleep 2s
 Show
