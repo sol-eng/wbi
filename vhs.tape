@@ -1,3 +1,5 @@
+Output vhs.gif
+
 Sleep 2s
 Type "sudo wbi setup"
 Enter
