@@ -1,4 +1,4 @@
-name: comment gif
+name: comment mp4
 on:
   pull_request:
     paths:
@@ -21,13 +21,13 @@ jobs:
       - uses: devicons/public-upload-to-imgur@v2.2.2
         id: imgur_step
         with:
-          path: ./vhs.gif
+          path: ./vhs.mp4
           client_id: ${{ secrets.IMGUR_CLIENT_ID }}
       - uses: github-actions-up-and-running/pr-comment@v1.0.1
         env:
           IMG_URL: ${{ fromJSON(steps.imgur_step.outputs.imgur_urls)[0] }}
           MESSAGE: |
-            ![VHS GIf]({0})
+            ![VHS MP4]({0})
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           message: ${{ format(env.MESSAGE, env.IMG_URL) }}

@@ -1,4 +1,4 @@
-Output vhs.gif
+Output vhs.mp4
 
 Set FontSize 16
 Set Width 1200
