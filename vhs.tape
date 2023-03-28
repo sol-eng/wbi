@@ -1,7 +1,7 @@
 Output vhs.gif
 
 Sleep 2s
-Type "sudo wbi setup"
+Type "sudo ./wbi setup"
 Enter
 Sleep 3s
 Type "y"
