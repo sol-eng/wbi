@@ -75,9 +75,9 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 		switch osType {
 		case config.Redhat9:
 			dnfPluginsCoreCommand := "dnf install -y dnf-plugins-core"
-			err := system.RunCommand(dnfPluginsCoreCommand)
+			err := system.RunCommand(dnfPluginsCoreCommand, true, 1)
 			if err != nil {
-				return fmt.Errorf("issue installing dnf-plugins-core: %w", err)
+				return fmt.Errorf("issue installing dnf-plugins-core with the command '%s': %w", dnfPluginsCoreCommand, err)
 			}
 			enableCodeReadyCommand := `dnf config-manager --set-enabled "*codeready-builder-for-rhel-9-*-rpms"`
 			err = system.RunCommand(enableCodeReadyCommand, true, 1)
@@ -113,9 +113,9 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 		switch osType {
 		case config.Redhat9:
 			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-9-$(arch)-rpms\n"
-			err := system.RunCommand(OnPremCodeReadyEnableCommand)
+			err := system.RunCommand(OnPremCodeReadyEnableCommand, true, 1)
 			if err != nil {
-				return fmt.Errorf("issue enabling codeready repo: %w", err)
+				return fmt.Errorf("issue enabling codeready repo with the command '%s': %w", OnPremCodeReadyEnableCommand, err)
 			}
 		case config.Redhat8:
 			OnPremCodeReadyEnableCommand := "sudo subscription-manager repos --enable codeready-builder-for-rhel-8-x86_64-rpms\n"
