@@ -107,7 +107,10 @@ func VerifyAndBuildPublicPackageManager(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("issue building Posit Public Package Manager URL: %w", err)
 	}
-	// TODO add config here
+	err = workbench.WriteRepoConfig(publicPackageManagerURL, "cran")
+	if err != nil {
+		return fmt.Errorf("failed to write CRAN repo config: %w", err)
+	}
 	return nil
 }
 
