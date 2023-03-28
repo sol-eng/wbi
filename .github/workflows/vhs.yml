@@ -15,7 +15,7 @@ jobs:
         id: imgur_step
         with:
           path: ./vhs.gif
-          client_id: ${{ secrets.IMGUR_CLIENT_ID }} # Make sure you have this secret set in your repo
+          client_id: ${{ secrets.IMGUR_CLIENT_ID }}
       - uses: github-actions-up-and-running/pr-comment@v1.0.1
         env:
           IMG_URL: ${{ fromJSON(steps.imgur_step.outputs.imgur_urls)[0] }}
