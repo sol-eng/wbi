@@ -2,7 +2,6 @@ package workbench
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/sol-eng/wbi/internal/system"
 )
@@ -31,25 +30,26 @@ func WriteRepoConfig(url string, source string) error {
 			return fmt.Errorf("line already exists in repos.conf")
 		}
 	} else if source == "pypi" {
-		// TODO instead of removing ensure that the correct URL is set
-		// Remove pip.conf if it exists
-		if _, err := os.Stat("/etc/pip.conf"); err == nil {
-			err = os.Remove("/etc/pip.conf")
-			if err != nil {
-				return fmt.Errorf("failed to remove pip.conf: %w", err)
-			}
-		}
-
-		writeLines := []string{
-			"[global]",
-			"index-url=" + url,
-		}
 		filepath := "/etc/pip.conf"
-
-		fmt.Println("\n=== Writing to the file " + filepath + ":")
-		err := system.WriteStrings(writeLines, filepath, 0644)
+		// check to ensure the line doesn't already exist
+		lineExists, err := system.CheckStringExists("index-url="+url, filepath)
 		if err != nil {
-			return fmt.Errorf("failed to write config: %w", err)
+			return fmt.Errorf("failed to check if line exists: %w", err)
+		}
+
+		if !lineExists {
+			writeLines := []string{
+				"[global]",
+				"index-url=" + url,
+			}
+
+			fmt.Println("\n=== Writing to the file " + filepath + ":")
+			err := system.WriteStrings(writeLines, filepath, 0644)
+			if err != nil {
+				return fmt.Errorf("failed to write config: %w", err)
+			}
+		} else {
+			return fmt.Errorf("line already exists in pip.conf")
 		}
 	}
 	return nil
