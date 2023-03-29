@@ -31,59 +31,127 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue in prompt for Posit Package Manager language choices: %w", err)
 	}
 
-	// prompt for base URL
-	rawPackageManagerURL, err := PromptPackageManagerURL()
-	if err != nil {
-		return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
-	}
+	var overallSkip bool
 
-	// verify URL
-	cleanURL, err := VerifyPackageManagerURL(rawPackageManagerURL)
-	if err != nil {
-		return fmt.Errorf("issue verifying Posit Package Manager URL: %w", err)
+	var goodURL bool
+	var cleanURL string
+	for {
+		// prompt for base URL
+		rawPackageManagerURL, err := PromptPackageManagerURL()
+		if err != nil {
+			return fmt.Errorf("issue entering Posit Package Manager URL: %w", err)
+		}
+		if strings.Contains(rawPackageManagerURL, "skip") {
+			overallSkip = true
+			break
+		}
+		// verify URL
+		cleanURL, err = VerifyPackageManagerURL(rawPackageManagerURL)
+		if err != nil {
+			if !(strings.Contains(err.Error(), "error in HTTP status code") || strings.Contains(err.Error(), "error retrieving JSON data")) {
+				return fmt.Errorf("issue verifying Posit Package Manager URL: %w", err)
+			}
+		} else {
+			goodURL = true
+		}
+		if goodURL {
+			break
+		} else {
+			fmt.Println(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
+		}
 	}
 
 	// r repo
-	if lo.Contains(languageChoices, "r") {
-		repoPackageManager, err := PromptPackageManagerRepo("r")
-		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+	if lo.Contains(languageChoices, "r") && !overallSkip {
+		var goodRepoR bool
+		var repoPackageManager string
+		for {
+			repoPackageManager, err = PromptPackageManagerRepo("r")
+
+			if err != nil {
+				return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+			}
+			if strings.Contains(repoPackageManager, "skip") {
+				overallSkip = true
+				break
+			}
+
+			err = VerifyPackageManagerRepo(cleanURL, repoPackageManager, "r")
+			if err != nil {
+				if !(strings.Contains(err.Error(), "error in HTTP status code") || strings.Contains(err.Error(), "error retrieving JSON data") || strings.Contains(err.Error(), "error finding the "+repoPackageManager+" repository in Posit Package Manager")) {
+					return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
+				}
+			} else {
+				goodRepoR = true
+			}
+
+			if goodRepoR {
+				break
+			} else {
+				fmt.Println(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
+			}
 		}
 
-		err = VerifyPackageManagerRepo(cleanURL, repoPackageManager, "r")
-		if err != nil {
-			return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
-		}
+		if !overallSkip {
+			packageManagerURLFull, err := BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "r")
+			if err != nil {
+				return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
+			}
 
-		packageManagerURLFull, err := BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "r")
-		if err != nil {
-			return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
-		}
-		err = workbench.WriteRepoConfig(packageManagerURLFull, "cran")
-		if err != nil {
-			return fmt.Errorf("failed to write CRAN repo config: %w", err)
+			err = workbench.WriteRepoConfig(packageManagerURLFull, "cran")
+			if err != nil {
+				if strings.Contains(err.Error(), "line already exists in repos.conf") {
+					fmt.Println("CRAN repo already exists in /etc/rstudio/repos.conf. Skipping writing to the file.")
+				} else {
+					return fmt.Errorf("failed to write CRAN repo config: %w", err)
+				}
+			}
 		}
 	}
 
 	// python repo
-	if lo.Contains(languageChoices, "python") {
-		repoPackageManager, err := PromptPackageManagerRepo("python")
-		if err != nil {
-			return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+	if lo.Contains(languageChoices, "python") && !overallSkip {
+		var goodRepoPython bool
+		var repoPackageManagerPython string
+		for {
+			repoPackageManagerPython, err = PromptPackageManagerRepo("python")
+			if err != nil {
+				return fmt.Errorf("issue entering Posit Package Manager repo name: %w", err)
+			}
+			if strings.Contains(repoPackageManagerPython, "skip") {
+				overallSkip = true
+				break
+			}
+
+			err = VerifyPackageManagerRepo(cleanURL, repoPackageManagerPython, "python")
+			if err != nil {
+				if !(strings.Contains(err.Error(), "error in HTTP status code") || strings.Contains(err.Error(), "error retrieving JSON data") || strings.Contains(err.Error(), "error finding the "+repoPackageManagerPython+" repository in Posit Package Manager")) {
+					return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
+				}
+			} else {
+				goodRepoPython = true
+			}
+
+			if goodRepoPython {
+				break
+			} else {
+				fmt.Println(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
+			}
 		}
 
-		err = VerifyPackageManagerRepo(cleanURL, repoPackageManager, "python")
-		if err != nil {
-			return fmt.Errorf("issue verifying Posit Package Manager repo: %w", err)
-		}
-
-		packageManagerURLFull, err := BuildPackagemanagerFullURL(cleanURL, repoPackageManager, osType, "python")
-		if err != nil {
-			return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
-		}
-		err = workbench.WriteRepoConfig(packageManagerURLFull, "pypi")
-		if err != nil {
-			return fmt.Errorf("failed to write PyPI repo config: %w", err)
+		if !overallSkip {
+			packageManagerURLFull, err := BuildPackagemanagerFullURL(cleanURL, repoPackageManagerPython, osType, "python")
+			if err != nil {
+				return fmt.Errorf("issue building Posit Package Manager URL: %w", err)
+			}
+			err = workbench.WriteRepoConfig(packageManagerURLFull, "pypi")
+			if err != nil {
+				if strings.Contains(err.Error(), "line already exists in pip.conf") {
+					fmt.Println("PyPI URL already exists in /etc/pip.conf. Skipping writing to the file.")
+				} else {
+					return fmt.Errorf("failed to write PyPI repo config: %w", err)
+				}
+			}
 		}
 	}
 	return nil
