@@ -3,6 +3,7 @@ package connect
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sol-eng/wbi/internal/workbench"
@@ -22,17 +23,39 @@ func PromptConnectChoice() (bool, error) {
 }
 
 func PromptVerifyAndConfigConnect() error {
-	rawConnectURL, err := PromptConnectURL()
-	if err != nil {
-		return fmt.Errorf("issue entering Connect URL: %w", err)
+	var overallSkip bool
+	var goodURL bool
+	var connectURLFull string
+	for {
+		rawConnectURL, err := PromptConnectURL()
+		if err != nil {
+			return fmt.Errorf("issue entering Connect URL: %w", err)
+		}
+		if strings.Contains(rawConnectURL, "skip") {
+			overallSkip = true
+			break
+		}
+		connectURLFull, err = VerifyConnectURL(rawConnectURL)
+		if err != nil {
+			if !(strings.Contains(err.Error(), "error in HTTP status code") || strings.Contains(err.Error(), "error retrieving JSON data")) {
+				return fmt.Errorf("issue with checking the Connect URL: %w", err)
+			}
+		} else {
+			goodURL = true
+		}
+
+		if goodURL {
+			break
+		} else {
+			fmt.Println(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
+		}
 	}
-	connectURLFull, err := VerifyConnectURL(rawConnectURL)
-	if err != nil {
-		return fmt.Errorf("issue with checking the Connect URL: %w", err)
-	}
-	err = workbench.WriteConnectURLConfig(connectURLFull)
-	if err != nil {
-		return fmt.Errorf("failed to write Connect URL config: %w", err)
+
+	if !overallSkip {
+		err := workbench.WriteConnectURLConfig(connectURLFull)
+		if err != nil {
+			return fmt.Errorf("failed to write Connect URL config: %w", err)
+		}
 	}
 	return nil
 }
