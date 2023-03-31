@@ -124,10 +124,20 @@ func PromptAndInstallPython(osType config.OperatingSystem) ([]string, error) {
 		if err != nil {
 			return []string{}, fmt.Errorf("issue retrieving Python versions: %w", err)
 		}
-		installPythonVersions, err := PythonSelectVersionsPrompt(validPythonVersions)
-		if err != nil {
-			return []string{}, fmt.Errorf("issue selecting Python versions: %w", err)
+
+		var installPythonVersions []string
+		for {
+			installPythonVersions, err = PythonSelectVersionsPrompt(validPythonVersions)
+			if err != nil {
+				return []string{}, fmt.Errorf("issue selecting Python versions: %w", err)
+			}
+			if len(installPythonVersions) == 0 {
+				fmt.Println(`No Python versions selected. Please select at least one version to install.`)
+			} else {
+				break
+			}
 		}
+
 		for _, pythonVersion := range installPythonVersions {
 			err = DownloadAndInstallPython(pythonVersion, osType)
 			if err != nil {
@@ -336,9 +346,6 @@ func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, err
 	err := survey.Ask(qs, &pythonVersionsAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the Python versions selection prompt")
-	}
-	if len(pythonVersionsAnswers.PythonVersions) == 0 {
-		return []string{}, errors.New("at least one Python version must be selected")
 	}
 	return pythonVersionsAnswers.PythonVersions, nil
 }

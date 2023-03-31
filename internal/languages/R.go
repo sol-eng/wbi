@@ -71,10 +71,20 @@ func PromptAndInstallR(osType config.OperatingSystem) ([]string, error) {
 		if err != nil {
 			return []string{}, fmt.Errorf("issue retrieving R versions: %w", err)
 		}
-		installRVersions, err := RSelectVersionsPrompt(validRVersions)
-		if err != nil {
-			return []string{}, fmt.Errorf("issue selecting R versions: %w", err)
+
+		var installRVersions []string
+		for {
+			installRVersions, err = RSelectVersionsPrompt(validRVersions)
+			if err != nil {
+				return []string{}, fmt.Errorf("issue selecting R versions: %w", err)
+			}
+			if len(installRVersions) == 0 {
+				fmt.Println(`No R versions selected. Please select at least one version to install.`)
+			} else {
+				break
+			}
 		}
+
 		for _, rVersion := range installRVersions {
 			err = DownloadAndInstallR(rVersion, osType)
 			if err != nil {
@@ -261,9 +271,7 @@ func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the R versions selection prompt")
 	}
-	if len(rVersionsAnswers.RVersions) == 0 {
-		return []string{}, errors.New("at least one R version must be selected")
-	}
+
 	return rVersionsAnswers.RVersions, nil
 }
 
