@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // TestActivateParamsValidate tests the activate command parameters
@@ -76,27 +73,8 @@ func TestActivateCommandIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	ctx := context.Background()
-	req := testcontainers.ContainerRequest{
-		FromDockerfile: testcontainers.FromDockerfile{
-			Context:    "../.",
-			Dockerfile: "Dockerfile.Workbench",
-		},
-		ExposedPorts: []string{"8787/tcp"},
-		WaitingFor:   wait.ForLog("Workbench has been successfully activated"),
-		Cmd:          []string{"/bin/sh", "-c", fmt.Sprintf("sudo ./wbi activate license --key=%s", os.Getenv("RSW_LICENSE"))},
-	}
-	workbenchC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	command := []string{"./wbi", "activate", "license", fmt.Sprintf("--key=%s", os.Getenv("RSW_LICENSE"))}
+	successMessage := "Workbench has been successfully activated"
 
-	defer func() {
-		if err := workbenchC.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err.Error())
-		}
-	}()
+	IntegrationContainerRunner(t, "Dockerfile.Workbench", command, successMessage)
 }
