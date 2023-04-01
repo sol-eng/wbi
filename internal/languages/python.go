@@ -436,7 +436,7 @@ func CheckIfPythonProfileDExists() bool {
 		return false
 	}
 
-	fmt.Println("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.\n")
+	fmt.Println("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.")
 	return true
 }
 func unavailablePythonVersionsByOS(osType config.OperatingSystem) unavailablePythonVersions {
