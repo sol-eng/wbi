@@ -19,33 +19,33 @@ func RestartRStudioServerAndLauncher() error {
 }
 
 func RestartRStudioServer() error {
-	err := system.RunCommand("rstudio-server restart")
+	err := system.RunCommand("rstudio-server restart", true, 1)
 	if err != nil {
-		return fmt.Errorf("issue restarting rstudio-server: %w", err)
+		return fmt.Errorf("issue restarting rstudio-server with the command 'rstudio-server restart': %w", err)
 	}
 	return nil
 }
 
 func RestartRStudioLauncher() error {
-	err := system.RunCommand("rstudio-launcher restart")
+	err := system.RunCommand("rstudio-launcher restart", true, 1)
 	if err != nil {
-		return fmt.Errorf("issue restarting rstudio-launcher: %w", err)
+		return fmt.Errorf("issue restarting rstudio-launcher with the command 'rstudio-launcher restart': %w", err)
 	}
 	return nil
 }
 
 func StopRStudioServer() error {
-	err := system.RunCommand("rstudio-server stop")
+	err := system.RunCommand("rstudio-server stop", true, 1)
 	if err != nil {
-		return fmt.Errorf("issue stopping rstudio-server: %w", err)
+		return fmt.Errorf("issue stopping rstudio-server with the command 'rstudio-server stop': %w", err)
 	}
 	return nil
 }
 
 func StartRStudioServer() error {
-	err := system.RunCommand("rstudio-server start")
+	err := system.RunCommand("rstudio-server start", true, 1)
 	if err != nil {
-		return fmt.Errorf("issue starting rstudio-server: %w", err)
+		return fmt.Errorf("issue starting rstudio-server with the command 'rstudio-server start': %w", err)
 	}
 	return nil
 }

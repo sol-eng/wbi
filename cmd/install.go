@@ -165,7 +165,11 @@ func (opts *installOpts) Validate(args []string) error {
 			return fmt.Errorf("invalid R versions: %w", err)
 		}
 	} else if args[0] == "python" && len(opts.versions) != 0 {
-		err := languages.ValidatePythonVersions(opts.versions)
+		osType, err := operatingsystem.DetectOS()
+		if err != nil {
+			return fmt.Errorf("issue detecting OS: %w", err)
+		}
+		err = languages.ValidatePythonVersions(opts.versions, osType)
 		if err != nil {
 			return fmt.Errorf("invalid Python versions: %w", err)
 		}

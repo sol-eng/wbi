@@ -83,9 +83,9 @@ func InstallProDrivers(filepath string, osType config.OperatingSystem) error {
 		return fmt.Errorf("RetrieveInstallCommand: %w", err)
 	}
 
-	err = system.RunCommand(installCommand)
+	err = system.RunCommand(installCommand, false, 0)
 	if err != nil {
-		return fmt.Errorf("issue installing Pro Drivers: %w", err)
+		return fmt.Errorf("issue installing Pro Drivers with the command '%s': %w", installCommand, err)
 	}
 
 	fmt.Println("\nPosit Pro Drivers have been successfully installed!\n")
@@ -137,14 +137,16 @@ func RetrieveProDriversInstallerInfo() (ProDrivers, error) {
 // Installs unixODBC and unixODBC-devel
 func InstallUnixODBC(osType config.OperatingSystem) error {
 	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
-		err := system.RunCommand("apt-get -y install unixodbc unixodbc-dev")
+		prereqCommand := "apt-get -y install unixodbc unixodbc-dev"
+		err := system.RunCommand(prereqCommand, true, 1)
 		if err != nil {
-			return fmt.Errorf("issue installing unixodbc and unixodbc-dev: %w", err)
+			return fmt.Errorf("issue installing unixodbc and unixodbc-dev with the command '%s': %w", prereqCommand, err)
 		}
 	} else if osType == config.Redhat7 || osType == config.Redhat8 || osType == config.Redhat9 {
-		err := system.RunCommand("yum -y install unixODBC unixODBC-devel")
+		prereqCommand := "yum -y install unixODBC unixODBC-devel"
+		err := system.RunCommand(prereqCommand, true, 1)
 		if err != nil {
-			return fmt.Errorf("issue installing unixodbc and unixodbc-dev: %w", err)
+			return fmt.Errorf("issue installing unixodbc and unixodbc-dev with the command '%s': %w", prereqCommand, err)
 		}
 	} else {
 		return errors.New("operating system not supported")
@@ -158,15 +160,17 @@ func BackupAndAppendODBCConfiguration() error {
 	// backup odbcinst.ini if one already exists
 	if _, err := os.Stat("/etc/odbcinst.ini"); err == nil {
 		fmt.Println("Backing up /etc/odbcinst.ini to /etc/odbcinst.ini.bak")
-		err := system.RunCommand("cp /etc/odbcinst.ini /etc/odbcinst.ini.bak")
+		backupCommand := "cp /etc/odbcinst.ini /etc/odbcinst.ini.bak"
+		err := system.RunCommand(backupCommand, true, 1)
 		if err != nil {
-			return fmt.Errorf("issue backing up /etc/odbcinst.ini: %w", err)
+			return fmt.Errorf("issue backing up /etc/odbcinst.ini with the command '%s': %w", backupCommand, err)
 		}
 	}
 	// append sample ODBC configuration to odbcinst.ini
-	_, err := system.RunCommandAndCaptureOutput("cat /opt/rstudio-drivers/odbcinst.ini.sample | tee -a /etc/odbcinst.ini")
+	addDefaultCommand := "cat /opt/rstudio-drivers/odbcinst.ini.sample | tee -a /etc/odbcinst.ini"
+	_, err := system.RunCommandAndCaptureOutput(addDefaultCommand, true, 1)
 	if err != nil {
-		return fmt.Errorf("issue appending sample configuration to /etc/odbcinst.ini: %w", err)
+		return fmt.Errorf("issue appending sample configuration to /etc/odbcinst.ini with the command '%s': %w", addDefaultCommand, err)
 	}
 
 	fmt.Println("\nThe sample preconfigured odbcinst.ini has been appended to /etc/odbcinst.ini\n")

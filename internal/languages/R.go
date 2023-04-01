@@ -1,14 +1,18 @@
 package languages
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
@@ -17,8 +21,12 @@ import (
 	"github.com/sol-eng/wbi/internal/system"
 )
 
-var availableRVersions = []string{
-	"4.2.2", "4.2.1", "4.2.0", "4.1.3", "4.1.2", "4.1.1", "4.1.0", "4.0.5", "4.0.4", "4.0.3", "4.0.2", "4.0.1", "4.0.0", "3.6.3", "3.6.2", "3.6.1", "3.6.0", "3.5.3", "3.5.2", "3.5.1", "3.5.0", "3.4.4", "3.4.3", "3.4.2", "3.4.1", "3.4.0", "3.3.3", "3.3.2", "3.3.1", "3.3.0",
+var nonNumericRVersions = []string{
+	"next", "devel",
+}
+
+type availableRVersions struct {
+	RVersions []string `json:"r_versions"`
 }
 
 var globalRPaths = []string{
@@ -52,7 +60,7 @@ func isRDir(path string) (string, bool) {
 	return rpath, false
 }
 
-// Prompts user if they want to install R and does the installation
+// PromptAndInstallR Prompts user if they want to install R and does the installation
 func PromptAndInstallR(osType config.OperatingSystem) ([]string, error) {
 	installRChoice, err := RInstallPrompt()
 	if err != nil {
@@ -63,10 +71,20 @@ func PromptAndInstallR(osType config.OperatingSystem) ([]string, error) {
 		if err != nil {
 			return []string{}, fmt.Errorf("issue retrieving R versions: %w", err)
 		}
-		installRVersions, err := RSelectVersionsPrompt(validRVersions)
-		if err != nil {
-			return []string{}, fmt.Errorf("issue selecting R versions: %w", err)
+
+		var installRVersions []string
+		for {
+			installRVersions, err = RSelectVersionsPrompt(validRVersions)
+			if err != nil {
+				return []string{}, fmt.Errorf("issue selecting R versions: %w", err)
+			}
+			if len(installRVersions) == 0 {
+				fmt.Println(`No R versions selected. Please select at least one version to install.`)
+			} else {
+				break
+			}
 		}
+
 		for _, rVersion := range installRVersions {
 			err = DownloadAndInstallR(rVersion, osType)
 			if err != nil {
@@ -133,7 +151,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 	return nil
 }
 
-// Append to a string slice only if the string is not yet in the slice
+// AppendIfMissing Append to a string slice only if the string is not yet in the slice
 func AppendIfMissing(slice []string, s string) []string {
 	for _, ele := range slice {
 		if ele == s {
@@ -179,7 +197,7 @@ func ScanForRVersions() ([]string, error) {
 	return foundVersions, nil
 }
 
-// Prompt users if they would like to install R versions
+// RInstallPrompt Prompt users if they would like to install R versions
 func RInstallPrompt() (bool, error) {
 	name := true
 	prompt := &survey.Confirm{
@@ -193,11 +211,48 @@ func RInstallPrompt() (bool, error) {
 }
 
 func RetrieveValidRVersions() ([]string, error) {
-	// TODO make this dynamic based on https://cran.r-project.org/src/base/R-4/ and https://cran.r-project.org/src/base/R-3/
-	return availableRVersions, nil
+	rVersionURL := "https://cdn.posit.co/r/versions.json"
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	req, err := http.NewRequestWithContext(context.Background(),
+		http.MethodGet, rVersionURL, nil)
+	if err != nil {
+		return nil, errors.New("error creating request")
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, errors.New("error retrieving JSON data")
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.New("error in HTTP status code")
+	}
+
+	var availVersions availableRVersions
+	err = json.NewDecoder(res.Body).Decode(&availVersions)
+	if err != nil {
+		return nil, errors.New("error unmarshalling JSON data")
+	}
+
+	numericVersions, err := removeElements(availVersions.RVersions, nonNumericRVersions)
+	if err != nil {
+		return nil, err
+	}
+	versions := ConvertStringSliceToVersionSlice(numericVersions)
+
+	sortedVersions := SortVersionsDesc(versions)
+	if err != nil {
+		return nil, errors.New("failed to sort versions")
+	}
+	stringVersions := ConvertVersionSliceToStringSlice(sortedVersions)
+
+	return stringVersions, nil
+
 }
 
-// Prompt asking users which R version(s) they would like to install
+// RSelectVersionsPrompt Prompt asking users which R version(s) they would like to install
 func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	var qs = []*survey.Question{
 		{
@@ -216,13 +271,11 @@ func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the R versions selection prompt")
 	}
-	if len(rVersionsAnswers.RVersions) == 0 {
-		return []string{}, errors.New("at least one R version must be selected")
-	}
+
 	return rVersionsAnswers.RVersions, nil
 }
 
-// Downloads the R installer, and installs R
+// DownloadAndInstallR Downloads the R installer, and installs R
 func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
 	// Create InstallerInfo with the proper information
 	installerInfo, err := PopulateInstallerInfo("r", rVersion, osType)
@@ -230,12 +283,12 @@ func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
 		return fmt.Errorf("PopulateInstallerInfo: %w", err)
 	}
 	// Download installer
-	filepath, err := install.DownloadFile("R", installerInfo.URL, installerInfo.Name)
+	installerPath, err := install.DownloadFile("R", installerInfo.URL, installerInfo.Name)
 	if err != nil {
 		return fmt.Errorf("DownloadR: %w", err)
 	}
 	// Install R
-	err = install.InstallLanguage("r", filepath, osType, rVersion)
+	err = install.InstallLanguage("r", installerPath, osType, rVersion)
 	if err != nil {
 		return fmt.Errorf("InstallLanguage: %w", err)
 	}
@@ -297,14 +350,14 @@ func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 // SetRSymlinks sets the R symlinks (both R and Rscript)
 func SetRSymlinks(rPath string) error {
 	rCommand := "ln -s " + rPath + " /usr/local/bin/R"
-	err := system.RunCommand(rCommand)
+	err := system.RunCommand(rCommand, true, 0)
 	if err != nil {
-		return fmt.Errorf("error setting R symlink: %w", err)
+		return fmt.Errorf("error setting R symlink with the command '%s': %w", rCommand, err)
 	}
 	rScriptCommand := "ln -s " + rPath + "script /usr/local/bin/Rscript"
-	err = system.RunCommand(rScriptCommand)
+	err = system.RunCommand(rScriptCommand, true, 0)
 	if err != nil {
-		return fmt.Errorf("error setting Rscript symlink: %w", err)
+		return fmt.Errorf("error setting Rscript symlink with the command '%s': %w", rScriptCommand, err)
 	}
 	return nil
 }
@@ -373,12 +426,12 @@ func CheckPromtAndSetRSymlinks(rPaths []string) error {
 }
 
 func ValidateRVersions(rVersions []string) error {
-	availableRVersions, err := RetrieveValidRVersions()
+	availRVersions, err := RetrieveValidRVersions()
 	if err != nil {
 		return fmt.Errorf("error retrieving valid R versions: %w", err)
 	}
 	for _, rVersion := range rVersions {
-		if !lo.Contains(availableRVersions, rVersion) {
+		if !lo.Contains(availRVersions, rVersion) {
 			return errors.New("version " + rVersion + " is not a valid R version")
 		}
 	}

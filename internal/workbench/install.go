@@ -87,9 +87,9 @@ func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 		return fmt.Errorf("RetrieveInstallCommandForWorkbench: %w", err)
 	}
 
-	err = system.RunCommand(installCommand)
+	err = system.RunCommand(installCommand, false, 0)
 	if err != nil {
-		return fmt.Errorf("issue installing Workbench: %w", err)
+		return fmt.Errorf("issue installing Workbench with the command '%s': %w", installCommand, err)
 	}
 
 	fmt.Println("\nWorkbench has been successfully installed!\n")
