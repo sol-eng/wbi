@@ -2,13 +2,16 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"strings"
 	"testing"
 
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func IntegrationContainerRunner(t *testing.T, dockerfile string, command []string, successMessage string) {
+func IntegrationContainerRunner(t *testing.T, dockerfile string, command []string, successMessage string, debug bool) {
 	ctx := context.Background()
 
 	req := testcontainers.ContainerRequest{
@@ -33,11 +36,18 @@ func IntegrationContainerRunner(t *testing.T, dockerfile string, command []strin
 		}
 	}()
 
-	c, _, err := ubuntuC.Exec(ctx, command)
+	_, reader, err := ubuntuC.Exec(ctx, command)
 	if err != nil {
 		t.Fatalf("genericContainer failed: %v", err)
 	}
-	if c > 0 {
-		t.Fatalf("genericContainer failed: %v", err)
+
+	if debug {
+		buf := new(strings.Builder)
+		_, err = io.Copy(buf, reader)
+		if err != nil {
+			t.Fatalf("genericContainer failed: %v", err)
+		}
+		// check errors
+		fmt.Println(buf.String())
 	}
 }

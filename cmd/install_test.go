@@ -1,13 +1,24 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/stretchr/testify/assert"
 )
 
 // TestInstallParamsValidate tests the install command parameters
 func TestInstallParamsValidate(t *testing.T) {
+	validRVersions, err := languages.RetrieveValidRVersions()
+	if err != nil {
+		t.Fatalf("failed to retrieve valid R versions: %v", err)
+	}
+	validPythonVersions, err := languages.RetrieveValidPythonVersions()
+	if err != nil {
+		t.Fatalf("failed to retrieve valid Python versions: %v", err)
+	}
+
 	//TODO: add valid R and Python versions from the availble versions function in languages package instead of hardcode
 	tests := map[string]struct {
 		args        []string
@@ -38,7 +49,7 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"r argument with a valid r version and a symlink flag succeeds": {
 			args:        []string{"r"},
-			flags:       installOpts{symlink: true, versions: []string{"3.6.1"}},
+			flags:       installOpts{symlink: true, versions: validRVersions[0:1]},
 			expectError: "",
 		},
 		"r argument with an invalid r version and a symlink flag fails": {
@@ -48,7 +59,7 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"r argument with single valid version flag succeeds": {
 			args:        []string{"r"},
-			flags:       installOpts{versions: []string{"3.6.1"}},
+			flags:       installOpts{versions: validRVersions[0:1]},
 			expectError: "",
 		},
 		"r argument with single invalid version flag fails": {
@@ -58,7 +69,7 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"r argument with multiple valid version flags succeeds": {
 			args:        []string{"r"},
-			flags:       installOpts{versions: []string{"3.6.1", "4.2.2"}},
+			flags:       installOpts{versions: validRVersions[0:2]},
 			expectError: "",
 		},
 		"r argument with multiple invalid version flags fails": {
@@ -68,7 +79,7 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"r argument with one valid and one invalid version flags fails": {
 			args:        []string{"r"},
-			flags:       installOpts{versions: []string{"3.6.1", "2.2.2"}},
+			flags:       installOpts{versions: []string{validRVersions[0], "2.2.2"}},
 			expectError: "version 2.2.2 is not a valid R version",
 		},
 		"r argument with path flag fails": {
@@ -99,7 +110,7 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"python argument with a valid python version and a addToPATH flag succeeds": {
 			args:        []string{"python"},
-			flags:       installOpts{addToPATH: true, versions: []string{"3.11.0"}},
+			flags:       installOpts{addToPATH: true, versions: validPythonVersions[0:1]},
 			expectError: "",
 		},
 		"python argument with an invalid python version and a addToPATH flag fails": {
@@ -109,7 +120,7 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"python argument with single valid version flag succeeds": {
 			args:        []string{"python"},
-			flags:       installOpts{versions: []string{"3.11.0"}},
+			flags:       installOpts{versions: validPythonVersions[0:1]},
 			expectError: "",
 		},
 		"python argument with single invalid version flag fails": {
@@ -119,7 +130,7 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"python argument with multiple valid version flags succeeds": {
 			args:        []string{"python"},
-			flags:       installOpts{versions: []string{"3.11.0", "3.10.0"}},
+			flags:       installOpts{versions: validPythonVersions[0:2]},
 			expectError: "",
 		},
 		"python argument with multiple invalid version flags fails": {
@@ -129,13 +140,91 @@ func TestInstallParamsValidate(t *testing.T) {
 		},
 		"python argument with one valid and one invalid version flags fails": {
 			args:        []string{"python"},
-			flags:       installOpts{versions: []string{"3.11.0", "3.3.2"}},
+			flags:       installOpts{versions: []string{validPythonVersions[0], "3.3.2"}},
 			expectError: "version 3.3.2 is not a valid Python version",
 		},
 		"python argument with path flag fails": {
 			args:        []string{"python"},
 			flags:       installOpts{path: "/opt/python/3.6.1/bin/python"},
 			expectError: "the path flag is only supported for jupyter",
+		},
+		// Workbench argument tests
+		"workbench argument only succeeds": {
+			args:        []string{"workbench"},
+			flags:       installOpts{},
+			expectError: "",
+		},
+		"workbench argument with a symlink flag fails": {
+			args:        []string{"workbench"},
+			flags:       installOpts{symlink: true},
+			expectError: "the symlink flag is only supported for r",
+		},
+		"workbench argument with a version flag fails": {
+			args:        []string{"workbench"},
+			flags:       installOpts{versions: []string{"2.11.1"}},
+			expectError: "workbench does not support specifying versions",
+		},
+		"workbench argument with a path flag fails": {
+			args:        []string{"workbench"},
+			flags:       installOpts{path: "/opt/python/3.6.1/bin/python"},
+			expectError: "the path flag is only supported for jupyter",
+		},
+		"workbench argument with a add-to-path flag fails": {
+			args:        []string{"workbench"},
+			flags:       installOpts{addToPATH: true},
+			expectError: "the add-to-path flag is only supported for python",
+		},
+		// Pro Drivers argument tests
+		"prodrivers argument only succeeds": {
+			args:        []string{"prodrivers"},
+			flags:       installOpts{},
+			expectError: "",
+		},
+		"prodrivers argument with a symlink flag fails": {
+			args:        []string{"prodrivers"},
+			flags:       installOpts{symlink: true},
+			expectError: "the symlink flag is only supported for r",
+		},
+		"prodrivers argument with a version flag fails": {
+			args:        []string{"prodrivers"},
+			flags:       installOpts{versions: []string{"2.11.1"}},
+			expectError: "prodrivers does not support specifying versions",
+		},
+		"prodrivers argument with a path flag fails": {
+			args:        []string{"prodrivers"},
+			flags:       installOpts{path: "/opt/python/3.6.1/bin/python"},
+			expectError: "the path flag is only supported for jupyter",
+		},
+		"prodrivers argument with a add-to-path flag fails": {
+			args:        []string{"prodrivers"},
+			flags:       installOpts{addToPATH: true},
+			expectError: "the add-to-path flag is only supported for python",
+		},
+		// Jupyter argument tests
+		"jupyter argument only succeeds": {
+			args:        []string{"jupyter"},
+			flags:       installOpts{},
+			expectError: "",
+		},
+		"jupyter argument with an invalid path flag succeeds in validating but returns the path does not exit": {
+			args:        []string{"jupyter"},
+			flags:       installOpts{path: "/opt/python/3.6.1/bin/python"},
+			expectError: "the path provided does not exist",
+		},
+		"jupyter argument with a symlink flag fails": {
+			args:        []string{"jupyter"},
+			flags:       installOpts{symlink: true},
+			expectError: "the symlink flag is only supported for r",
+		},
+		"jupyter argument with a version flag fails": {
+			args:        []string{"jupyter"},
+			flags:       installOpts{versions: []string{"2.11.1"}},
+			expectError: "jupyter does not support specifying versions",
+		},
+		"jupyter argument with a add-to-path flag fails": {
+			args:        []string{"jupyter"},
+			flags:       installOpts{addToPATH: true},
+			expectError: "the add-to-path flag is only supported for python",
 		},
 	}
 
@@ -161,4 +250,74 @@ func TestInstallParamsValidate(t *testing.T) {
 		})
 	}
 
+}
+
+// TestInstallRCommandIntegration tests the install command with the r arg in a Docker container.
+func TestInstallRCommandIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	validRVersions, err := languages.RetrieveValidRVersions()
+	if err != nil {
+		t.Fatalf("failed to retrieve valid R versions: %v", err)
+	}
+
+	installCommand := []string{"./wbi", "install", "r", fmt.Sprintf("--version=%s", validRVersions[0])}
+	successMessage := fmt.Sprintf("R version %s successfully installed!", validRVersions[0])
+
+	IntegrationContainerRunner(t, "Dockerfile.Ubuntu", installCommand, successMessage, false)
+}
+
+// TestInstallPythonCommandIntegration tests the install command with the python arg in a Docker container.
+func TestInstallPythonCommandIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	validPythonVersions, err := languages.RetrieveValidPythonVersions()
+	if err != nil {
+		t.Fatalf("failed to retrieve valid Python versions: %v", err)
+	}
+
+	installCommand := []string{"./wbi", "install", "python", fmt.Sprintf("--version=%s", validPythonVersions[0])}
+	successMessage := fmt.Sprintf("Python version %s successfully installed!", validPythonVersions[0])
+
+	IntegrationContainerRunner(t, "Dockerfile.Ubuntu", installCommand, successMessage, false)
+}
+
+// TestInstallWorkbenchCommandIntegration tests the install command with the workbench arg in a Docker container.
+func TestInstallWorkbenchCommandIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	installCommand := []string{"./wbi", "install", "workbench"}
+	successMessage := "Workbench has been successfully installed!"
+
+	IntegrationContainerRunner(t, "Dockerfile.Ubuntu-R-Python", installCommand, successMessage, false)
+}
+
+// TestInstallProDriversCommandIntegration tests the install command with the prodrivers arg in a Docker container.
+func TestInstallProDriversCommandIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	installCommand := []string{"./wbi", "install", "prodrivers"}
+	successMessage := "The sample preconfigured odbcinst.ini has been appended to /etc/odbcinst.ini"
+
+	IntegrationContainerRunner(t, "Dockerfile.Ubuntu", installCommand, successMessage, false)
+}
+
+// TestInstallJupyterCommandIntegration tests the install command with the jupyter arg in a Docker container.
+func TestInstallJupyterCommandIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	installCommand := []string{"./wbi", "install", "jupyter", "--path=/opt/python/3.11.2/bin/python"}
+	successMessage := "Jupyter notebook extensions have been successfully installed and enabled!"
+
+	IntegrationContainerRunner(t, "Dockerfile.Ubuntu-R-Python", installCommand, successMessage, false)
 }

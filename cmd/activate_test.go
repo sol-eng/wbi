@@ -76,5 +76,5 @@ func TestActivateCommandIntegration(t *testing.T) {
 	command := []string{"./wbi", "activate", "license", fmt.Sprintf("--key=%s", os.Getenv("RSW_LICENSE"))}
 	successMessage := "Workbench has been successfully activated"
 
-	IntegrationContainerRunner(t, "Dockerfile.Workbench", command, successMessage)
+	IntegrationContainerRunner(t, "Dockerfile.Workbench", command, successMessage, false)
 }
