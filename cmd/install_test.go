@@ -5,16 +5,23 @@ import (
 	"testing"
 
 	"github.com/sol-eng/wbi/internal/languages"
+	"github.com/sol-eng/wbi/internal/operatingsystem"
 	"github.com/stretchr/testify/assert"
 )
 
 // TestInstallParamsValidate tests the install command parameters
 func TestInstallParamsValidate(t *testing.T) {
+	// Determine OS
+	osType, err := operatingsystem.DetectOS()
+	if err != nil {
+		t.Fatalf("issue detecting OS: %v", err)
+	}
+
 	validRVersions, err := languages.RetrieveValidRVersions()
 	if err != nil {
 		t.Fatalf("failed to retrieve valid R versions: %v", err)
 	}
-	validPythonVersions, err := languages.RetrieveValidPythonVersions()
+	validPythonVersions, err := languages.RetrieveValidPythonVersions(osType)
 	if err != nil {
 		t.Fatalf("failed to retrieve valid Python versions: %v", err)
 	}
@@ -275,7 +282,13 @@ func TestInstallPythonCommandIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	validPythonVersions, err := languages.RetrieveValidPythonVersions()
+	// Determine OS
+	osType, err := operatingsystem.DetectOS()
+	if err != nil {
+		t.Fatalf("issue detecting OS: %v", err)
+	}
+
+	validPythonVersions, err := languages.RetrieveValidPythonVersions(osType)
 	if err != nil {
 		t.Fatalf("failed to retrieve valid Python versions: %v", err)
 	}
