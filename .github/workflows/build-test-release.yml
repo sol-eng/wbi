@@ -26,8 +26,8 @@ jobs:
           cache: true
       - name: Build
         run: go build -v ./...
-      # - name: Test
-      #   run: go test -v ./...
+      - name: Test (Unit + Integration Tests)
+        run: go test -v ./...
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.59.0
         env:
