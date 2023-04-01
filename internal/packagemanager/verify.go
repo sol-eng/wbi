@@ -26,7 +26,7 @@ func VerifyPackageManagerURL(packageManagerURL string) (string, error) {
 	fullTestURL := cleanPackageManagerURL + "/__ping__"
 
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 	req, err := http.NewRequestWithContext(context.Background(),
 		http.MethodGet, fullTestURL, nil)
@@ -51,7 +51,7 @@ func VerifyPackageManagerRepo(packageManagerURL string, packageManagerRepo strin
 	repoSearchURL := packageManagerURL + "/__api__/repos?type=" + language
 
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 	req, err := http.NewRequestWithContext(context.Background(),
 		http.MethodGet, repoSearchURL, nil)

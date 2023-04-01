@@ -24,11 +24,10 @@ func InstallJupyter(pythonPath string) error {
 // Install various Jupyter related packages from PyPI
 func InstallJupyterAndComponents(pythonPath string) error {
 	licenseCommand := pythonPath + " -m pip install jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
-	err := system.RunCommand(licenseCommand)
+	err := system.RunCommand(licenseCommand, true, 2)
 	if err != nil {
-		return fmt.Errorf("issue installing Jupyter: %w", err)
+		return fmt.Errorf("issue installing Jupyter with the command '%s': %w", licenseCommand, err)
 	}
-
 	// TODO add some proper tests to ensure Jupyter is working
 	fmt.Println("\nJupyter has been successfully installed!\n")
 	return nil
@@ -52,9 +51,9 @@ func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 
 	for _, command := range commands {
 		installCommand := pythonPathShort + "/" + command
-		err := system.RunCommand(installCommand)
+		err := system.RunCommand(installCommand, true, 0)
 		if err != nil {
-			return fmt.Errorf("issue installing Jupyter notebook extensions: %w", err)
+			return fmt.Errorf("issue installing Jupyter notebook extension with the command '%s': %w", installCommand, err)
 		}
 	}
 
