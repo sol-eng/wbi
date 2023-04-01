@@ -42,10 +42,10 @@ func StatusRStudioLauncher() error {
 	}
 	if strings.Contains(status, "active (running)") {
 		fmt.Println(status)
-		fmt.Println("\nrstudio-launcher status is active (running)!\n")
+		fmt.Println("\nrstudio-launcher status is active (running)!")
 	} else {
 		fmt.Println(status)
-		fmt.Println("\nrstudio-launcher status is not active!\n")
+		fmt.Println("\nrstudio-launcher status is not active!")
 	}
 	return nil
 }

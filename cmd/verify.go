@@ -57,7 +57,7 @@ func newVerify(verifyOpts verifyOpts, item string) error {
 	} else if item == "workbench" {
 		workbenchInstalled := workbench.VerifyWorkbench()
 		if !workbenchInstalled {
-			return fmt.Errorf("Workbench is not installed")
+			return fmt.Errorf("Workbench is not installed") //nolint:staticcheck
 		}
 	} else if item == "ssl" {
 		err := ssl.VerifySSLCertAndKey(verifyOpts.certPath, verifyOpts.keyPath)

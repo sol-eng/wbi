@@ -1,19 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
-	"errors"
-	"io"
-	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
-
-func exists(path string) bool {
-	_, err := os.Stat(path)
-	return errors.Is(err, os.ErrNotExist)
-}
 
 func setLogLevel(level string) {
 	// We want the log to be reset whenever it is initialized.
@@ -37,13 +28,4 @@ func setLogLevel(level string) {
 	default:
 		log.Fatalf("Invalid log level: %s", logLevel)
 	}
-}
-
-func prettyEncode(data interface{}, out io.Writer) error {
-	enc := json.NewEncoder(out)
-	enc.SetIndent("", "    ")
-	if err := enc.Encode(data); err != nil {
-		return err
-	}
-	return nil
 }
