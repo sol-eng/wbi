@@ -20,7 +20,7 @@ func PromptSSL() (bool, error) {
 	return name, nil
 }
 
-func PromptVerifyAndConfigSSL() error {
+func PromptAndVerifySSL() error {
 	certPath, err := PromptSSLFilePath()
 	if err != nil {
 		return fmt.Errorf("issue with the provided SSL cert path: %w", err)
@@ -29,11 +29,25 @@ func PromptVerifyAndConfigSSL() error {
 	if err != nil {
 		return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
 	}
-	verifySSLCert := VerifySSLCertAndKey(certPath, keyPath)
-	if verifySSLCert != nil {
+	_, certHostMatch, err := VerifySSLCertAndKey(certPath, keyPath)
+	if err != nil {
 		return fmt.Errorf("could not verify the SSL cert: %w", err)
 	}
-	fmt.Println("SSL successfully setup and verified")
+	if !certHostMatch {
+		proceed, err := PromptMisMatchedHostName()
+		if err != nil {
+			return fmt.Errorf("Hostname mismatch error: %w", err)
+		}
+		if proceed {
+			fmt.Println("SSL successfully verified, with accepted hostname/cert" +
+				"mismatch")
+			return nil
+		} else {
+			return fmt.Errorf("Hostname mismatch error, exit without proceeding: %w", err)
+		}
+
+	}
+	fmt.Println("SSL successfully verified")
 	return nil
 }
 
@@ -61,4 +75,18 @@ func PromptSSLKeyFilePath() (string, error) {
 		return "", errors.New("there was an issue with the SSL cert key path prompt")
 	}
 	return target, nil
+}
+
+func PromptMisMatchedHostName() (bool, error) {
+	name := false
+	prompt := &survey.Confirm{
+		Message: "The hostname of your server and the subject name in the certificate" +
+			"don't match. This is common in configurations that include a load balancer" +
+			"or a proxy. Please confirm that you want to proceed?",
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with the SSL prompt")
+	}
+	return name, nil
 }

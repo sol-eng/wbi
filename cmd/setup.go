@@ -193,10 +193,11 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 		}
 		if sslChoice {
-			err = ssl.PromptVerifyAndConfigSSL()
+			err = ssl.PromptAndVerifySSL()
 			if err != nil {
 				return fmt.Errorf("issue verifying and configuring SSL: %w", err)
 			}
+
 		}
 		step = "auth"
 	}
