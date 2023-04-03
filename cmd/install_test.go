@@ -26,7 +26,6 @@ func TestInstallParamsValidate(t *testing.T) {
 		t.Fatalf("failed to retrieve valid Python versions: %v", err)
 	}
 
-	//TODO: add valid R and Python versions from the availble versions function in languages package instead of hardcode
 	tests := map[string]struct {
 		args        []string
 		flags       installOpts
