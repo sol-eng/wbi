@@ -270,7 +270,7 @@ func TestInstallRCommandIntegration(t *testing.T) {
 	}
 
 	installCommand := []string{"./wbi", "install", "r", fmt.Sprintf("--version=%s", validRVersions[0])}
-	successMessage := fmt.Sprintf("R version %s successfully installed!", validRVersions[0])
+	successMessage := []string{fmt.Sprintf("R version %s successfully installed!", validRVersions[0])}
 
 	IntegrationContainerRunner(t, "Dockerfile.Ubuntu", installCommand, successMessage, false)
 }
@@ -293,7 +293,7 @@ func TestInstallPythonCommandIntegration(t *testing.T) {
 	}
 
 	installCommand := []string{"./wbi", "install", "python", fmt.Sprintf("--version=%s", validPythonVersions[0])}
-	successMessage := fmt.Sprintf("Python version %s successfully installed!", validPythonVersions[0])
+	successMessage := []string{fmt.Sprintf("Python version %s successfully installed!", validPythonVersions[0])}
 
 	IntegrationContainerRunner(t, "Dockerfile.Ubuntu", installCommand, successMessage, false)
 }
@@ -305,7 +305,7 @@ func TestInstallWorkbenchCommandIntegration(t *testing.T) {
 	}
 
 	installCommand := []string{"./wbi", "install", "workbench"}
-	successMessage := "Workbench has been successfully installed!"
+	successMessage := []string{"Workbench has been successfully installed!"}
 
 	IntegrationContainerRunner(t, "Dockerfile.Ubuntu-R-Python", installCommand, successMessage, false)
 }
@@ -317,7 +317,7 @@ func TestInstallProDriversCommandIntegration(t *testing.T) {
 	}
 
 	installCommand := []string{"./wbi", "install", "prodrivers"}
-	successMessage := "The sample preconfigured odbcinst.ini has been appended to /etc/odbcinst.ini"
+	successMessage := []string{"The sample preconfigured odbcinst.ini has been appended to /etc/odbcinst.ini"}
 
 	IntegrationContainerRunner(t, "Dockerfile.Ubuntu", installCommand, successMessage, false)
 }
@@ -329,7 +329,7 @@ func TestInstallJupyterCommandIntegration(t *testing.T) {
 	}
 
 	installCommand := []string{"./wbi", "install", "jupyter", "--path=/opt/python/3.11.2/bin/python"}
-	successMessage := "Jupyter notebook extensions have been successfully installed and enabled!"
+	successMessage := []string{"Jupyter notebook extensions have been successfully installed and enabled!"}
 
 	IntegrationContainerRunner(t, "Dockerfile.Ubuntu-R-Python", installCommand, successMessage, false)
 }

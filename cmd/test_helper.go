@@ -11,7 +11,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func IntegrationContainerRunner(t *testing.T, dockerfile string, command []string, successMessage string, debug bool) {
+func IntegrationContainerRunner(t *testing.T, dockerfile string, command []string, successMessage []string, debug bool) {
 	ctx := context.Background()
 
 	req := testcontainers.ContainerRequest{
@@ -20,7 +20,7 @@ func IntegrationContainerRunner(t *testing.T, dockerfile string, command []strin
 			Dockerfile: dockerfile,
 		},
 		Entrypoint: []string{"tail", "-f", "/dev/null"},
-		WaitingFor: wait.ForExec([]string{successMessage}),
+		WaitingFor: wait.ForExec(successMessage),
 	}
 	ubuntuC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
