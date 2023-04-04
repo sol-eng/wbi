@@ -1,6 +1,7 @@
 package ssl
 
 import (
+	"crypto/x509"
 	"errors"
 	"fmt"
 
@@ -33,11 +34,15 @@ func PromptAndVerifySSL() (string, string, error) {
 	if err != nil {
 		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
 	}
-	certHostMatch, err := VerifySSLHostMatch(certPath)
+	serverCert, intermediateCertPool, _, err := ParseCertificateChain(certPath)
+
 	if err != nil {
-		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
+		return certPath, keyPath, fmt.Errorf("could not parse the certificate chain: %w", err)
 	}
-	if certHostMatch {
+
+	certHostMisMatch, err := VerifySSLHostMatch(serverCert)
+
+	if certHostMisMatch {
 		proceed, err := PromptMisMatchedHostName()
 		if err != nil {
 			return certPath, keyPath, fmt.Errorf("hostname mismatch error: %w", err)
@@ -46,7 +51,7 @@ func PromptAndVerifySSL() (string, string, error) {
 			return certPath, keyPath, fmt.Errorf("hostname mismatch error, exit without proceeding: %w", err)
 		}
 	}
-	err = VerifyTrustedCertificate(certPath)
+	_, err = VerifyTrustedCertificate(serverCert, intermediateCertPool)
 	if err != nil {
 		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
 	}
@@ -89,6 +94,19 @@ func PromptMisMatchedHostName() (bool, error) {
 			"or a proxy.\n If you would like to exit the installer, resolve the certificate mismatch\n" +
 			" and restart the installer at this step, you can run \"wbi setup --step ssl\" \n" +
 			"Please confirm that you want to proceed with mismatched names above?",
+	}
+	err := survey.AskOne(prompt, &name)
+	if err != nil {
+		return false, errors.New("there was an issue with the SSL prompt")
+	}
+	return name, nil
+}
+
+func PromptAddRootCAToTrustStore(*x509.Certificate) (bool, error) {
+	name := false
+	prompt := &survey.Confirm{
+		Message: "Would you like to add this untrusted root certificate to the system" +
+			"trust store?",
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {

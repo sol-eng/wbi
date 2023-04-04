@@ -64,20 +64,28 @@ func newVerify(verifyOpts verifyOpts, item string) error {
 		if err != nil {
 			return fmt.Errorf("could not verify the SSL cert: %w", err)
 		}
-		certHostMatch, err := ssl.VerifySSLHostMatch(verifyOpts.certPath)
-		if !certHostMatch {
+		serverCert, intermediateCertPool, _, err := ssl.ParseCertificateChain(verifyOpts.certPath)
+		if err != nil {
+			return fmt.Errorf("could not parse the certificate chain: %w", err)
+		}
+
+		certHostMisMatch, err := ssl.VerifySSLHostMatch(serverCert)
+
+		if certHostMisMatch {
 			proceed, err := ssl.PromptMisMatchedHostName()
 			if err != nil {
-				return fmt.Errorf("Hostname mismatch error: %w", err)
+				return fmt.Errorf("hostname mismatch error: %w", err)
 			}
-			if proceed {
-				fmt.Println("SSL successfully verified, with accepted hostname/cert" +
-					"mismatch")
-				return nil
-			} else {
-				return fmt.Errorf("Hostname mismatch error, exit without proceeding: %w", err)
+			if !proceed {
+				return fmt.Errorf("hostname mismatch error, exit without proceeding: %w", err)
 			}
 		}
+		_, err = ssl.VerifyTrustedCertificate(serverCert, intermediateCertPool)
+		if err != nil {
+			return fmt.Errorf("could not verify the SSL cert: %w", err)
+		}
+
+		fmt.Println("SSL successfully verified")
 	} else if item == "license" {
 		_, err := license.CheckLicenseActivation()
 		if err != nil {
