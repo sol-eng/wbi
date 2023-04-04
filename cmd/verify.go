@@ -82,7 +82,7 @@ func newVerify(verifyOpts verifyOpts, item string) error {
 		}
 		_, err = ssl.VerifyTrustedCertificate(serverCert, intermediateCertPool)
 		if err != nil {
-			return fmt.Errorf("could not verify the SSL cert: %w", err)
+			return fmt.Errorf("failure while trying to verify server trust of the SSL cert: %w", err)
 		}
 
 		fmt.Println("SSL successfully verified")

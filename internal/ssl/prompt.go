@@ -53,7 +53,7 @@ func PromptAndVerifySSL() (string, string, error) {
 	}
 	_, err = VerifyTrustedCertificate(serverCert, intermediateCertPool)
 	if err != nil {
-		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
+		return certPath, keyPath, fmt.Errorf("failure while trying to verify server trust of the SSL cert: %w", err)
 	}
 
 	fmt.Println("SSL successfully verified")
