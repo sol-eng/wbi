@@ -75,7 +75,7 @@ func newVerify(verifyOpts verifyOpts, item string) error {
 }
 
 func setVerifyOpts(verifyOpts *verifyOpts) {
-	verifyOpts.url = viper.GetString("url")
+	verifyOpts.url = viper.GetString("urls")
 	verifyOpts.repo = viper.GetString("repo")
 	verifyOpts.language = viper.GetString("language")
 	verifyOpts.certPath = viper.GetString("cert-path")
@@ -92,7 +92,7 @@ func (opts *verifyOpts) Validate(args []string) error {
 
 	// only the url flag is supported for packagemanager and connect-url
 	if opts.url != "" && (args[0] != "packagemanager" && args[0] != "connect-url") {
-		return fmt.Errorf("the url flag is only supported for packagemanager and connect")
+		return fmt.Errorf("the url flag is only supported for packagemanager and connect-url")
 	}
 	// only the repo flag is supported for packagemanager
 	if opts.repo != "" && args[0] != "packagemanager" {
@@ -189,8 +189,8 @@ func newVerifyCmd() *verifyCmd {
 		},
 	}
 
-	cmd.Flags().StringP("url", "u", "", "Package Manager or Connect base URL")
-	viper.BindPFlag("url", cmd.Flags().Lookup("url"))
+	cmd.Flags().StringP("url", "", "", "Package Manager or Connect base URL")
+	viper.BindPFlag("urls", cmd.Flags().Lookup("url"))
 
 	cmd.Flags().StringP("repo", "r", "", "Name of the Package Manager repository")
 	viper.BindPFlag("repo", cmd.Flags().Lookup("repo"))
