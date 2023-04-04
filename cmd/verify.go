@@ -60,10 +60,11 @@ func newVerify(verifyOpts verifyOpts, item string) error {
 			return fmt.Errorf("Workbench is not installed")
 		}
 	} else if item == "ssl" {
-		_, certHostMatch, err := ssl.VerifySSLCertAndKey(verifyOpts.certPath, verifyOpts.keyPath)
+		err := ssl.VerifySSLCertAndKeyMD5Match(verifyOpts.certPath, verifyOpts.keyPath)
 		if err != nil {
 			return fmt.Errorf("could not verify the SSL cert: %w", err)
 		}
+		certHostMatch, err := ssl.VerifySSLHostMatch(verifyOpts.certPath)
 		if !certHostMatch {
 			proceed, err := ssl.PromptMisMatchedHostName()
 			if err != nil {

@@ -7,7 +7,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 )
 
-// Prompt asking users if they wish to use SSL
+// PromptSSL Prompt asking users if they wish to use SSL
 func PromptSSL() (bool, error) {
 	name := false
 	prompt := &survey.Confirm{
@@ -20,38 +20,42 @@ func PromptSSL() (bool, error) {
 	return name, nil
 }
 
-func PromptAndVerifySSL() error {
+func PromptAndVerifySSL() (string, string, error) {
 	certPath, err := PromptSSLFilePath()
 	if err != nil {
-		return fmt.Errorf("issue with the provided SSL cert path: %w", err)
+		return certPath, "", fmt.Errorf("issue with the provided SSL cert path: %w", err)
 	}
 	keyPath, err := PromptSSLKeyFilePath()
 	if err != nil {
-		return fmt.Errorf("issue with the provided SSL cert key path: %w", err)
+		return certPath, keyPath, fmt.Errorf("issue with the provided SSL cert key path: %w", err)
 	}
-	_, certHostMatch, err := VerifySSLCertAndKey(certPath, keyPath)
+	err = VerifySSLCertAndKeyMD5Match(certPath, keyPath)
 	if err != nil {
-		return fmt.Errorf("could not verify the SSL cert: %w", err)
+		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
 	}
-	if !certHostMatch {
+	certHostMatch, err := VerifySSLHostMatch(certPath)
+	if err != nil {
+		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
+	}
+	if certHostMatch {
 		proceed, err := PromptMisMatchedHostName()
 		if err != nil {
-			return fmt.Errorf("Hostname mismatch error: %w", err)
+			return certPath, keyPath, fmt.Errorf("hostname mismatch error: %w", err)
 		}
-		if proceed {
-			fmt.Println("SSL successfully verified, with accepted hostname/cert" +
-				"mismatch")
-			return nil
-		} else {
-			return fmt.Errorf("Hostname mismatch error, exit without proceeding: %w", err)
+		if !proceed {
+			return certPath, keyPath, fmt.Errorf("hostname mismatch error, exit without proceeding: %w", err)
 		}
-
 	}
+	err = VerifyTrustedCertificate(certPath)
+	if err != nil {
+		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
+	}
+
 	fmt.Println("SSL successfully verified")
-	return nil
+	return certPath, keyPath, nil
 }
 
-// Prompt asking users for a filepath to their SSL cert
+// PromptSSLFilePath Prompt asking users for a filepath to their SSL cert
 func PromptSSLFilePath() (string, error) {
 	target := ""
 	prompt := &survey.Input{
@@ -64,7 +68,7 @@ func PromptSSLFilePath() (string, error) {
 	return target, nil
 }
 
-// Prompt asking users for a filepath to their SSL cert key
+// PromptSSLKeyFilePath Prompt asking users for a filepath to their SSL cert key
 func PromptSSLKeyFilePath() (string, error) {
 	target := ""
 	prompt := &survey.Input{
@@ -80,9 +84,11 @@ func PromptSSLKeyFilePath() (string, error) {
 func PromptMisMatchedHostName() (bool, error) {
 	name := false
 	prompt := &survey.Confirm{
-		Message: "The hostname of your server and the subject name in the certificate" +
-			"don't match. This is common in configurations that include a load balancer" +
-			"or a proxy. Please confirm that you want to proceed?",
+		Message: "The hostname of your server and the subject name in the certificate " +
+			"don't match.\n This is common in configurations that include a load balancer " +
+			"or a proxy.\n If you would like to exit the installer, resolve the certificate mismatch\n" +
+			" and restart the installer at this step, you can run \"wbi setup --step ssl\" \n" +
+			"Please confirm that you want to proceed with mismatched names above?",
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
