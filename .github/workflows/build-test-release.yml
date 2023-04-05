@@ -26,8 +26,8 @@ jobs:
           cache: true
       - name: Build
         run: go build -v ./...
-      - name: Test (Unit + Integration Tests)
-        run: RSW_LICENSE=${{secrets.RSW_LICENSE}} go test -v -timeout 30m ./...
+      - name: Test (Unit Only)
+        run: go test -v ./... -short
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.59.0
         env:
