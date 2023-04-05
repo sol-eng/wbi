@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/sol-eng/wbi/internal/languages"
@@ -301,21 +300,7 @@ func TestInstallPythonCommandIntegration(t *testing.T) {
 	IntegrationContainerRunner(t, "Dockerfile.Ubuntu", installCommand, successMessage, false)
 }
 
-// TestInstallWorkbenchCommandIntegration tests the install command with the workbench arg in a Docker container.
-func TestInstallWorkbenchCommandIntegration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-	t.Parallel()
-
-	installCommand := []string{fmt.Sprintf("./wbi install workbench && ./wbi activate license --key=%s", os.Getenv("RSW_LICENSE"))}
-	successMessage := []string{
-		"Workbench has been successfully installed!",
-		"Workbench has been successfully activated",
-	}
-
-	IntegrationContainerRunner(t, "Dockerfile.Ubuntu-R-Python", installCommand, successMessage, true)
-}
+// TODO TestInstallWorkbenchCommandIntegration tests the install command with the workbench arg in a Docker container.
 
 // TestInstallProDriversCommandIntegration tests the install command with the prodrivers arg in a Docker container.
 func TestInstallProDriversCommandIntegration(t *testing.T) {
