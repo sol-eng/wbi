@@ -344,6 +344,8 @@ func newSetupCmd() *setupCmd {
 			}
 			return nil
 		},
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	stepHelp := `The step to start at. Valid steps are: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, auth, packagemanager, connect, restart, status, verify.`

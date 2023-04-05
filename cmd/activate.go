@@ -80,6 +80,8 @@ func newActivateCmd() *activateCmd {
 			}
 			return nil
 		},
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
 	cmd.Flags().StringP("key", "k", "", "License key to activate Workbench with")
