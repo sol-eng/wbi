@@ -3,6 +3,7 @@ package jupyter
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sol-eng/wbi/internal/languages"
@@ -40,6 +41,39 @@ func KernelPrompt(pythonPaths []string) (string, error) {
 	return target, nil
 }
 
+// Prompt asking users which additional Python location should be registered as Jupyter kernels
+func AdditionalKernelPrompt(pythonPaths []string, defaultPythonPaths []string) ([]string, error) {
+	// Allow the user to select multiple versions
+	var qs = []*survey.Question{
+		{
+			Name: "kernelprompt",
+			Prompt: &survey.MultiSelect{
+				Message: "Which of the remaining Python versions would you like to have automatically registered as Jupyter kernels? (select none to skip this step)",
+				Options: pythonPaths,
+				Default: defaultPythonPaths,
+			},
+		},
+	}
+	kernelAnswers := struct {
+		Versions []string `survey:"kernelprompt"`
+	}{}
+
+	err := survey.Ask(qs, &kernelAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
+	if err != nil {
+		return []string{}, errors.New("there was an issue with the languages prompt")
+	}
+	return kernelAnswers.Versions, nil
+}
+
+func removeString(s []string, r string) []string {
+	for i, v := range s {
+		if v == r {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
+}
+
 func ScanPromptInstallAndConfigJupyter() error {
 	// scan for Python versions
 	pythonVersions, err := languages.ScanForPythonVersions()
@@ -59,7 +93,7 @@ func ScanPromptInstallAndConfigJupyter() error {
 				return fmt.Errorf("issue selecting Python location for Jupyter: %w", err)
 			}
 			if jupyterPythonTarget != "" {
-				err := InstallJupyter(jupyterPythonTarget)
+				err = InstallJupyter(jupyterPythonTarget)
 				if err != nil {
 					return fmt.Errorf("issue installing Jupyter: %w", err)
 				}
@@ -74,8 +108,36 @@ func ScanPromptInstallAndConfigJupyter() error {
 				if err != nil {
 					return fmt.Errorf("issue writing Jupyter config: %w", err)
 				}
+
+				// prompt and handle additional kernels to be registered
+				// remove the primary Jupyter Python version
+				pythonVersionsLeft := removeString(pythonVersions, jupyterPythonTarget)
+				// remove any non opt locations from the default selections
+				defaultPythonVersions := removeNonOptPython(pythonVersionsLeft)
+				additionalPythonTargets, err := AdditionalKernelPrompt(pythonVersionsLeft, defaultPythonVersions)
+				if err != nil {
+					return fmt.Errorf("issue selecting additional Python kernels to register: %w", err)
+				}
+				// if one or more versions is selected then automatically register them
+				if len(additionalPythonTargets) > 0 {
+					err = RegisterJupyterKernels(additionalPythonTargets)
+					if err != nil {
+						return fmt.Errorf("issue registering additional Python kernels: %w", err)
+					}
+				}
 			}
 		}
 	}
 	return nil
+}
+
+func removeNonOptPython(pythonPaths []string) []string {
+	anyOptLocations := []string{}
+	for _, value := range pythonPaths {
+		matched, err := regexp.MatchString(".*/opt.*", value)
+		if err == nil && matched {
+			anyOptLocations = append(anyOptLocations, value)
+		}
+	}
+	return anyOptLocations
 }
