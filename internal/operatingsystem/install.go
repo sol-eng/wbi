@@ -11,7 +11,7 @@ import (
 )
 
 func InstallPrereqs(osType config.OperatingSystem) error {
-	fmt.Println("Installing prerequisites...\n")
+	fmt.Println("Installing prerequisites...")
 	// Update apt and install gdebi-core if an Ubuntu system
 	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
 		AptErr := UpgradeApt()
@@ -41,7 +41,7 @@ func InstallPrereqs(osType config.OperatingSystem) error {
 	} else {
 		return errors.New("unsupported operating system")
 	}
-	fmt.Println("\nPrerequisites successfully installed!\n")
+	fmt.Println("\nPrerequisites successfully installed!")
 	return nil
 }
 
@@ -53,7 +53,7 @@ func InstallGdebiCore() error {
 		return fmt.Errorf("issue installing gdebi-core with the command '%s': %w", gdebiCoreCommand, err)
 	}
 
-	fmt.Println("\ngdebi-core has been successfully installed!\n")
+	fmt.Println("\ngdebi-core has been successfully installed!")
 	return nil
 }
 
@@ -65,7 +65,7 @@ func UpgradeApt() error {
 		return fmt.Errorf("issue upgrading apt with the command '%s': %w", aptUpgradeCommand, err)
 	}
 
-	fmt.Println("\napt has been successfully upgraded!\n")
+	fmt.Println("\napt has been successfully upgraded!")
 	return nil
 }
 
@@ -133,7 +133,7 @@ func EnableCodeReadyRepo(osType config.OperatingSystem, CloudInstall bool) error
 	} else {
 		return fmt.Errorf("issue enabling codeready repo: CloudInstall boolean undefined")
 	}
-	fmt.Println("\nThe CodeReady Linux Builder repository has been successfully enabled!\n")
+	fmt.Println("\nThe CodeReady Linux Builder repository has been successfully enabled!")
 	return nil
 }
 
@@ -157,7 +157,7 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 	commandOutput, err := system.RunCommandAndCaptureOutput(EPELCommand, true, 1)
 	if err != nil {
 		if strings.Contains(commandOutput, "does not update installed package") && osType == config.Redhat7 {
-			fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository was already enabled.\n")
+			fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository was already enabled.")
 			return nil
 		}
 		return fmt.Errorf("issue enabling EPEL repo with the command '%s': %w", commandOutput, err)
@@ -166,7 +166,7 @@ func EnableEPELRepo(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue enabling EPEL repo with the command '%s': %w", commandOutput, err)
 	}
 
-	fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository has been successfully enabled!\n")
+	fmt.Println("\nThe Extra Packages for Enterprise Linux (EPEL) repository has been successfully enabled!")
 	return nil
 }
 
@@ -180,14 +180,14 @@ func DisableFirewall(osType config.OperatingSystem) error {
 	case config.Redhat7, config.Redhat8, config.Redhat9:
 		FWCommand = "systemctl stop firewalld && systemctl disable firewalld"
 	default:
-		return errors.New("Unsupported OS, setting FWCommand failed")
+		return errors.New("Unsupported OS, setting FWCommand failed") //nolint:all
 	}
 	err := system.RunCommand(FWCommand, true, 1)
 	if err != nil {
 		return fmt.Errorf("issue disabling system firewall with the command '%s': %w", FWCommand, err)
 	}
 
-	fmt.Println("\nThe system firewall has been successfully disabled!\n")
+	fmt.Println("\nThe system firewall has been successfully disabled!")
 	return nil
 }
 
@@ -205,6 +205,6 @@ func DisableLinuxSecurity() error {
 		return fmt.Errorf("issue disabling selinux with the command '%s': %w", disableSELinuxCommand, err)
 	}
 
-	fmt.Println("\nThe SELinux has been successfully changed to permissive mode, and will be disabled on next reboot!\n")
+	fmt.Println("\nThe SELinux has been successfully changed to permissive mode, and will be disabled on next reboot!")
 	return nil
 }

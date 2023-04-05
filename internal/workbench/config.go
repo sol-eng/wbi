@@ -187,7 +187,7 @@ func WriteOIDCAuthConfig(idpURL string, usernameClaim string, clientID string, c
 		fmt.Println("\n=== Writing to the file " + filepathRserver + ":")
 		err := system.WriteStrings(writeLinesRserver, filepathRserver, 0644)
 		if err != nil {
-			fmt.Errorf("failed to write config: %w", err)
+			return fmt.Errorf("failed to write config: %w", err)
 		}
 	} else {
 		return fmt.Errorf("at least one line already exists in rserver.conf")
@@ -220,7 +220,7 @@ func WriteOIDCAuthConfig(idpURL string, usernameClaim string, clientID string, c
 			fmt.Println("\n=== Writing to the file " + filepathClientSecret + ":")
 			err := system.WriteStrings(writeLinesClientSecret, filepathClientSecret, 0644)
 			if err != nil {
-				fmt.Errorf("failed to write config: %w", err)
+				return fmt.Errorf("failed to write config: %w", err)
 			}
 		} else {
 			return fmt.Errorf("at least one line already exists in openid-client-secret")

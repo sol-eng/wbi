@@ -29,7 +29,7 @@ func InstallJupyterAndComponents(pythonPath string) error {
 		return fmt.Errorf("issue installing Jupyter with the command '%s': %w", licenseCommand, err)
 	}
 	// TODO add some proper tests to ensure Jupyter is working
-	fmt.Println("\nJupyter has been successfully installed!\n")
+	fmt.Println("\nJupyter has been successfully installed!")
 	return nil
 }
 
@@ -58,7 +58,7 @@ func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 	}
 
 	// TODO add some proper tests to ensure Jupyter notebook extensions are working
-	fmt.Println("\nJupyter notebook extensions have been successfully installed and enabled!\n")
+	fmt.Println("\nJupyter notebook extensions have been successfully installed and enabled!")
 	return nil
 }
 

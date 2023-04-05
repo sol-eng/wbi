@@ -72,7 +72,7 @@ func DownloadAndInstallProDrivers(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("BackupAndAppendODBCConfiguration: %w", err)
 	}
-	fmt.Println("\nPosit Pro Drivers next steps:\nNow that the Pro Drivers are installed and /etc/odbcinst.ini is setup, the next step is to test database connectivity and/or create DSNs in your /etc/odbc.ini file.\n\n More information about each of these steps can be found here: https://docs.posit.co/pro-drivers/workbench-connect/#step-4-testing-database-connectivity\n")
+	fmt.Println("\nPosit Pro Drivers next steps:\nNow that the Pro Drivers are installed and /etc/odbcinst.ini is setup, the next step is to test database connectivity and/or create DSNs in your /etc/odbc.ini file.\n\n More information about each of these steps can be found here: https://docs.posit.co/pro-drivers/workbench-connect/#step-4-testing-database-connectivity")
 	return nil
 }
 
@@ -88,7 +88,7 @@ func InstallProDrivers(filepath string, osType config.OperatingSystem) error {
 		return fmt.Errorf("issue installing Pro Drivers with the command '%s': %w", installCommand, err)
 	}
 
-	fmt.Println("\nPosit Pro Drivers have been successfully installed!\n")
+	fmt.Println("\nPosit Pro Drivers have been successfully installed!")
 	return nil
 }
 
@@ -152,7 +152,7 @@ func InstallUnixODBC(osType config.OperatingSystem) error {
 		return errors.New("operating system not supported")
 	}
 
-	fmt.Println("\nunixodbc and unixodbc-dev has been successfully installed!\n")
+	fmt.Println("\nunixodbc and unixodbc-dev has been successfully installed!")
 	return nil
 }
 
@@ -173,6 +173,6 @@ func BackupAndAppendODBCConfiguration() error {
 		return fmt.Errorf("issue appending sample configuration to /etc/odbcinst.ini with the command '%s': %w", addDefaultCommand, err)
 	}
 
-	fmt.Println("\nThe sample preconfigured odbcinst.ini has been appended to /etc/odbcinst.ini\n")
+	fmt.Println("\nThe sample preconfigured odbcinst.ini has been appended to /etc/odbcinst.ini")
 	return nil
 }

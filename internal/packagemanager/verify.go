@@ -42,7 +42,7 @@ func VerifyPackageManagerURL(packageManagerURL string) (string, error) {
 		return "", errors.New("error in HTTP status code")
 	}
 
-	fmt.Println("\nPosit Package Manager URL has been successfull validated.\n")
+	fmt.Println("\nPosit Package Manager URL has been successfull validated.")
 
 	return cleanPackageManagerURL, nil
 }
@@ -85,7 +85,7 @@ func VerifyPackageManagerRepo(packageManagerURL string, packageManagerRepo strin
 		return errors.New("error finding the " + packageManagerRepo + " repository in Posit Package Manager")
 	}
 
-	fmt.Println("\nPosit Package Manager Repository has been successfull validated.\n")
+	fmt.Println("\nPosit Package Manager Repository has been successfull validated.")
 	return nil
 
 }

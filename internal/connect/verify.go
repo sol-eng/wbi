@@ -39,6 +39,6 @@ func VerifyConnectURL(connectURL string) (string, error) {
 		return "", errors.New("error in HTTP status code")
 	}
 
-	fmt.Println("\nConnect URL has been successfull validated.\n")
+	fmt.Println("\nConnect URL has been successfull validated.")
 	return cleanConnectURL, nil
 }

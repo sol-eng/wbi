@@ -36,6 +36,12 @@ func newInstall(installOpts installOpts, program string) error {
 	}
 
 	if program == "r" {
+		// install prereqs
+		err = operatingsystem.InstallPrereqs(osType)
+		if err != nil {
+			return fmt.Errorf("issue installing pre-requisites: %w", err)
+		}
+		// install R
 		if len(installOpts.versions) == 0 {
 			err = languages.ScanAndHandleRVersions(osType)
 			if err != nil {
@@ -57,6 +63,12 @@ func newInstall(installOpts installOpts, program string) error {
 			}
 		}
 	} else if program == "python" {
+		// install prereqs
+		err = operatingsystem.InstallPrereqs(osType)
+		if err != nil {
+			return fmt.Errorf("issue installing pre-requisites: %w", err)
+		}
+		// install Python
 		if len(installOpts.versions) == 0 {
 			err = languages.ScanAndHandlePythonVersions(osType)
 			if err != nil {
@@ -79,12 +91,24 @@ func newInstall(installOpts installOpts, program string) error {
 			}
 		}
 	} else if program == "workbench" {
+		// install prereqs
+		err = operatingsystem.InstallPrereqs(osType)
+		if err != nil {
+			return fmt.Errorf("issue installing pre-requisites: %w", err)
+		}
+		// install Workbench
 		err := workbench.CheckDownloadAndInstallWorkbench(osType)
 		if err != nil {
 			return fmt.Errorf("issue installing Workbench: %w", err)
 		}
 	} else if program == "prodrivers" {
-		err = prodrivers.CheckPromptDownloadAndInstallProDrivers(osType)
+		// install prereqs
+		err = operatingsystem.InstallPrereqs(osType)
+		if err != nil {
+			return fmt.Errorf("issue installing pre-requisites: %w", err)
+		}
+		// install Pro Drivers Prereqs and Drivers
+		err := prodrivers.DownloadAndInstallProDrivers(osType)
 		if err != nil {
 			return fmt.Errorf("issue checking, prompting, downloading or installing Pro Drivers: %w", err)
 		}

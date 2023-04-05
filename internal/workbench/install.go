@@ -92,7 +92,7 @@ func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 		return fmt.Errorf("issue installing Workbench with the command '%s': %w", installCommand, err)
 	}
 
-	fmt.Println("\nWorkbench has been successfully installed!\n")
+	fmt.Println("\nWorkbench has been successfully installed!")
 	return nil
 }
 
@@ -100,7 +100,7 @@ func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 func RetrieveInstallCommandForWorkbench(filepath string, osType config.OperatingSystem) (string, error) {
 	switch osType {
 	case config.Ubuntu22, config.Ubuntu20, config.Ubuntu18:
-		return "gdebi -n " + filepath, nil
+		return "DEBIAN_FRONTEND=noninteractive gdebi -n " + filepath, nil
 	case config.Redhat7, config.Redhat8, config.Redhat9:
 		return "yum install -y " + filepath, nil
 	default:
