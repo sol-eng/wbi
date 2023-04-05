@@ -14,31 +14,25 @@ func TestSetupParamsValidate(t *testing.T) {
 		expectError string
 	}{
 		// general arguement tests
-		"no argument or key": {
+		"no argument or flag succeeds": {
 			args:        []string{},
-			flags:       setupOpts{},
-			expectError: "no arguments provided, please provide one argument",
-		},
-		"too many arguments": {
-			args:        []string{"setup", "python"},
-			flags:       setupOpts{},
-			expectError: "too many arguments provided, please provide only one argument",
-		},
-		// setup argument tests
-		"setup argument only succeeds": {
-			args:        []string{"setup"},
 			flags:       setupOpts{},
 			expectError: "",
 		},
-		"setup argument with a valid step succeeds": {
-			args:        []string{"setup"},
+		"too many arguments": {
+			args:        []string{"python"},
+			flags:       setupOpts{},
+			expectError: "no arguments are supported for this command",
+		},
+		"no argument with a valid step succeeds": {
+			args:        []string{},
 			flags:       setupOpts{step: "auth"},
 			expectError: "",
 		},
-		"setup argument with an invalid step fails": {
-			args:        []string{"setup"},
-			flags:       setupOpts{step: "connect"},
-			expectError: "invalid step: connect",
+		"no argument with an invalid step fails": {
+			args:        []string{},
+			flags:       setupOpts{step: "configure"},
+			expectError: "invalid step: configure",
 		},
 	}
 
