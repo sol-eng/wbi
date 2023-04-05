@@ -115,6 +115,16 @@ func (opts *configOpts) Validate(args []string) error {
 		return fmt.Errorf("the key-path flag is required for ssl")
 	}
 
+	// the cert-path flag is only valid for ssl
+	if opts.certPath != "" && args[0] != "ssl" {
+		return fmt.Errorf("the cert-path flag is only valid for ssl")
+	}
+
+	// the key-path flag is only valid for ssl
+	if opts.keyPath != "" && args[0] != "ssl" {
+		return fmt.Errorf("the key-path flag is only valid for ssl")
+	}
+
 	// the url flag is only valid for repo and connect-url
 	if opts.url != "" && (args[0] != "repo" && args[0] != "connect-url") {
 		return fmt.Errorf("the url flag is only valid for repo and connect-url")
@@ -134,6 +144,11 @@ func (opts *configOpts) Validate(args []string) error {
 		return fmt.Errorf("the source flag is required for repo")
 	}
 
+	// the source flag is only valid for repo
+	if opts.source != "" && args[0] != "repo" {
+		return fmt.Errorf("the source flag is only valid for repo")
+	}
+
 	// the only source flags allow are cran and pypi
 	if args[0] == "repo" && (opts.source != "cran" && opts.source != "pypi") {
 		return fmt.Errorf("the source flag only allows cran and pypi")
@@ -147,6 +162,15 @@ func (opts *configOpts) Validate(args []string) error {
 	// the idp-url flag is required for argument auth and auth-type saml
 	if opts.idpURL == "" && args[0] == "auth" && (opts.authType == "saml" || opts.authType == "oidc") {
 		return fmt.Errorf("the idp-url flag is required for argument auth and auth-type flag of saml or odic")
+	}
+
+	// the client-id flag is required for argument auth and auth-type oidc
+	if opts.clientID == "" && args[0] == "auth" && opts.authType == "oidc" {
+		return fmt.Errorf("the client-id flag is required for argument auth and auth-type flag of odic")
+	}
+	// the client-secret flag is required for argument auth and auth-type oidc
+	if opts.clientSecret == "" && args[0] == "auth" && opts.authType == "oidc" {
+		return fmt.Errorf("the client-secret flag is required for argument auth and auth-type flag of odic")
 	}
 
 	// the only valid authType flags are saml and oidc
