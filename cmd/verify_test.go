@@ -215,6 +215,7 @@ func TestVerifyPackageManagerURLCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "verify", "packagemanager", "--url=https://packagemanager.posit.co"}
 	successMessage := []string{"Posit Package Manager URL has been successfull validated."}
@@ -227,6 +228,7 @@ func TestVerifyPackageManagerURLRepoCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "verify", "packagemanager", "--url=https://packagemanager.posit.co", "--repo cran", "--language r"}
 	successMessage := []string{
@@ -242,6 +244,7 @@ func TestVerifyConnectURLCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "verify", "connect-url", "--url=https://colorado.posit.co/rsc"}
 	successMessage := []string{"Connect URL has been successfull validated."}
@@ -254,6 +257,7 @@ func TestVerifyWorkbenchCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "verify", "workbench"}
 	successMessage := []string{"Workbench installation detected:"}
@@ -268,6 +272,7 @@ func TestVerifyLicenseCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "verify", "license"}
 	successMessage := []string{"An active Workbench license was detected"}

@@ -72,6 +72,7 @@ func TestActivateCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	command := []string{"./wbi", "activate", "license", fmt.Sprintf("--key=%s", os.Getenv("RSW_LICENSE"))}
 	successMessage := []string{"Workbench has been successfully activated"}

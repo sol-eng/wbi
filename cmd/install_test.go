@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/sol-eng/wbi/internal/languages"
@@ -263,6 +264,7 @@ func TestInstallRCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	validRVersions, err := languages.RetrieveValidRVersions()
 	if err != nil {
@@ -280,6 +282,7 @@ func TestInstallPythonCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	// Determine OS
 	osType, err := operatingsystem.DetectOS()
@@ -303,11 +306,15 @@ func TestInstallWorkbenchCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
-	installCommand := []string{"./wbi", "install", "workbench"}
-	successMessage := []string{"Workbench has been successfully installed!"}
+	installCommand := []string{fmt.Sprintf("./wbi install workbench && ./wbi activate license --key=%s", os.Getenv("RSW_LICENSE"))}
+	successMessage := []string{
+		"Workbench has been successfully installed!",
+		"Workbench has been successfully activated",
+	}
 
-	IntegrationContainerRunner(t, "Dockerfile.Ubuntu-R-Python", installCommand, successMessage, false)
+	IntegrationContainerRunner(t, "Dockerfile.Ubuntu-R-Python", installCommand, successMessage, true)
 }
 
 // TestInstallProDriversCommandIntegration tests the install command with the prodrivers arg in a Docker container.
@@ -315,6 +322,7 @@ func TestInstallProDriversCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "install", "prodrivers"}
 	successMessage := []string{"The sample preconfigured odbcinst.ini has been appended to /etc/odbcinst.ini"}
@@ -327,6 +335,7 @@ func TestInstallJupyterCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "install", "jupyter", "--path=/opt/python/3.11.2/bin/python"}
 	successMessage := []string{"Jupyter notebook extensions have been successfully installed and enabled!"}

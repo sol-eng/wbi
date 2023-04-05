@@ -73,6 +73,7 @@ func TestScanRCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "scan", "r"}
 	successMessage := []string{"/opt/R/4.2.2/bin/R"}
@@ -85,6 +86,7 @@ func TestScanPythonCommandIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "scan", "python"}
 	successMessage := []string{

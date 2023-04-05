@@ -267,6 +267,7 @@ func TestConfigAuthSAMLCommandIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	// TODO actually verify the contents of rserver.conf
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "config", "auth", "--auth-type=saml", "--idp-url=https://www.example.com"}
 	successMessage := []string{"=== Writing to the file /etc/rstudio/rserver.conf:"}
@@ -280,6 +281,7 @@ func TestConfigAuthOIDCCommandIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	// TODO actually verify the contents of rserver.conf
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "config", "auth", "--auth-type=oidc", "--idp-url=https://www.example.com", "--client-id=awdawdawd", "--client-secret=adwawdawdfgawa"}
 	successMessage := []string{"=== Writing to the file /etc/rstudio/rserver.conf:"}
@@ -293,6 +295,7 @@ func TestConfigRepoCRANCommandIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	// TODO actually verify the contents of repos.conf
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "config", "repo", "--url=https://packagemanager.posit.co/cran/__linux__/jammy/latest", "--source=cran"}
 	successMessage := []string{"=== Writing to the file /etc/rstudio/repos.conf:"}
@@ -306,6 +309,7 @@ func TestConfigRepoPyPICommandIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	// TODO actually verify the contents of pip.conf
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "config", "repo", "--url=https://packagemanager.posit.co/pypi/latest/simple", "--source=pypi"}
 	successMessage := []string{"=== Writing to the file /etc/pip.conf:"}
@@ -319,6 +323,7 @@ func TestConfigConnectCommandIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 	// TODO actually verify the contents of resession.conf
+	t.Parallel()
 
 	installCommand := []string{"./wbi", "config", "connect-url", "--url=https://colorado.posit.co/rsc"}
 	successMessage := []string{"=== Writing to the file /etc/rstudio/rsession.conf:"}
