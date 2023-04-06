@@ -2,6 +2,7 @@ package jupyter
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/sol-eng/wbi/internal/system"
@@ -76,6 +77,56 @@ func InstallAndConfigJupyter(pythonPath string) error {
 	err = workbench.WriteJupyterConfig(jupyterPath)
 	if err != nil {
 		return fmt.Errorf("issue writing Jupyter config: %w", err)
+	}
+	return nil
+}
+
+func RegisterJupyterKernels(additionalPythonPaths []string) error {
+
+	// register the kernel for each additional python version
+	for _, pythonPath := range additionalPythonPaths {
+		// find the version
+		versionCommand := pythonPath + " --version"
+		pythonVersion, err := system.RunCommandAndCaptureOutput(versionCommand, false, 0)
+		if err != nil {
+			return fmt.Errorf("issue finding python version: %w", err)
+		}
+		// install ipykernel
+		err = installIpykernel(pythonPath)
+		if err != nil {
+			return fmt.Errorf("issue installing ipykernel: %w", err)
+		}
+		// run the install command
+		err = registerKernel(pythonPath, pythonVersion)
+		if err != nil {
+			return fmt.Errorf("issue registering kernel: %w", err)
+		}
+	}
+	return nil
+}
+
+func installIpykernel(pythonPath string) error {
+	basePath, err := languages.RemovePythonFromPath(pythonPath)
+	if err != nil {
+		return fmt.Errorf("issue removing python from the path: %w", err)
+	}
+
+	installCommand := basePath + "/pip install ipykernel"
+	err = system.RunCommand(installCommand, true, 1)
+	if err != nil {
+		return fmt.Errorf("issue installing ipykernel with the command '%s': %w", installCommand, err)
+	}
+	return nil
+}
+
+func registerKernel(pythonPath string, pythonVersion string) error {
+	pythonVersionClean := strings.Replace(pythonVersion, "Python ", "", 1)
+
+	installCommand := pythonPath + " -m ipykernel install --name py" + strings.TrimSpace(pythonVersionClean) + " --display-name \"" + pythonVersion + "\""
+
+	err := system.RunCommand(installCommand, true, 0)
+	if err != nil {
+		return fmt.Errorf("issue registering the Python kernel with the command '%s': %w", installCommand, err)
 	}
 	return nil
 }
