@@ -223,6 +223,7 @@ func newConfigCmd() *configCmd {
 			}
 			return nil
 		},
+		SilenceUsage: true,
 	}
 
 	cmd.Flags().StringP("cert-path", "c", "", "TLS/SSL certificate path")

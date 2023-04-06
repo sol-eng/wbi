@@ -187,6 +187,7 @@ func newVerifyCmd() *verifyCmd {
 			}
 			return nil
 		},
+		SilenceUsage: true,
 	}
 
 	cmd.Flags().StringP("url", "", "", "Package Manager or Connect base URL")

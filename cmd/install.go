@@ -251,6 +251,7 @@ func newInstallCmd() *installCmd {
 			}
 			return nil
 		},
+		SilenceUsage: true,
 	}
 
 	cmd.Flags().StringSliceP("version", "v", []string{}, "Version(s) of R or Python to install. Multiple values can be passed by seperating each version with a comma.")

@@ -86,6 +86,7 @@ func newScanCmd() *scanCmd {
 			}
 			return nil
 		},
+		SilenceUsage: true,
 	}
 
 	root.cmd = cmd
