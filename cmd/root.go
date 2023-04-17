@@ -87,10 +87,7 @@ func setUpLogger() error {
 	log.SetOutput(f)
 
 	// Setup the logger format
-	formatter := new(log.TextFormatter)
-	formatter.TimestampFormat = "02-01-2006 15:04:05"
-	formatter.FullTimestamp = true
-	log.SetFormatter(formatter)
+	log.SetFormatter(&log.JSONFormatter{})
 
 	return nil
 }

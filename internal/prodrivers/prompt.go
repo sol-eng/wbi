@@ -6,6 +6,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // Prompt users if they would like to install Posit Pro Drivers
@@ -38,7 +39,7 @@ func CheckPromptDownloadAndInstallProDrivers(osType config.OperatingSystem) erro
 			}
 		}
 	} else {
-		fmt.Println("Pro Drivers are already installed")
+		system.PrintAndLogInfo("Pro Drivers are already installed")
 	}
 	return nil
 }

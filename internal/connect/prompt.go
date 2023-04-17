@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
 
@@ -47,7 +48,7 @@ func PromptVerifyAndConfigConnect() error {
 		if goodURL {
 			break
 		} else {
-			fmt.Println(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
+			system.PrintAndLogInfo(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
 		}
 	}
 

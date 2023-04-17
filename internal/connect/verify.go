@@ -3,9 +3,10 @@ package connect
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 func cleanConnectURL(connectURL string) string {
@@ -39,6 +40,6 @@ func VerifyConnectURL(connectURL string) (string, error) {
 		return "", errors.New("error in HTTP status code")
 	}
 
-	fmt.Println("\nConnect URL has been successfull validated.")
+	system.PrintAndLogInfo("\nConnect URL has been successfull validated.")
 	return cleanConnectURL, nil
 }

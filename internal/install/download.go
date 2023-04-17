@@ -3,17 +3,18 @@ package install
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // Create a temporary file and download the installer to it.
 func DownloadFile(installerName string, url string, filename string) (string, error) {
 
-	fmt.Println("Downloading " + installerName + " installer from: " + url)
+	system.PrintAndLogInfo("Downloading " + installerName + " installer from: " + url)
 
 	// Create the file
 	filename = "*_" + filename

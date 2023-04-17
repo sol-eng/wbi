@@ -21,7 +21,7 @@ func WriteRepoConfig(url string, source string) error {
 				"CRAN=" + url,
 			}
 
-			fmt.Println("\n=== Writing to the file " + filepath + ":")
+			system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
 			err := system.WriteStrings(writeLines, filepath, 0644)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
@@ -43,7 +43,7 @@ func WriteRepoConfig(url string, source string) error {
 				"index-url=" + url,
 			}
 
-			fmt.Println("\n=== Writing to the file " + filepath + ":")
+			system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
 			err := system.WriteStrings(writeLines, filepath, 0644)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
@@ -81,7 +81,7 @@ func WriteSSLConfig(certPath string, keyPath string) error {
 			"ssl-certificate-key=" + keyPath,
 		}
 
-		fmt.Println("\n=== Writing to the file " + filepath + ":")
+		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
 		err := system.WriteStrings(writeLines, filepath, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
@@ -107,7 +107,7 @@ func WriteConnectURLConfig(url string) error {
 			"default-rsconnect-server=" + url,
 		}
 
-		fmt.Println("\n=== Writing to the file " + filepath + ":")
+		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
 		err := system.WriteStrings(writeLines, filepath, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
@@ -141,7 +141,7 @@ func WriteSAMLAuthConfig(idpUrl string) error {
 			"auth-saml-metadata-url=" + idpUrl,
 		}
 
-		fmt.Println("\n=== Writing to the file " + filepath + ":")
+		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
 		err := system.WriteStrings(writeLines, filepath, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
@@ -184,7 +184,7 @@ func WriteOIDCAuthConfig(idpURL string, usernameClaim string, clientID string, c
 			"auth-openid-username-claim=" + usernameClaim,
 		}
 
-		fmt.Println("\n=== Writing to the file " + filepathRserver + ":")
+		system.PrintAndLogInfo("\n=== Writing to the file " + filepathRserver + ":")
 		err := system.WriteStrings(writeLinesRserver, filepathRserver, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
@@ -217,7 +217,7 @@ func WriteOIDCAuthConfig(idpURL string, usernameClaim string, clientID string, c
 				"client-secret=" + clientSecret,
 			}
 
-			fmt.Println("\n=== Writing to the file " + filepathClientSecret + ":")
+			system.PrintAndLogInfo("\n=== Writing to the file " + filepathClientSecret + ":")
 			err := system.WriteStrings(writeLinesClientSecret, filepathClientSecret, 0644)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
@@ -238,7 +238,7 @@ func WriteJupyterConfig(jupyterPath string) error {
 	}
 	filepath := "/etc/rstudio/jupyter.conf"
 
-	fmt.Println("\n=== Writing to the file " + filepath + ":")
+	system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
 	err := system.WriteStrings(writeLines, filepath, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)

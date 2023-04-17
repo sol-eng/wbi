@@ -8,6 +8,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
 
@@ -57,7 +58,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 		if goodURL {
 			break
 		} else {
-			fmt.Println(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
+			system.PrintAndLogInfo(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
 		}
 	}
 
@@ -88,7 +89,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			if goodRepoR {
 				break
 			} else {
-				fmt.Println(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
+				system.PrintAndLogInfo(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
 			}
 		}
 
@@ -101,7 +102,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			err = workbench.WriteRepoConfig(packageManagerURLFull, "cran")
 			if err != nil {
 				if strings.Contains(err.Error(), "line already exists in repos.conf") {
-					fmt.Println("CRAN repo already exists in /etc/rstudio/repos.conf. Skipping writing to the file.")
+					system.PrintAndLogInfo("CRAN repo already exists in /etc/rstudio/repos.conf. Skipping writing to the file.")
 				} else {
 					return fmt.Errorf("failed to write CRAN repo config: %w", err)
 				}
@@ -135,7 +136,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			if goodRepoPython {
 				break
 			} else {
-				fmt.Println(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
+				system.PrintAndLogInfo(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
 			}
 		}
 
@@ -147,7 +148,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			err = workbench.WriteRepoConfig(packageManagerURLFull, "pypi")
 			if err != nil {
 				if strings.Contains(err.Error(), "line already exists in pip.conf") {
-					fmt.Println("PyPI URL already exists in /etc/pip.conf. Skipping writing to the file.")
+					system.PrintAndLogInfo("PyPI URL already exists in /etc/pip.conf. Skipping writing to the file.")
 				} else {
 					return fmt.Errorf("failed to write PyPI repo config: %w", err)
 				}

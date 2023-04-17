@@ -6,6 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/languages"
+	"github.com/sol-eng/wbi/internal/system"
 	"github.com/spf13/cobra"
 )
 
@@ -23,13 +24,13 @@ func newScan(scanOpts scanOpts, language string) error {
 		if err != nil {
 			return fmt.Errorf("issue occured in scanning for R versions: %w", err)
 		}
-		fmt.Println(strings.Join(rVersions, "\n"))
+		system.PrintAndLogInfo(strings.Join(rVersions, "\n"))
 	} else if language == "python" {
 		pythonVersions, err := languages.ScanForPythonVersions()
 		if err != nil {
 			return fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 		}
-		fmt.Println(strings.Join(pythonVersions, "\n"))
+		system.PrintAndLogInfo(strings.Join(pythonVersions, "\n"))
 	} else {
 		return fmt.Errorf("language %s is not supported", language)
 	}

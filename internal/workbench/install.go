@@ -92,7 +92,7 @@ func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 		return fmt.Errorf("issue installing Workbench with the command '%s': %w", installCommand, err)
 	}
 
-	fmt.Println("\nWorkbench has been successfully installed!")
+	system.PrintAndLogInfo("\nWorkbench has been successfully installed!")
 	return nil
 }
 

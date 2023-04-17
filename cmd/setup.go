@@ -14,6 +14,7 @@ import (
 	"github.com/sol-eng/wbi/internal/packagemanager"
 	"github.com/sol-eng/wbi/internal/prodrivers"
 	"github.com/sol-eng/wbi/internal/ssl"
+	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
 
 	log "github.com/sirupsen/logrus"
@@ -39,7 +40,7 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	if step == "start" {
-		fmt.Println("Welcome to the Workbench Installer!")
+		system.PrintAndLogInfo("Welcome to the Workbench Installer!")
 		step = "prereqs"
 	}
 
@@ -258,7 +259,7 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	if step == "restart" {
-		fmt.Println("\n Restarting RStudio Server and Launcher...")
+		system.PrintAndLogInfo("\nRestarting RStudio Server and Launcher...")
 
 		err = workbench.RestartRStudioServerAndLauncher()
 		if err != nil {
@@ -268,7 +269,7 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	if step == "status" {
-		fmt.Println("\n Printing the status of RStudio Server and Launcher...")
+		system.PrintAndLogInfo("\nPrinting the status of RStudio Server and Launcher...")
 
 		err = workbench.StatusRStudioServerAndLauncher()
 		if err != nil {
@@ -291,7 +292,7 @@ func newSetup(setupOpts setupOpts) error {
 		step = "done"
 	}
 
-	fmt.Println("\nThanks for using wbi!")
+	system.PrintAndLogInfo("\nThanks for using wbi!")
 	return nil
 }
 

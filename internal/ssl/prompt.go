@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // Prompt asking users if they wish to use SSL
@@ -33,7 +34,7 @@ func PromptVerifyAndConfigSSL() error {
 	if verifySSLCert != nil {
 		return fmt.Errorf("could not verify the SSL cert: %w", err)
 	}
-	fmt.Println("SSL successfully setup and verified")
+	system.PrintAndLogInfo("SSL successfully setup and verified")
 	return nil
 }
 
