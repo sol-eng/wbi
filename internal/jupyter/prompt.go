@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
+	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
@@ -12,13 +13,16 @@ import (
 // Prompt asking users if they wish to install Jupyter
 func InstallPrompt() (bool, error) {
 	name := true
+	messageText := "Would you like to install Jupyter?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to install Jupyter?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Jupyter install prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -26,8 +30,9 @@ func InstallPrompt() (bool, error) {
 func KernelPrompt(pythonPaths []string) (string, error) {
 	// Allow the user to select a version of Python to target
 	target := ""
+	messageText := "Select a Python kernel to install Jupyter into:"
 	prompt := &survey.Select{
-		Message: "Select a Python kernel to install Jupyter into:",
+		Message: messageText,
 		Options: pythonPaths,
 	}
 	err := survey.AskOne(prompt, &target)
@@ -37,6 +42,8 @@ func KernelPrompt(pythonPaths []string) (string, error) {
 	if target == "" {
 		return target, errors.New("no Python kernel selected for Jupyter")
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 

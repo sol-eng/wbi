@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
@@ -13,13 +14,16 @@ import (
 // Prompt users if they wish to add a default Connect URL to Workbench
 func PromptConnectChoice() (bool, error) {
 	name := true
+	messageText := "Would you like to provide a default Connect URL for Workbench?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to provide a default Connect URL for Workbench?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Connect URL prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -64,12 +68,15 @@ func PromptVerifyAndConfigConnect() error {
 // Prompt users for a default Connect URL
 func PromptConnectURL() (string, error) {
 	target := ""
+	messageText := "Enter a default Connect URL:"
 	prompt := &survey.Input{
-		Message: "Connect URL:",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
 		return "", fmt.Errorf("issue prompting for a Connect URL: %w", err)
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }

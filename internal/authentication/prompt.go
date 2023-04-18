@@ -3,7 +3,8 @@ package authentication
 import (
 	"errors"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/sol-eng/wbi/internal/config"
@@ -14,13 +15,16 @@ import (
 // Prompt asking users if they wish to setup Authentication
 func PromptAuth() (bool, error) {
 	name := false
+	messageText := "Would you like to setup Authentication?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to setup Authentication?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Authentication prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -52,14 +56,17 @@ func PromptAndConvertAuthType() (config.AuthType, error) {
 // Prompt asking user for their desired authentication method
 func PromptAuthentication() (string, error) {
 	name := ""
+	messageText := "Choose an authentication method:"
 	prompt := &survey.Select{
-		Message: "Choose an authentication method:",
+		Message: messageText,
 		Options: []string{"SAML", "OIDC", "Active Directory/LDAP", "PAM", "Other"},
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return "", errors.New("there was an issue with the authentication prompt")
 	}
+	log.Info(messageText)
+	log.Info(name)
 	return name, nil
 }
 

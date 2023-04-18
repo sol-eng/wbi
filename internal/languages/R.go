@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
@@ -200,13 +201,16 @@ func ScanForRVersions() ([]string, error) {
 // RInstallPrompt Prompt users if they would like to install R versions
 func RInstallPrompt() (bool, error) {
 	name := true
+	messageText := "Would you like to install version(s) of R?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to install version(s) of R?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the R install prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -254,11 +258,12 @@ func RetrieveValidRVersions() ([]string, error) {
 
 // RSelectVersionsPrompt Prompt asking users which R version(s) they would like to install
 func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
+	messageText := "Which version(s) of R would you like to install?"
 	var qs = []*survey.Question{
 		{
 			Name: "rversions",
 			Prompt: &survey.MultiSelect{
-				Message: "Which version(s) of R would you like to install?",
+				Message: messageText,
 				Options: availableRVersions,
 				Default: availableRVersions[0],
 			},
@@ -271,7 +276,8 @@ func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the R versions selection prompt")
 	}
-
+	log.Info(messageText)
+	log.Info(strings.Join(rVersionsAnswers.RVersions, ", "))
 	return rVersionsAnswers.RVersions, nil
 }
 
@@ -319,13 +325,16 @@ func PromptAndSetRSymlinks(rPaths []string) error {
 // RSymlinkPrompt asks users if they would like to set R symlinks
 func RSymlinkPrompt() (bool, error) {
 	name := true
+	messageText := `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal.`
 	prompt := &survey.Confirm{
-		Message: `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal.`,
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the symlink R prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -333,8 +342,9 @@ func RSymlinkPrompt() (bool, error) {
 func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 	// Allow the user to select a version of R to target
 	target := ""
+	messageText := "Select a R binary to symlink:"
 	prompt := &survey.Select{
-		Message: "Select a R binary to symlink:",
+		Message: messageText,
 		Options: rPaths,
 	}
 	err := survey.AskOne(prompt, &target)
@@ -344,6 +354,8 @@ func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 	if target == "" {
 		return target, errors.New("no R binary selected to be symlinked")
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 

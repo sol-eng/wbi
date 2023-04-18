@@ -2,18 +2,21 @@ package languages
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 )
 
 // Prompt asking users which languages they will use
 func PromptAndRespond() ([]string, error) {
+	messageText := "What languages will you use"
 	var qs = []*survey.Question{
 		{
 			Name: "languages",
 			Prompt: &survey.MultiSelect{
-				Message: "What languages will you use",
+				Message: messageText,
 				Options: []string{"R", "python"},
 				Default: []string{"R", "python"},
 			},
@@ -30,5 +33,7 @@ func PromptAndRespond() ([]string, error) {
 	if !lo.Contains(languageAnswers.Languages, "R") {
 		return []string{}, errors.New("R must be a select language to install Workbench")
 	}
+	log.Info(messageText)
+	log.Info(strings.Join(languageAnswers.Languages, ", "))
 	return languageAnswers.Languages, nil
 }
