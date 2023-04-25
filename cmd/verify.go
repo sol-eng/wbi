@@ -60,10 +60,32 @@ func newVerify(verifyOpts verifyOpts, item string) error {
 			return fmt.Errorf("Workbench is not installed") //nolint:staticcheck
 		}
 	} else if item == "ssl" {
-		err := ssl.VerifySSLCertAndKey(verifyOpts.certPath, verifyOpts.keyPath)
+		err := ssl.VerifySSLCertAndKeyMD5Match(verifyOpts.certPath, verifyOpts.keyPath)
 		if err != nil {
-			return fmt.Errorf("issue with checking the SSL cert and key: %w", err)
+			return fmt.Errorf("could not verify the SSL cert: %w", err)
 		}
+		serverCert, intermediateCertPool, _, err := ssl.ParseCertificateChain(verifyOpts.certPath)
+		if err != nil {
+			return fmt.Errorf("could not parse the certificate chain: %w", err)
+		}
+
+		certHostMisMatch, err := ssl.VerifySSLHostMatch(serverCert)
+
+		if certHostMisMatch {
+			proceed, err := ssl.PromptMisMatchedHostName()
+			if err != nil {
+				return fmt.Errorf("hostname mismatch error: %w", err)
+			}
+			if !proceed {
+				return fmt.Errorf("hostname mismatch error, exit without proceeding: %w", err)
+			}
+		}
+		_, err = ssl.VerifyTrustedCertificate(serverCert, intermediateCertPool)
+		if err != nil {
+			return fmt.Errorf("failure while trying to verify server trust of the SSL cert: %w", err)
+		}
+
+		fmt.Println("SSL successfully verified")
 	} else if item == "license" {
 		_, err := license.CheckLicenseActivation()
 		if err != nil {
