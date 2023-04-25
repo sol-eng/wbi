@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"github.com/sol-eng/wbi/internal/system"
 	"os"
@@ -23,11 +24,11 @@ func VerifySSLCertAndKeyMD5Match(certLocation string, keyLocation string) error 
 	}
 
 	if certMD5 != keyMD5 {
-		return fmt.Errorf("Certificate and Key do not cryptographically match, "+
-			"please check that your certificates are correct. You can run these commands to verify the certificates:\n"+
-			"openssl x509 -noout -modulus -in /path/to/your/certificate.crt 2> /dev/null | openssl md5\n"+
-			"openssl rsa -noout -modulus -in /path/to/your/private.key  2> /dev/null | openssl md5 \n\n"+
-			"The returned MD5 hashes must match: %w", err)
+		return errors.New("Certificate and Key do not cryptographically match, " +
+			"please check that your certificates are correct. You can run these commands to verify the certificates:\n" +
+			"openssl x509 -noout -modulus -in " + certLocation + " 2> /dev/null | openssl md5\n" +
+			"openssl rsa -noout -modulus -in " + keyLocation + "  2> /dev/null | openssl md5 \n\n" +
+			"The returned MD5 hashes must match: %w")
 	}
 	return nil
 }
@@ -58,17 +59,14 @@ func VerifyTrustedCertificate(serverCert *x509.Certificate, intermediateCA *x509
 		return true, fmt.Errorf("failed to load system root CAs: %w", err)
 	}
 
-	// Verify certificate
 	opts := x509.VerifyOptions{
 		Roots:         rootCAs,
 		Intermediates: intermediateCA,
 	}
 
-	//fmt.Println(rootCAs)
 	_, err = serverCert.Verify(opts)
 	if err != nil {
 		fmt.Println("The server certificate is not trusted by the system:" + err.Error())
-		//fmt.Println(block)
 		return false, nil
 	} else {
 		fmt.Println("This certificate is trusted by system")
@@ -102,20 +100,14 @@ func ParseCertificateChain(certLocation string) (*x509.Certificate, *x509.CertPo
 	}
 
 	certDataChain := DecodePemFiles(certData)
-	// Decode the certificate data
-	//block, _ := pem.Decode(certData)
-	//if block == nil {
-	//	return fmt.Errorf("failed to decode PEM block: %w", err)
-	//}
 	intermediateCA := x509.NewCertPool()
 	var serverCert *x509.Certificate
 	var rootCert *x509.Certificate
 
-	//Parse the certificate
 	for _, cert := range certDataChain.Certificate {
 		x509Cert, err := x509.ParseCertificate(cert)
 		if err != nil {
-			fmt.Errorf("error parsing certificates: %w", err)
+			return nil, nil, nil, fmt.Errorf("error parsing certificates: %w", err)
 		}
 		if x509Cert.IsCA && x509Cert.Subject.CommonName != x509Cert.Issuer.CommonName {
 			intermediateCA.AddCert(x509Cert)
@@ -123,12 +115,10 @@ func ParseCertificateChain(certLocation string) (*x509.Certificate, *x509.CertPo
 		} else if !x509Cert.IsCA {
 			serverCert = x509Cert
 			fmt.Println("This is the Server Certificate:" + x509Cert.Subject.String())
-			//= x509.ParseCertificate(cert.Raw)
 		} else {
 			rootCert = x509Cert
 			fmt.Println("This is the Root Certificate:" + x509Cert.Subject.String())
 		}
 	}
 	return serverCert, intermediateCA, rootCert, nil
-
 }

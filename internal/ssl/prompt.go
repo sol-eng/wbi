@@ -51,12 +51,14 @@ func PromptAndVerifySSL() (string, string, error) {
 			return certPath, keyPath, fmt.Errorf("hostname mismatch error, exit without proceeding: %w", err)
 		}
 	}
-	_, err = VerifyTrustedCertificate(serverCert, intermediateCertPool)
+	verified, err := VerifyTrustedCertificate(serverCert, intermediateCertPool)
 	if err != nil {
 		return certPath, keyPath, fmt.Errorf("failure while trying to verify server trust of the SSL cert: %w", err)
 	}
+	if verified {
+		fmt.Println("SSL successfully verified")
+	}
 
-	fmt.Println("SSL successfully verified")
 	return certPath, keyPath, nil
 }
 
