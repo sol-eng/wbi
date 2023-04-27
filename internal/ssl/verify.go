@@ -56,7 +56,7 @@ func VerifyTrustedCertificate(serverCert *x509.Certificate, intermediateCA *x509
 	//Load system root CAs
 	rootCAs, err := x509.SystemCertPool()
 	if err != nil {
-		return true, fmt.Errorf("failed to load system root CAs: %w", err)
+		return false, fmt.Errorf("failed to load system root CAs: %w", err)
 	}
 
 	opts := x509.VerifyOptions{
