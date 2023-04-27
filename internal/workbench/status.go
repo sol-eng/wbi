@@ -25,11 +25,11 @@ func StatusRStudioServer() error {
 		return fmt.Errorf("issue running status for rstudio-server: %w", err)
 	}
 	if strings.Contains(status, "active (running)") {
-		fmt.Println(status)
-		fmt.Println("\nrstudio-server status is active (running)!")
+		system.PrintAndLogInfo(status)
+		system.PrintAndLogInfo("\nrstudio-server status is active (running)!")
 	} else {
-		fmt.Println(status)
-		fmt.Println("\nrstudio-server status is not active!")
+		system.PrintAndLogInfo(status)
+		system.PrintAndLogInfo("\nrstudio-server status is not active!")
 	}
 
 	return nil
@@ -41,11 +41,11 @@ func StatusRStudioLauncher() error {
 		return fmt.Errorf("issue running status for rstudio-launcher with the command 'rstudio-launcher status | cat': %w", err)
 	}
 	if strings.Contains(status, "active (running)") {
-		fmt.Println(status)
-		fmt.Println("\nrstudio-launcher status is active (running)!")
+		system.PrintAndLogInfo(status)
+		system.PrintAndLogInfo("\nrstudio-launcher status is active (running)!")
 	} else {
-		fmt.Println(status)
-		fmt.Println("\nrstudio-launcher status is not active!")
+		system.PrintAndLogInfo(status)
+		system.PrintAndLogInfo("\nrstudio-launcher status is not active!")
 	}
 	return nil
 }

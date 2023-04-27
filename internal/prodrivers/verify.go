@@ -17,7 +17,7 @@ func CheckExistingProDrivers() (bool, error) {
 		}
 
 		if strings.Contains(odbciniOutput, "Installer = RStudio Pro Drivers") {
-			fmt.Println("\nExisting installation of Posit Pro Drivers detected in /etc/odbcinst.ini.\nSkipping installation of Pro Drivers.")
+			system.PrintAndLogInfo("\nExisting installation of Posit Pro Drivers detected in /etc/odbcinst.ini.\nSkipping installation of Pro Drivers.")
 			return true, nil
 		}
 	} else {

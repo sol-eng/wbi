@@ -15,10 +15,10 @@ func CheckLicenseActivation() (bool, error) {
 	}
 
 	if strings.Contains(licenseStatus, "Status: Activated") {
-		fmt.Println("\nAn active Workbench license was detected")
+		system.PrintAndLogInfo("\nAn active Workbench license was detected")
 		return true, nil
 	}
 
-	fmt.Println("\nNo active Workbench license was detected")
+	system.PrintAndLogInfo("\nNo active Workbench license was detected")
 	return false, nil
 }

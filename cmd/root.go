@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
@@ -34,6 +38,7 @@ func (cmd *rootCmd) Execute(args []string) {
 func setGlobalSettings(cfg *settings) {
 	cfg.loglevel = viper.GetString("loglevel")
 	setLogLevel(cfg.loglevel)
+	setUpLogger()
 }
 func newRootCmd(version string) *rootCmd {
 	root := &rootCmd{cfg: &settings{}}
@@ -64,4 +69,25 @@ func newRootCmd(version string) *rootCmd {
 
 	root.cmd = cmd
 	return root
+}
+
+func setUpLogger() error {
+	// Setup the logger output
+	logFile := "wbi-" + time.Now().Format("20060102T150405") + ".log"
+
+	var f *os.File
+	var err error
+
+	if f, err = os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666); err != nil {
+		// Using fmt to print to stdout since logger is not ready
+		fmt.Println(err)
+		return err
+	}
+
+	log.SetOutput(f)
+
+	// Setup the logger format
+	log.SetFormatter(&log.JSONFormatter{})
+
+	return nil
 }

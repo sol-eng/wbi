@@ -15,6 +15,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
 	"github.com/sol-eng/wbi/internal/system"
@@ -89,7 +90,7 @@ func CheckPromptAndSetPythonPATH(pythonPaths []string) error {
 				return fmt.Errorf("issue adding Python binary to PATH: %w", err)
 			}
 
-			fmt.Println("\nThe selected Python directory  " + pythonPathChoice + " has been successfully added to PATH in the /etc/profile.d/wbi_python.sh file.\n")
+			system.PrintAndLogInfo("\nThe selected Python directory  " + pythonPathChoice + " has been successfully added to PATH in the /etc/profile.d/wbi_python.sh file.\n")
 		}
 	}
 	return nil
@@ -99,8 +100,9 @@ func CheckPromptAndSetPythonPATH(pythonPaths []string) error {
 func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
 	// Allow the user to select a version of Python to target
 	target := ""
+	messageText := `Please select a Python binary to add to PATH.`
 	prompt := &survey.Select{
-		Message: "Select a Python binary to add to PATH:",
+		Message: messageText,
 		Options: pythonPaths,
 	}
 	err := survey.AskOne(prompt, &target)
@@ -110,6 +112,8 @@ func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
 	if target == "" {
 		return target, errors.New("no Python binary selected to add to PATH")
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 
@@ -132,7 +136,7 @@ func PromptAndInstallPython(osType config.OperatingSystem) ([]string, error) {
 				return []string{}, fmt.Errorf("issue selecting Python versions: %w", err)
 			}
 			if len(installPythonVersions) == 0 {
-				fmt.Println(`No Python versions selected. Please select at least one version to install.`)
+				system.PrintAndLogInfo(`No Python versions selected. Please select at least one version to install.`)
 			} else {
 				break
 			}
@@ -156,12 +160,12 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 	}
 
-	fmt.Println("\nFound Python versions:")
-	fmt.Println(strings.Join(pythonVersionsOrig, "\n"))
+	system.PrintAndLogInfo("\nFound Python versions:")
+	system.PrintAndLogInfo(strings.Join(pythonVersionsOrig, "\n"))
 
 	if len(pythonVersionsOrig) == 0 {
 		scanMessage := "no Python versions found at locations: \n" + strings.Join(GetPythonRootDirs(), "\n")
-		fmt.Println(scanMessage)
+		system.PrintAndLogInfo(scanMessage)
 
 		installedPythonVersion, err := PromptAndInstallPython(osType)
 		if err != nil {
@@ -179,7 +183,7 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) error {
 			}
 		}
 		if len(anyOptLocations) == 0 {
-			fmt.Println("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python.")
+			system.PrintAndLogInfo("Posit recommends installing version of Python into the /opt directory to not conflict/rely on the system installed version of Python.")
 		}
 		_, err := PromptAndInstallPython(osType)
 		if err != nil {
@@ -197,8 +201,8 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue setting Python PATH: %w", err)
 	}
 
-	fmt.Println("\nFound Python versions:")
-	fmt.Println(strings.Join(pythonVersions, "\n"))
+	system.PrintAndLogInfo("\nFound Python versions:")
+	system.PrintAndLogInfo(strings.Join(pythonVersions, "\n"))
 	return nil
 }
 
@@ -240,26 +244,32 @@ func ScanForPythonVersions() ([]string, error) {
 // PythonInstallPrompt Prompt users if they would like to install Python versions
 func PythonInstallPrompt() (bool, error) {
 	name := true
+	messageText := "Would you like to install version(s) of Python?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to install version(s) of Python?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Python install prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
 // PythonPATHPrompt asks users if they would like to set Python PATH
 func PythonPATHPrompt() (bool, error) {
 	name := true
+	messageText := `Would you like to add a Python version to PATH? This is recommended so users can type "python" and "pip" in the terminal to access this specified version of python and associated tools.`
 	prompt := &survey.Confirm{
-		Message: `Would you like to add a Python version to PATH? This is recommended so users can type "python" and "pip" in the terminal to access this specified version of python and associated tools.`,
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Python set PATH prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -330,11 +340,12 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 
 // PythonSelectVersionsPrompt Prompt asking users which Python version(s) they would like to install
 func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, error) {
+	messageText := "Which version(s) of Python would you like to install?"
 	var qs = []*survey.Question{
 		{
 			Name: "pythonVersions",
 			Prompt: &survey.MultiSelect{
-				Message: "Which version(s) of Python would you like to install?",
+				Message: messageText,
 				Options: availablePythonVersions,
 				Default: availablePythonVersions[0],
 			},
@@ -347,6 +358,8 @@ func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, err
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the Python versions selection prompt")
 	}
+	log.Info(messageText)
+	log.Info(strings.Join(pythonVersionsAnswers.PythonVersions, ", "))
 	return pythonVersionsAnswers.PythonVersions, nil
 }
 
@@ -384,7 +397,7 @@ func UpgradePythonTools(pythonVersion string) error {
 	}
 
 	successMessage := "\npip, setuptools and wheel have been upgraded for Python version " + pythonVersion + "\n"
-	fmt.Println(successMessage)
+	system.PrintAndLogInfo(successMessage)
 
 	return nil
 }
@@ -436,7 +449,7 @@ func CheckIfPythonProfileDExists() bool {
 		return false
 	}
 
-	fmt.Println("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.")
+	system.PrintAndLogInfo("\nAn existing /etc/profile.d/wbi_python.sh file was found, skipping setting Python path.")
 	return true
 }
 func unavailablePythonVersionsByOS(osType config.OperatingSystem) unavailablePythonVersions {

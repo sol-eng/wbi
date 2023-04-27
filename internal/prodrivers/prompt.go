@@ -5,19 +5,24 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
+	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // Prompt users if they would like to install Posit Pro Drivers
 func ProDriversInstallPrompt() (bool, error) {
 	name := true
+	messageText := "Would you like to install Post Pro Drivers?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to install Post Pro Drivers?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Pro Drivers install prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -38,7 +43,7 @@ func CheckPromptDownloadAndInstallProDrivers(osType config.OperatingSystem) erro
 			}
 		}
 	} else {
-		fmt.Println("Pro Drivers are already installed")
+		system.PrintAndLogInfo("Pro Drivers are already installed")
 	}
 	return nil
 }

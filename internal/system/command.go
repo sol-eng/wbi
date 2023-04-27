@@ -1,29 +1,41 @@
 package system
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Runs a command in the terminal and streams the output
 func RunCommand(command string, displayCommand bool, delay time.Duration) error {
 	if displayCommand {
-		fmt.Println("Running command: " + command)
+		PrintAndLogInfo("Running command: " + command)
 	}
 
 	// sleep for X seconds to allow the user to read the command
 	time.Sleep(delay * time.Second)
 
+	var errBuf, outBuf bytes.Buffer
+
 	cmd := exec.Command("/bin/sh", "-c", command)
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Stderr = io.MultiWriter(os.Stderr, &errBuf)
+	cmd.Stdout = io.MultiWriter(os.Stdout, &outBuf)
 
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("issue running the command '%s': %w", command, err)
+	}
+	if len(outBuf.String()) > 0 {
+		log.Info(outBuf.String())
+	}
+	if len(errBuf.String()) > 0 {
+		log.Error(errBuf.String())
 	}
 
 	return nil
@@ -32,7 +44,7 @@ func RunCommand(command string, displayCommand bool, delay time.Duration) error 
 // Runs a command in the terminal and return stdout/stderr as seperate strings
 func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.Duration) (string, error) {
 	if displayCommand {
-		fmt.Println("Running command: " + command)
+		PrintAndLogInfo("Running command: " + command)
 	}
 
 	// sleep for X seconds to allow the user to read the command
@@ -44,6 +56,7 @@ func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.
 	if err != nil {
 		return "", fmt.Errorf("issue running the command '%s': %w", command, err)
 	}
+	log.Info(string(out))
 
 	return string(out), nil
 }

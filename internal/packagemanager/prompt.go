@@ -7,20 +7,25 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // Prompt users if they wish to add a default Posit Package Manager URL to Workbench
 func PromptPackageManagerChoice() (bool, error) {
 	name := true
+	messageText := "Would you like to setup Posit Package Manager as the default R and/or Python repo in Workbench? You will need connectivity to the Package Manager server to use this option."
 	prompt := &survey.Confirm{
-		Message: "Would you like to setup Posit Package Manager as the default R and/or Python repo in Workbench? You will need connectivity to the Package Manager server to use this option.",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Posit Package Manager choice prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -57,7 +62,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 		if goodURL {
 			break
 		} else {
-			fmt.Println(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
+			system.PrintAndLogInfo(`The URL you entered is not valid. Please try again. To skip this section type "skip".`)
 		}
 	}
 
@@ -88,7 +93,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			if goodRepoR {
 				break
 			} else {
-				fmt.Println(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
+				system.PrintAndLogInfo(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
 			}
 		}
 
@@ -101,7 +106,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			err = workbench.WriteRepoConfig(packageManagerURLFull, "cran")
 			if err != nil {
 				if strings.Contains(err.Error(), "line already exists in repos.conf") {
-					fmt.Println("CRAN repo already exists in /etc/rstudio/repos.conf. Skipping writing to the file.")
+					system.PrintAndLogInfo("CRAN repo already exists in /etc/rstudio/repos.conf. Skipping writing to the file.")
 				} else {
 					return fmt.Errorf("failed to write CRAN repo config: %w", err)
 				}
@@ -135,7 +140,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			if goodRepoPython {
 				break
 			} else {
-				fmt.Println(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
+				system.PrintAndLogInfo(`The repo you entered is not valid. Please try again. To skip this section type "skip".`)
 			}
 		}
 
@@ -147,7 +152,7 @@ func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
 			err = workbench.WriteRepoConfig(packageManagerURLFull, "pypi")
 			if err != nil {
 				if strings.Contains(err.Error(), "line already exists in pip.conf") {
-					fmt.Println("PyPI URL already exists in /etc/pip.conf. Skipping writing to the file.")
+					system.PrintAndLogInfo("PyPI URL already exists in /etc/pip.conf. Skipping writing to the file.")
 				} else {
 					return fmt.Errorf("failed to write PyPI repo config: %w", err)
 				}
@@ -185,13 +190,16 @@ func VerifyAndBuildPublicPackageManager(osType config.OperatingSystem) error {
 // Prompt users for a default Posit Package Manager URL
 func PromptPackageManagerURL() (string, error) {
 	target := ""
+	messageText := "Enter your Posit Package Manager base URL (for example, https://exampleaddress.com):"
 	prompt := &survey.Input{
-		Message: "Enter your Posit Package Manager base URL (for example, https://exampleaddress.com):",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
 		return "", fmt.Errorf("issue prompting for a Posit Package Manager URL: %w", err)
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 
@@ -209,26 +217,32 @@ func PromptPackageManagerRepo(language string) (string, error) {
 	languageTitle := strings.Title(language)
 
 	target := ""
+	messageText := "Enter the name of your " + languageTitle + " repository on Posit Package Manager (for example, " + exampleRepo + ") :"
 	prompt := &survey.Input{
-		Message: "Enter the name of your " + languageTitle + " repository on Posit Package Manager (for example, " + exampleRepo + ") :",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
 		return "", fmt.Errorf("issue prompting for a Posit Package Manager "+languageTitle+" repo: %w", err)
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 
 // Prompt users if they wish to add Posit Public Package Manager as the default R repo in Workbench
 func PromptPublicPackageManagerChoice() (bool, error) {
 	name := true
+	messageText := "Would you like to setup Posit Public Package Manager as the default R repo in Workbench? You will need internet accessibility to use this option."
 	prompt := &survey.Confirm{
-		Message: "Would you like to setup Posit Public Package Manager as the default R repo in Workbench? You will need internet accessibility to use this option.",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the Posit Public Package Manager R choice prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -253,11 +267,12 @@ func PromptPackageManagerNameAndBuildURL(cleanURL string, osType config.Operatin
 
 // Prompt asking users which language repos they will use
 func PromptLanguageRepos() ([]string, error) {
+	messageText := "What language repositories would you like to setup?"
 	var qs = []*survey.Question{
 		{
 			Name: "languages",
 			Prompt: &survey.MultiSelect{
-				Message: "What language repositories would you like to setup?",
+				Message: messageText,
 				Options: []string{"r", "python"},
 				Default: []string{"r", "python"},
 			},
@@ -270,6 +285,7 @@ func PromptLanguageRepos() ([]string, error) {
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the repo languages prompt")
 	}
-
+	log.Info(messageText)
+	log.Info(strings.Join(languageAnswers.Languages, ", "))
 	return languageAnswers.Languages, nil
 }

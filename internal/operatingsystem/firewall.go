@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/sol-eng/wbi/internal/config"
-
 	"github.com/sol-eng/wbi/internal/system"
 )
 

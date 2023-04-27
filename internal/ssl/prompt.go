@@ -6,18 +6,23 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
+	log "github.com/sirupsen/logrus"
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // PromptSSL Prompt asking users if they wish to use SSL
 func PromptSSL() (bool, error) {
 	name := false
+	messageText := "Would you like to use SSL?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to use SSL?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the SSL prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -56,7 +61,7 @@ func PromptAndVerifySSL() (string, string, error) {
 		return certPath, keyPath, fmt.Errorf("failure while trying to verify server trust of the SSL cert: %w", err)
 	}
 	if verified {
-		fmt.Println("SSL successfully verified")
+	  system.PrintAndLogInfo("SSL successfully verified")
 	}
 
 	return certPath, keyPath, nil
@@ -65,26 +70,32 @@ func PromptAndVerifySSL() (string, string, error) {
 // PromptSSLFilePath Prompt asking users for a filepath to their SSL cert
 func PromptSSLFilePath() (string, error) {
 	target := ""
+	messageText := "Filepath to SSL certificate:"
 	prompt := &survey.Input{
-		Message: "Filepath to SSL certificate:",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
 		return "", errors.New("there was an issue with the SSL cert path prompt")
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 
 // PromptSSLKeyFilePath Prompt asking users for a filepath to their SSL cert key
 func PromptSSLKeyFilePath() (string, error) {
 	target := ""
+	messageText := "Filepath to SSL certificate key:"
 	prompt := &survey.Input{
-		Message: "Filepath to SSL certificate key:",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
 		return "", errors.New("there was an issue with the SSL cert key path prompt")
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 

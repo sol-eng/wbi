@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
@@ -79,7 +80,7 @@ func PromptAndInstallR(osType config.OperatingSystem) ([]string, error) {
 				return []string{}, fmt.Errorf("issue selecting R versions: %w", err)
 			}
 			if len(installRVersions) == 0 {
-				fmt.Println(`No R versions selected. Please select at least one version to install.`)
+				system.PrintAndLogInfo(`No R versions selected. Please select at least one version to install.`)
 			} else {
 				break
 			}
@@ -102,12 +103,12 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
-	fmt.Println("\nFound R versions:")
-	fmt.Println(strings.Join(rVersionsOrig, "\n"))
+	system.PrintAndLogInfo("\nFound R versions:")
+	system.PrintAndLogInfo(strings.Join(rVersionsOrig, "\n"))
 
 	if len(rVersionsOrig) == 0 {
 		scanMessage := "no R versions found at locations: \n" + strings.Join(GetRRootDirs(), "\n")
-		fmt.Println(scanMessage)
+		system.PrintAndLogInfo(scanMessage)
 
 		installedRVersion, err := PromptAndInstallR(osType)
 		if err != nil {
@@ -125,14 +126,14 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 			}
 		}
 		if len(anyOptLocations) == 0 {
-			fmt.Println("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R.")
+			system.PrintAndLogInfo("Posit recommends installing version of R into the /opt directory to not conflict/rely on the system installed version of R.")
 		}
 		installedRVersion, err := PromptAndInstallR(osType)
 		if err != nil {
 			return fmt.Errorf("issue installing R: %w", err)
 		}
 		if len(installedRVersion) > 0 {
-			fmt.Println("\nThe following R versions have been installed:\n", strings.Join(installedRVersion, "\n"))
+			system.PrintAndLogInfo("\nThe following R versions have been installed:\n" + strings.Join(installedRVersion, "\n"))
 		}
 	}
 
@@ -146,8 +147,8 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue setting R symlinks: %w", err)
 	}
 
-	fmt.Println("\nFound R versions:")
-	fmt.Println(strings.Join(rVersions, "\n"))
+	system.PrintAndLogInfo("\nFound R versions:")
+	system.PrintAndLogInfo(strings.Join(rVersions, "\n"))
 	return nil
 }
 
@@ -200,13 +201,16 @@ func ScanForRVersions() ([]string, error) {
 // RInstallPrompt Prompt users if they would like to install R versions
 func RInstallPrompt() (bool, error) {
 	name := true
+	messageText := "Would you like to install version(s) of R?"
 	prompt := &survey.Confirm{
-		Message: "Would you like to install version(s) of R?",
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the R install prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -254,11 +258,12 @@ func RetrieveValidRVersions() ([]string, error) {
 
 // RSelectVersionsPrompt Prompt asking users which R version(s) they would like to install
 func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
+	messageText := "Which version(s) of R would you like to install?"
 	var qs = []*survey.Question{
 		{
 			Name: "rversions",
 			Prompt: &survey.MultiSelect{
-				Message: "Which version(s) of R would you like to install?",
+				Message: messageText,
 				Options: availableRVersions,
 				Default: availableRVersions[0],
 			},
@@ -271,7 +276,8 @@ func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the R versions selection prompt")
 	}
-
+	log.Info(messageText)
+	log.Info(strings.Join(rVersionsAnswers.RVersions, ", "))
 	return rVersionsAnswers.RVersions, nil
 }
 
@@ -311,7 +317,7 @@ func PromptAndSetRSymlinks(rPaths []string) error {
 			return fmt.Errorf("issue setting R symlinks: %w", err)
 		}
 
-		fmt.Println("\nThe selected R directory  " + RPathChoice + " has been successfully symlinked and will be available on the default system PATH.\n")
+		system.PrintAndLogInfo("\nThe selected R directory  " + RPathChoice + " has been successfully symlinked and will be available on the default system PATH.\n")
 	}
 	return nil
 }
@@ -319,13 +325,16 @@ func PromptAndSetRSymlinks(rPaths []string) error {
 // RSymlinkPrompt asks users if they would like to set R symlinks
 func RSymlinkPrompt() (bool, error) {
 	name := true
+	messageText := `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal.`
 	prompt := &survey.Confirm{
-		Message: `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal.`,
+		Message: messageText,
 	}
 	err := survey.AskOne(prompt, &name)
 	if err != nil {
 		return false, errors.New("there was an issue with the symlink R prompt")
 	}
+	log.Info(messageText)
+	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
 }
 
@@ -333,8 +342,9 @@ func RSymlinkPrompt() (bool, error) {
 func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 	// Allow the user to select a version of R to target
 	target := ""
+	messageText := "Select a R binary to symlink:"
 	prompt := &survey.Select{
-		Message: "Select a R binary to symlink:",
+		Message: messageText,
 		Options: rPaths,
 	}
 	err := survey.AskOne(prompt, &target)
@@ -344,6 +354,8 @@ func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 	if target == "" {
 		return target, errors.New("no R binary selected to be symlinked")
 	}
+	log.Info(messageText)
+	log.Info(target)
 	return target, nil
 }
 
@@ -380,7 +392,7 @@ func CheckIfRSymlinkExists() bool {
 		return false
 	}
 
-	fmt.Println("\nAn existing R symlink has been detected (/usr/local/bin/R)")
+	system.PrintAndLogInfo("\nAn existing R symlink has been detected (/usr/local/bin/R)")
 	return true
 }
 
@@ -391,7 +403,7 @@ func CheckIfRscriptSymlinkExists() bool {
 		return false
 	}
 
-	fmt.Println("\nAn existing Rscript symlink has been detected (/usr/local/bin/Rscript)")
+	system.PrintAndLogInfo("\nAn existing Rscript symlink has been detected (/usr/local/bin/Rscript)")
 	return true
 }
 
@@ -405,7 +417,7 @@ func CheckAndSetRSymlinks(rPath string) error {
 			return fmt.Errorf("issue setting R symlinks: %w", err)
 		}
 	} else {
-		fmt.Println("R and Rscript symlinks already exist, skipping symlink creation")
+		system.PrintAndLogInfo("R and Rscript symlinks already exist, skipping symlink creation")
 	}
 	return nil
 }

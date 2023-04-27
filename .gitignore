@@ -13,3 +13,4 @@ wbi
 dist/
 
 dist/
+*.log

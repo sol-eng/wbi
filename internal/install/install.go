@@ -24,7 +24,7 @@ func InstallLanguage(language string, filepath string, osType config.OperatingSy
 	}
 
 	successMessage := "\n" + languageTitleCase + " version " + version + " successfully installed!\n"
-	fmt.Println(successMessage)
+	system.PrintAndLogInfo(successMessage)
 	return nil
 }
 

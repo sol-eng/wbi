@@ -15,7 +15,7 @@ func ActivateLicenseKey(licenseKey string) error {
 	}
 
 	// TODO add a real check that Workbench is activated
-	fmt.Println("\nWorkbench has been successfully activated")
+	system.PrintAndLogInfo("\nWorkbench has been successfully activated")
 	return nil
 }
 
