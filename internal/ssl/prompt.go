@@ -3,6 +3,7 @@ package ssl
 import (
 	"errors"
 	"fmt"
+	"github.com/sol-eng/wbi/internal/config"
 
 	"github.com/AlecAivazis/survey/v2"
 	log "github.com/sirupsen/logrus"
@@ -25,7 +26,7 @@ func PromptSSL() (bool, error) {
 	return name, nil
 }
 
-func PromptAndVerifySSL() (string, string, error) {
+func PromptAndVerifySSL(osType config.OperatingSystem) (string, string, error) {
 	certPath, err := PromptSSLFilePath()
 	if err != nil {
 		return certPath, "", fmt.Errorf("issue with the provided SSL cert path: %w", err)
@@ -38,7 +39,7 @@ func PromptAndVerifySSL() (string, string, error) {
 	if err != nil {
 		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
 	}
-	serverCert, intermediateCertPool, _, err := ParseCertificateChain(certPath)
+	serverCert, intermediateCertPool, rootCert, err := ParseCertificateChain(certPath)
 
 	if err != nil {
 		return certPath, keyPath, fmt.Errorf("could not parse the certificate chain: %w", err)
@@ -68,7 +69,7 @@ func PromptAndVerifySSL() (string, string, error) {
 				"certificate trust: %w", err)
 		}
 		if trust {
-
+			err = TrustRootCertificate(rootCert, osType)
 		}
 
 	}

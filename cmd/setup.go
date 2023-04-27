@@ -194,7 +194,7 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 		}
 		if sslChoice {
-			certPath, keyPath, err := ssl.PromptAndVerifySSL()
+			certPath, keyPath, err := ssl.PromptAndVerifySSL(osType)
 			if err != nil {
 				return fmt.Errorf("issue verifying and configuring SSL: %w", err)
 			}
