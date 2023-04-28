@@ -9,10 +9,10 @@ import (
 )
 
 func TrustRootCertificate(rootCA *x509.Certificate, osType config.OperatingSystem) error {
-	fmt.Println(rootCA.Raw)
 	block := pem.Block{Type: "CERTIFICATE", Bytes: rootCA.Raw}
 	var pemCert []string
 	pemCert = append(pemCert, string(pem.EncodeToMemory(&block)))
+	fmt.Println(pemCert)
 	switch osType {
 	case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
 		err := system.WriteStrings(pemCert, "/usr/local/share/ca-certificates/workbenchCA.crt", 0755)
