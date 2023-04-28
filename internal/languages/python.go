@@ -209,6 +209,7 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) error {
 // ScanForPythonVersions scans for Python versions in locations workbench will also look
 func ScanForPythonVersions() ([]string, error) {
 	foundVersions := []string{}
+	foundOptVersions := []string{}
 	// This is somewhat naive with respect to actually checking whether
 	// this is _really_ a working version of Python by launching it,
 	// vs just matches the path to Python
@@ -227,7 +228,11 @@ func ScanForPythonVersions() ([]string, error) {
 			if entry.IsDir() {
 				pythonPath, isPython := isPythonDir(filepath.Join(rootPath, entry.Name()))
 				if isPython {
-					foundVersions = append(foundVersions, pythonPath)
+					if rootPath == "/opt/python" {
+						foundOptVersions = append(foundOptVersions, pythonPath)
+					} else {
+						foundVersions = append(foundVersions, pythonPath)
+					}
 				}
 			}
 		}
@@ -238,7 +243,32 @@ func ScanForPythonVersions() ([]string, error) {
 		foundVersions = AppendIfMissing(foundVersions, maybePython)
 	}
 
-	return foundVersions, nil
+	// sort /opt/R versions
+	foundOptVersionsSortedPaths, err := sortOptPythonVersionPaths(foundOptVersions)
+	if err != nil {
+		return []string{}, fmt.Errorf("issue sorting /opt/python versions: %w", err)
+	}
+
+	finalVersionPathSorted := append(foundOptVersionsSortedPaths, foundVersions...)
+
+	return finalVersionPathSorted, nil
+}
+
+func sortOptPythonVersionPaths(versionPaths []string) ([]string, error) {
+	foundOptVersionsOnly := []string{}
+	for _, optVersion := range versionPaths {
+		i := strings.Index(optVersion, "python")
+		j := strings.Index(optVersion, "bin")
+		foundOptVersionsOnly = append(foundOptVersionsOnly, optVersion[i+7:j-1])
+	}
+	versions := ConvertStringSliceToVersionSlice(foundOptVersionsOnly)
+	sortedVersions := SortVersionsDesc(versions)
+	foundOptVersionsSorted := ConvertVersionSliceToStringSlice(sortedVersions)
+	foundOptVersionsSortedPaths := []string{}
+	for _, optVersion := range foundOptVersionsSorted {
+		foundOptVersionsSortedPaths = append(foundOptVersionsSortedPaths, "/opt/python/"+optVersion+"/bin/python")
+	}
+	return foundOptVersionsSortedPaths, nil
 }
 
 // PythonInstallPrompt Prompt users if they would like to install Python versions
