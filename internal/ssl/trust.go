@@ -28,7 +28,7 @@ func TrustRootCertificate(rootCA *x509.Certificate, osType config.OperatingSyste
 		if err != nil {
 			return fmt.Errorf("writing CA certificate to disk failed: ", err)
 		}
-		err = system.RunCommand("update-ca-trust", true, 1)
+		err = system.RunCommand("update-ca-trust && sleep 2", true, 1)
 		if err != nil {
 			return fmt.Errorf("running command to trust root certificate: ", err)
 		}
