@@ -12,7 +12,6 @@ func TrustRootCertificate(rootCA *x509.Certificate, osType config.OperatingSyste
 	block := pem.Block{Type: "CERTIFICATE", Bytes: rootCA.Raw}
 	var pemCert []string
 	pemCert = append(pemCert, string(pem.EncodeToMemory(&block)))
-	fmt.Println(pemCert)
 	switch osType {
 	case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
 		err := system.WriteStrings(pemCert, "/usr/local/share/ca-certificates/workbenchCA.crt", 0755)
@@ -28,7 +27,7 @@ func TrustRootCertificate(rootCA *x509.Certificate, osType config.OperatingSyste
 		if err != nil {
 			return fmt.Errorf("writing CA certificate to disk failed: ", err)
 		}
-		err = system.RunCommand("update-ca-trust && sleep 2", true, 1)
+		err = system.RunCommand("update-ca-trust", true, 1)
 		if err != nil {
 			return fmt.Errorf("running command to trust root certificate: ", err)
 		}
