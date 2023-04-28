@@ -73,16 +73,26 @@ func WriteSSLConfig(certPath string, keyPath string) error {
 		}
 	}
 
-	// append the lines if they don't exist
+	// remove launcher-sessions-callback-address and append the lines if they don't exist
 	if !linesExist {
+		// remove launcher-sessions-callback-address
+		err := system.DeleteStrings([]string{"launcher-sessions-callback-address"}, filepath, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to delete launcher-sessions-callback-address: %w", err)
+		}
+
+		// append new lines including the updated launcher-sessions-callback-address
 		writeLines := []string{
+			"",
+			"launcher-sessions-callback-address=https://localhost:8787",
+			"",
 			"ssl-enabled=1",
 			"ssl-certificate=" + certPath,
 			"ssl-certificate-key=" + keyPath,
 		}
 
 		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-		err := system.WriteStrings(writeLines, filepath, 0644)
+		err = system.WriteStrings(writeLines, filepath, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
