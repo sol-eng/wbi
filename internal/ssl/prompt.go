@@ -35,10 +35,10 @@ func PromptAndVerifySSL(osType config.OperatingSystem) (string, string, error) {
 	if err != nil {
 		return certPath, keyPath, fmt.Errorf("issue with the provided SSL cert key path: %w", err)
 	}
-	err = VerifySSLCertAndKeyMD5Match(certPath, keyPath)
-	if err != nil {
-		return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
-	}
+	//err = VerifySSLCertAndKeyMD5Match(certPath, keyPath)
+	//if err != nil {
+	//	return certPath, keyPath, fmt.Errorf("could not verify the SSL cert: %w", err)
+	//}
 	serverCert, intermediateCertPool, rootCert, err := ParseCertificateChain(certPath)
 	if err != nil {
 		return certPath, keyPath, fmt.Errorf("could not parse the certificate chain: %w", err)
