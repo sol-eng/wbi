@@ -121,15 +121,17 @@ func ScanPromptInstallAndConfigJupyter() error {
 				pythonVersionsLeft := removeString(pythonVersions, jupyterPythonTarget)
 				// remove any non opt locations from the default selections
 				defaultPythonVersions := removeNonOptPython(pythonVersionsLeft)
-				additionalPythonTargets, err := AdditionalKernelPrompt(pythonVersionsLeft, defaultPythonVersions)
-				if err != nil {
-					return fmt.Errorf("issue selecting additional Python kernels to register: %w", err)
-				}
-				// if one or more versions is selected then automatically register them
-				if len(additionalPythonTargets) > 0 {
-					err = RegisterJupyterKernels(additionalPythonTargets)
+				if len(pythonVersionsLeft) > 0 {
+					additionalPythonTargets, err := AdditionalKernelPrompt(pythonVersionsLeft, defaultPythonVersions)
 					if err != nil {
-						return fmt.Errorf("issue registering additional Python kernels: %w", err)
+						return fmt.Errorf("issue selecting additional Python kernels to register: %w", err)
+					}
+					// if one or more versions is selected then automatically register them
+					if len(additionalPythonTargets) > 0 {
+						err = RegisterJupyterKernels(additionalPythonTargets)
+						if err != nil {
+							return fmt.Errorf("issue registering additional Python kernels: %w", err)
+						}
 					}
 				}
 			}
