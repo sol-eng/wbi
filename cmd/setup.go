@@ -70,6 +70,15 @@ func newSetup(setupOpts setupOpts) error {
 		if err != nil {
 			return err
 		}
+		step = "user"
+	}
+
+	var username string
+	if step == "user" {
+		username, err = operatingsystem.PromptAndVerifyUser()
+		if err != nil {
+			return err
+		}
 		step = "firewall"
 	}
 
@@ -273,7 +282,13 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue selecting if verification is to be run: %w", err)
 		}
 		if verifyChoice {
-			err = workbench.VerifyInstallation()
+			if username == "" {
+				username, err = operatingsystem.PromptAndVerifyUser()
+				if err != nil {
+					return err
+				}
+			}
+			err = workbench.VerifyInstallation(username)
 			if err != nil {
 				return fmt.Errorf("issue running verification: %w", err)
 			}
@@ -311,7 +326,7 @@ func (opts *setupOpts) Validate(args []string) error {
 		return fmt.Errorf("no arguments are supported for this command")
 	}
 	// ensure step is valid
-	validSteps := []string{"start", "prereqs", "firewall", "security", "languages", "r", "python", "workbench", "license", "jupyter", "prodrivers", "ssl", "packagemanager", "connect", "restart", "status", "verify"}
+	validSteps := []string{"start", "prereqs", "user", "firewall", "security", "languages", "r", "python", "workbench", "license", "jupyter", "prodrivers", "ssl", "packagemanager", "connect", "restart", "status", "verify"}
 	if opts.step != "" && !lo.Contains(validSteps, opts.step) {
 		return fmt.Errorf("invalid step: %s", opts.step)
 	}
@@ -353,7 +368,7 @@ func newSetupCmd() *setupCmd {
 		SilenceUsage: true,
 	}
 
-	stepHelp := `The step to start at. Valid steps are: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.`
+	stepHelp := `The step to start at. Valid steps are: start, prereqs, user, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.`
 
 	cmd.Flags().StringP("step", "s", "", stepHelp)
 	viper.BindPFlag("step", cmd.Flags().Lookup("step"))

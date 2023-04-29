@@ -51,7 +51,7 @@ You can also pass the `--step` flag to begin at a certain spot in the interactiv
 sudo wbi setup --step workbench
 ```
 
-The following steps are valid options: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.
+The following steps are valid options: start, prereqs, user, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.
 
 ## Assumptions
 - Single server
