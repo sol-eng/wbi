@@ -24,7 +24,7 @@ func InstallJupyter(pythonPath string) error {
 
 // Install various Jupyter related packages from PyPI
 func InstallJupyterAndComponents(pythonPath string) error {
-	licenseCommand := pythonPath + " -m pip install jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
+	licenseCommand := pythonPath + " -m pip install --no-warn-script-location --disable-pip-version-check --root-user-action=ignore jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
 	err := system.RunCommand(licenseCommand, true, 2)
 	if err != nil {
 		return fmt.Errorf("issue installing Jupyter with the command '%s': %w", licenseCommand, err)
@@ -111,7 +111,7 @@ func installIpykernel(pythonPath string) error {
 		return fmt.Errorf("issue removing python from the path: %w", err)
 	}
 
-	installCommand := basePath + "/pip install ipykernel"
+	installCommand := basePath + "/pip install --no-warn-script-location --disable-pip-version-check --root-user-action=ignore ipykernel"
 	err = system.RunCommand(installCommand, true, 1)
 	if err != nil {
 		return fmt.Errorf("issue installing ipykernel with the command '%s': %w", installCommand, err)
