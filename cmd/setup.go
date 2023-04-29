@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
+	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/connect"
 	"github.com/sol-eng/wbi/internal/jupyter"
 	"github.com/sol-eng/wbi/internal/languages"
@@ -280,7 +281,23 @@ func newSetup(setupOpts setupOpts) error {
 		step = "done"
 	}
 
-	system.PrintAndLogInfo("\nThanks for using wbi!")
+	var adDocURL string
+	switch osType {
+	case config.Ubuntu18, config.Ubuntu20, config.Ubuntu22:
+		adDocURL = "https://support.posit.co/hc/en-us/articles/360024137174-Integrating-Ubuntu-with-Active-Directory-for-RStudio-Workbench-RStudio-Server-Pro"
+	case config.Redhat7, config.Redhat8, config.Redhat9:
+		adDocURL = "https://support.posit.co/hc/en-us/articles/360016587973-Integrating-RStudio-Workbench-RStudio-Server-Pro-with-Active-Directory-using-CentOS-RHEL"
+	}
+
+	finalMessage := "\nThank you for using wbi! \n\n" +
+		"Workbench is now configured using the default PAM authentication method. Users with local Linux accounts and home directories should be able to log in to Workbench. \n\n" +
+		"Workbench integrates with a variety of Authentication types. To learn more about specific integrations, visit the documentation links below:\n" +
+		"For more information on PAM authentication https://docs.posit.co/ide/server-pro/authenticating_users/pam_authentication.html. \n" + "For more information on Active Directory authentication " + adDocURL + ". \n" +
+		"For more information on SAML Single Sign-On authentication https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html. \n" +
+		"For more information on OpenID Connect Single Sign-On authentication https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html. \n" +
+		"For more information on Proxied Authentication https://docs.posit.co/ide/server-pro/authenticating_users/proxied_authentication.html."
+
+	system.PrintAndLogInfo(finalMessage)
 	return nil
 }
 
