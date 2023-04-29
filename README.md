@@ -95,10 +95,6 @@ The following steps are valid options: start, prereqs, firewall, security, langu
 ### SSL
 - Record and specify where to put cert and key paths
 
-### Authentication
-- Provide information about PAM and AD/LDAP setup steps
-- Record and specify where to put values for SAML and OIDC SSO setups
-
 ### Posit Package Manager integration
 - Record, validate, and specify config for Posit Package Manger URL and R/Python repos
 - Automatically generate, validate and specify config for Posit Public Package Manager
