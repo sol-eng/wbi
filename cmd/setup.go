@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
-	"github.com/sol-eng/wbi/internal/authentication"
 	"github.com/sol-eng/wbi/internal/connect"
 	"github.com/sol-eng/wbi/internal/jupyter"
 	"github.com/sol-eng/wbi/internal/languages"
@@ -203,21 +202,6 @@ func newSetup(setupOpts setupOpts) error {
 				return fmt.Errorf("error writing ssl configuration to file rserver.conf: %w", err)
 			}
 		}
-		step = "auth"
-	}
-
-	if step == "auth" {
-		// Authentication
-		authChoice, err := authentication.PromptAuth()
-		if err != nil {
-			return fmt.Errorf("issue selecting if Authentication is to be setup: %w", err)
-		}
-		if authChoice {
-			err = authentication.PromptAndConfigAuth(osType)
-			if err != nil {
-				return fmt.Errorf("issue prompting and configuring Authentication: %w", err)
-			}
-		}
 		step = "packagemanager"
 	}
 
@@ -310,7 +294,7 @@ func (opts *setupOpts) Validate(args []string) error {
 		return fmt.Errorf("no arguments are supported for this command")
 	}
 	// ensure step is valid
-	validSteps := []string{"start", "prereqs", "firewall", "security", "languages", "r", "python", "workbench", "license", "jupyter", "prodrivers", "ssl", "auth", "packagemanager", "connect", "restart", "status", "verify"}
+	validSteps := []string{"start", "prereqs", "firewall", "security", "languages", "r", "python", "workbench", "license", "jupyter", "prodrivers", "ssl", "packagemanager", "connect", "restart", "status", "verify"}
 	if opts.step != "" && !lo.Contains(validSteps, opts.step) {
 		return fmt.Errorf("invalid step: %s", opts.step)
 	}
@@ -352,7 +336,7 @@ func newSetupCmd() *setupCmd {
 		SilenceUsage: true,
 	}
 
-	stepHelp := `The step to start at. Valid steps are: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, auth, packagemanager, connect, restart, status, verify.`
+	stepHelp := `The step to start at. Valid steps are: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.`
 
 	cmd.Flags().StringP("step", "s", "", stepHelp)
 	viper.BindPFlag("step", cmd.Flags().Lookup("step"))

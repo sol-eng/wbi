@@ -26,7 +26,7 @@ func TestSetupParamsValidate(t *testing.T) {
 		},
 		"no argument with a valid step succeeds": {
 			args:        []string{},
-			flags:       setupOpts{step: "auth"},
+			flags:       setupOpts{step: "packagemanager"},
 			expectError: "",
 		},
 		"no argument with an invalid step fails": {
