@@ -261,7 +261,11 @@ func sortOptPythonVersionPaths(versionPaths []string) ([]string, error) {
 		j := strings.Index(optVersion, "bin")
 		foundOptVersionsOnly = append(foundOptVersionsOnly, optVersion[i+7:j-1])
 	}
-	versions := ConvertStringSliceToVersionSlice(foundOptVersionsOnly)
+	versions, err := ConvertStringSliceToVersionSlice(foundOptVersionsOnly)
+	if err != nil {
+		return []string{}, fmt.Errorf("issue converting string slice to version slice: %w", err)
+	}
+
 	sortedVersions := SortVersionsDesc(versions)
 	foundOptVersionsSorted := ConvertVersionSliceToStringSlice(sortedVersions)
 	foundOptVersionsSortedPaths := []string{}
@@ -312,24 +316,27 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 	req, err := http.NewRequestWithContext(context.Background(),
 		http.MethodGet, pythonVersionURL, nil)
 	if err != nil {
-		return nil, errors.New("error creating request")
+		return []string{}, errors.New("error creating request")
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, errors.New("error retrieving JSON data")
+		return []string{}, errors.New("error retrieving JSON data")
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("error in HTTP status code")
+		return []string{}, errors.New("error in HTTP status code")
 	}
 
 	var availVersions availablePythonVersions
 	err = json.NewDecoder(res.Body).Decode(&availVersions)
 	if err != nil {
-		return nil, errors.New("error unmarshalling JSON data")
+		return []string{}, errors.New("error unmarshalling JSON data")
 	}
 
-	versions := ConvertStringSliceToVersionSlice(availVersions.PythonVersions)
+	versions, err := ConvertStringSliceToVersionSlice(availVersions.PythonVersions)
+	if err != nil {
+		return []string{}, fmt.Errorf("issue converting string slice to version slice: %w", err)
+	}
 
 	unavailPythonVersions := unavailablePythonVersionsByOS(osType)
 
@@ -337,7 +344,7 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 		for _, v := range unavailPythonVersions.NewestPythonVersions {
 			versions, err = removeNewerVersions(versions, v)
 			if err != nil {
-				return nil, errors.New("failed removing newer unsupported versions of Python")
+				return []string{}, errors.New("failed removing newer unsupported versions of Python")
 			}
 		}
 	}
@@ -345,7 +352,7 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 		for _, v := range unavailPythonVersions.OldestPythonVersions {
 			versions, err = removeOlderVersions(versions, v)
 			if err != nil {
-				return nil, errors.New("failed removing older unsupported versions of Python")
+				return []string{}, errors.New("failed removing older unsupported versions of Python")
 			}
 		}
 	}
@@ -353,19 +360,18 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 		for _, v := range unavailPythonVersions.SpecificPythonVersions {
 			versions, err = removeSpecificVersions(versions, v)
 			if err != nil {
-				return nil, errors.New("failed removing specific unsupported versions of Python")
+				return []string{}, errors.New("failed removing specific unsupported versions of Python")
 			}
 		}
 	}
 
 	sortedVersions := SortVersionsDesc(versions)
 	if err != nil {
-		return nil, errors.New("failed to sort versions")
+		return []string{}, errors.New("failed to sort versions")
 	}
 	stringVersions := ConvertVersionSliceToStringSlice(sortedVersions)
 
 	return stringVersions, nil
-
 }
 
 // PythonSelectVersionsPrompt Prompt asking users which Python version(s) they would like to install
