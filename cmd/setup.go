@@ -198,7 +198,11 @@ func newSetup(setupOpts setupOpts) error {
 			if err != nil {
 				return fmt.Errorf("issue verifying and configuring SSL: %w", err)
 			}
-			workbench.WriteSSLConfig(certPath, keyPath)
+			serverURL, err := ssl.PromptServerURL()
+			if err != nil {
+				return fmt.Errorf("issue prompting for server URL: %w", err)
+			}
+			workbench.WriteSSLConfig(certPath, keyPath, serverURL)
 			if err != nil {
 				return fmt.Errorf("error writing ssl configuration to file rserver.conf: %w", err)
 			}

@@ -61,7 +61,7 @@ func PromptAndVerifySSL() (string, string, error) {
 		return certPath, keyPath, fmt.Errorf("failure while trying to verify server trust of the SSL cert: %w", err)
 	}
 	if verified {
-	  system.PrintAndLogInfo("SSL successfully verified")
+		system.PrintAndLogInfo("SSL successfully verified")
 	}
 
 	return certPath, keyPath, nil
@@ -77,6 +77,22 @@ func PromptSSLFilePath() (string, error) {
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
 		return "", errors.New("there was an issue with the SSL cert path prompt")
+	}
+	log.Info(messageText)
+	log.Info(target)
+	return target, nil
+}
+
+// PromptServerURL asks users for the server URL
+func PromptServerURL() (string, error) {
+	target := ""
+	messageText := "Server URL that end users will use to access the server (for example, mydomainname.com):"
+	prompt := &survey.Input{
+		Message: messageText,
+	}
+	err := survey.AskOne(prompt, &target)
+	if err != nil {
+		return "", errors.New("there was an issue with the server URL prompt")
 	}
 	log.Info(messageText)
 	log.Info(target)

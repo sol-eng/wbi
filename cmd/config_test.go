@@ -35,44 +35,44 @@ func TestConfigParamsValidate(t *testing.T) {
 			flags:       configOpts{certPath: "cert.crt"},
 			expectError: "the key-path flag is required for ssl",
 		},
-		"ssl argument with cert-path and key-path flags succeeds": {
+		"ssl argument with cert-path and key-path flags fails": {
 			args:        []string{"ssl"},
 			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key"},
-			expectError: "",
+			expectError: "the url flag is required for ssl",
 		},
-		"ssl argument with url flag fails": {
+		"ssl argument with cert-path, key-path and url flags succeeds": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "https://www.packagemanager.rstudio.com"},
-			expectError: "the url flag is only valid for repo and connect-url",
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com"},
+			expectError: "",
 		},
 		"ssl argument with source flag fails": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", source: "cran"},
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com", source: "cran"},
 			expectError: "the source flag is only valid for repo",
 		},
 		"ssl argument with auth-type flag fails": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", authType: "saml"},
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com", authType: "saml"},
 			expectError: "the auth-type flag is only valid for auth",
 		},
 		"ssl argument with idp-url flag fails": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", idpURL: "https://www.example.com"},
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com", idpURL: "https://www.example.com"},
 			expectError: "the idp-url flag is only valid with auth as an argument and a auth-type flag of saml or oidc",
 		},
 		"ssl argument with username-claim flag fails": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", usernameClaim: "user"},
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com", usernameClaim: "user"},
 			expectError: "the username-claim flag is only valid with auth as an argument and a auth-type flag of oidc",
 		},
 		"ssl argument with client-id flag fails": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", clientID: "user"},
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com", clientID: "user"},
 			expectError: "the client-id flag is only valid with auth as an argument and a auth-type flag of oidc",
 		},
 		"ssl argument with client-secret flag fails": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", clientSecret: "user"},
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com", clientSecret: "user"},
 			expectError: "the client-secret flag is only valid with auth as an argument and a auth-type flag of oidc",
 		},
 		// auth argument tests
@@ -109,7 +109,7 @@ func TestConfigParamsValidate(t *testing.T) {
 		"auth argument with url flag fails": {
 			args:        []string{"auth"},
 			flags:       configOpts{authType: "saml", idpURL: "https://www.example.com", url: "https://www.packagemanager.rstudio.com"},
-			expectError: "the url flag is only valid for repo and connect-url",
+			expectError: "the url flag is only valid for repo, connect-url and url",
 		},
 		"auth argument with source flag fails": {
 			args:        []string{"auth"},

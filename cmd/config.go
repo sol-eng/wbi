@@ -29,7 +29,7 @@ type configOpts struct {
 
 func newConfig(configOpts configOpts, item string) error {
 	if item == "ssl" {
-		err := workbench.WriteSSLConfig(configOpts.certPath, configOpts.keyPath)
+		err := workbench.WriteSSLConfig(configOpts.certPath, configOpts.keyPath, configOpts.url)
 		if err != nil {
 			return fmt.Errorf("failed to write SSL config for Workbench: %w", err)
 		}
@@ -114,20 +114,23 @@ func (opts *configOpts) Validate(args []string) error {
 	if opts.keyPath == "" && args[0] == "ssl" {
 		return fmt.Errorf("the key-path flag is required for ssl")
 	}
+	// the url flag is required for ssl
+	if opts.url == "" && args[0] == "ssl" {
+		return fmt.Errorf("the url flag is required for ssl")
+	}
 
 	// the cert-path flag is only valid for ssl
 	if opts.certPath != "" && args[0] != "ssl" {
 		return fmt.Errorf("the cert-path flag is only valid for ssl")
 	}
-
 	// the key-path flag is only valid for ssl
 	if opts.keyPath != "" && args[0] != "ssl" {
 		return fmt.Errorf("the key-path flag is only valid for ssl")
 	}
 
-	// the url flag is only valid for repo and connect-url
-	if opts.url != "" && (args[0] != "repo" && args[0] != "connect-url") {
-		return fmt.Errorf("the url flag is only valid for repo and connect-url")
+	// the url flag is only valid for repo, connect-url and ssl
+	if opts.url != "" && (args[0] != "repo" && args[0] != "connect-url" && args[0] != "ssl") {
+		return fmt.Errorf("the url flag is only valid for repo, connect-url and url")
 	}
 
 	// the url flag is required for repo
@@ -189,7 +192,7 @@ func newConfigCmd() *configCmd {
 	// adding two spaces to have consistent formatting
 	exampleText := []string{
 		"To configure TLS/SSL:",
-		"  wbi config ssl --cert-path [PATH-TO-CERTIFICATE-FILE] --key-path [PATH-TO-KEY-FILE]",
+		"  wbi config ssl --cert-path [PATH-TO-CERTIFICATE-FILE] --key-path [PATH-TO-KEY-FILE] --url [SERVER-URL]",
 		"",
 		"To configure SAML Authentication:",
 		"  wbi config auth --auth-type saml --idp-url [IDP-SAML-METADATA-URL]",
@@ -232,7 +235,7 @@ func newConfigCmd() *configCmd {
 	cmd.Flags().StringP("key-path", "k", "", "TLS/SSL key path")
 	viper.BindPFlag("key-path", cmd.Flags().Lookup("key-path"))
 
-	cmd.Flags().StringP("url", "u", "", "Package Manager or Connect base URL")
+	cmd.Flags().StringP("url", "u", "", "Package Manager, Connect or Server URL")
 	viper.BindPFlag("url", cmd.Flags().Lookup("url"))
 
 	cmd.Flags().StringP("source", "s", "", "Repository source (cran or pypi)")
