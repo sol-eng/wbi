@@ -6,7 +6,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -73,7 +72,7 @@ func newRootCmd(version string) *rootCmd {
 
 func setUpLogger() error {
 	// Setup the logger output
-	logFile := "wbi-" + time.Now().Format("20060102T150405") + ".log"
+	logFile := "wbi-log-" + time.Now().Format("20060102T150405") + ".log"
 
 	var f *os.File
 	var err error
