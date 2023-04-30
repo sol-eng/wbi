@@ -51,7 +51,7 @@ You can also pass the `--step` flag to begin at a certain spot in the interactiv
 sudo wbi setup --step workbench
 ```
 
-The following steps are valid options: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, auth, packagemanager, connect, restart, status, verify.
+The following steps are valid options: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.
 
 ## Assumptions
 - Single server
@@ -94,10 +94,6 @@ The following steps are valid options: start, prereqs, firewall, security, langu
 
 ### SSL
 - Record and specify where to put cert and key paths
-
-### Authentication
-- Provide information about PAM and AD/LDAP setup steps
-- Record and specify where to put values for SAML and OIDC SSO setups
 
 ### Posit Package Manager integration
 - Record, validate, and specify config for Posit Package Manger URL and R/Python repos

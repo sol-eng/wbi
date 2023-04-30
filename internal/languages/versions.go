@@ -2,8 +2,10 @@ package languages
 
 import (
 	"errors"
-	"github.com/hashicorp/go-version"
+	"fmt"
 	"sort"
+
+	"github.com/hashicorp/go-version"
 )
 
 func SortVersionsDesc(versions []*version.Version) []*version.Version {
@@ -83,15 +85,18 @@ func removeSpecificVersions(versions []*version.Version, specificVersion string)
 	return result, nil
 }
 
-func ConvertStringSliceToVersionSlice(strings []string) []*version.Version {
+func ConvertStringSliceToVersionSlice(strings []string) ([]*version.Version, error) {
 
 	versions := make([]*version.Version, len(strings))
 	for i, raw := range strings {
-		v, _ := version.NewVersion(raw)
+		v, err := version.NewVersion(raw)
+		if err != nil {
+			return []*version.Version{}, fmt.Errorf("failed to parse version %s: %w", raw, err)
+		}
 		versions[i] = v
 	}
 
-	return versions
+	return versions, nil
 }
 
 func ConvertVersionSliceToStringSlice(versions []*version.Version) []string {
