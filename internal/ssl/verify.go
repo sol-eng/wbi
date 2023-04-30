@@ -56,7 +56,7 @@ func VerifyTrustedCertificate(serverCert *x509.Certificate, intermediateCA *x509
 	//Load system root CAs
 	rootCAs, err := x509.SystemCertPool()
 	if err != nil {
-		return true, fmt.Errorf("failed to load system root CAs: %w", err)
+		return false, fmt.Errorf("failed to load system root CAs: %w", err)
 	}
 
 	opts := x509.VerifyOptions{
@@ -111,14 +111,23 @@ func ParseCertificateChain(certLocation string) (*x509.Certificate, *x509.CertPo
 		}
 		if x509Cert.IsCA && x509Cert.Subject.CommonName != x509Cert.Issuer.CommonName {
 			intermediateCA.AddCert(x509Cert)
-			fmt.Println("This is an Intermediate Certificate:" + x509Cert.Subject.CommonName)
+			system.PrintAndLogInfo("This is an Intermediate Certificate:" + x509Cert.Subject.CommonName)
 		} else if !x509Cert.IsCA {
 			serverCert = x509Cert
-			fmt.Println("This is the Server Certificate:" + x509Cert.Subject.String())
-		} else {
+			system.PrintAndLogInfo("This is the Server Certificate:" + x509Cert.Subject.String())
+		} else if x509Cert.IsCA {
 			rootCert = x509Cert
-			fmt.Println("This is the Root Certificate:" + x509Cert.Subject.String())
+			system.PrintAndLogInfo("This is the Root Certificate:" + x509Cert.Subject.String())
 		}
 	}
+
+	if serverCert == nil {
+		return nil, nil, nil, fmt.Errorf("The server portion of your certificate is empty, or not in pem format")
+	}
+	if rootCert == nil {
+		system.PrintAndLogInfo("The root portion of your certificate is empty," +
+			" this is an odd, but not impossible configuration")
+	}
+
 	return serverCert, intermediateCA, rootCert, nil
 }
