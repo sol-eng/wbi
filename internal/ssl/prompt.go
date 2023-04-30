@@ -86,7 +86,7 @@ func PromptSSLFilePath() (string, error) {
 // PromptServerURL asks users for the server URL
 func PromptServerURL() (string, error) {
 	target := ""
-	messageText := "Server URL that end users will use to access the server (for example, mydomainname.com):"
+	messageText := "Server URL that end users will use to access the server (for example, workbench.mydomainname.com):"
 	prompt := &survey.Input{
 		Message: messageText,
 	}

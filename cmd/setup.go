@@ -194,13 +194,13 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
 		}
 		if sslChoice {
-			certPath, keyPath, err := ssl.PromptAndVerifySSL()
-			if err != nil {
-				return fmt.Errorf("issue verifying and configuring SSL: %w", err)
-			}
 			serverURL, err := ssl.PromptServerURL()
 			if err != nil {
 				return fmt.Errorf("issue prompting for server URL: %w", err)
+			}
+			certPath, keyPath, err := ssl.PromptAndVerifySSL()
+			if err != nil {
+				return fmt.Errorf("issue verifying and configuring SSL: %w", err)
 			}
 			workbench.WriteSSLConfig(certPath, keyPath, serverURL)
 			if err != nil {
