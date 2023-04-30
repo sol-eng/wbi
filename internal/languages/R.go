@@ -165,6 +165,7 @@ func AppendIfMissing(slice []string, s string) []string {
 // ScanForRVersions scans for R versions in locations workbench will also look
 func ScanForRVersions() ([]string, error) {
 	foundVersions := []string{}
+	foundOptVersions := []string{}
 	// This is somewhat naive with respect to actually checking whether
 	// this is _really_ a working version of R by launching it,
 	// vs just matches the path to R
@@ -183,7 +184,11 @@ func ScanForRVersions() ([]string, error) {
 			if entry.IsDir() {
 				rpath, isR := isRDir(filepath.Join(rootPath, entry.Name()))
 				if isR {
-					foundVersions = append(foundVersions, rpath)
+					if rootPath == "/opt/R" {
+						foundOptVersions = append(foundOptVersions, rpath)
+					} else {
+						foundVersions = append(foundVersions, rpath)
+					}
 				}
 			}
 		}
@@ -195,7 +200,34 @@ func ScanForRVersions() ([]string, error) {
 		foundVersions = AppendIfMissing(foundVersions, maybeR)
 	}
 
-	return foundVersions, nil
+	// sort /opt/R versions
+	foundOptVersionsSortedPaths, err := sortOptRVersionPaths(foundOptVersions)
+	if err != nil {
+		return []string{}, fmt.Errorf("issue sorting /opt/R versions: %w", err)
+	}
+
+	finalVersionPathSorted := append(foundOptVersionsSortedPaths, foundVersions...)
+	return finalVersionPathSorted, nil
+}
+
+func sortOptRVersionPaths(versionPaths []string) ([]string, error) {
+	foundOptVersionsOnly := []string{}
+	for _, optVersion := range versionPaths {
+		i := strings.Index(optVersion, "R")
+		j := strings.Index(optVersion, "bin")
+		foundOptVersionsOnly = append(foundOptVersionsOnly, optVersion[i+2:j-1])
+	}
+	versions, err := ConvertStringSliceToVersionSlice(foundOptVersionsOnly)
+	if err != nil {
+		return []string{}, fmt.Errorf("issue converting string slice to version slice: %w", err)
+	}
+	sortedVersions := SortVersionsDesc(versions)
+	foundOptVersionsSorted := ConvertVersionSliceToStringSlice(sortedVersions)
+	foundOptVersionsSortedPaths := []string{}
+	for _, optVersion := range foundOptVersionsSorted {
+		foundOptVersionsSortedPaths = append(foundOptVersionsSortedPaths, "/opt/R/"+optVersion+"/bin/R")
+	}
+	return foundOptVersionsSortedPaths, nil
 }
 
 // RInstallPrompt Prompt users if they would like to install R versions
@@ -223,32 +255,35 @@ func RetrieveValidRVersions() ([]string, error) {
 	req, err := http.NewRequestWithContext(context.Background(),
 		http.MethodGet, rVersionURL, nil)
 	if err != nil {
-		return nil, errors.New("error creating request")
+		return []string{}, errors.New("error creating request")
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, errors.New("error retrieving JSON data")
+		return []string{}, errors.New("error retrieving JSON data")
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("error in HTTP status code")
+		return []string{}, errors.New("error in HTTP status code")
 	}
 
 	var availVersions availableRVersions
 	err = json.NewDecoder(res.Body).Decode(&availVersions)
 	if err != nil {
-		return nil, errors.New("error unmarshalling JSON data")
+		return []string{}, errors.New("error unmarshalling JSON data")
 	}
 
 	numericVersions, err := removeElements(availVersions.RVersions, nonNumericRVersions)
 	if err != nil {
-		return nil, err
+		return []string{}, errors.New("failed to remove non-numeric R versions")
 	}
-	versions := ConvertStringSliceToVersionSlice(numericVersions)
+	versions, err := ConvertStringSliceToVersionSlice(numericVersions)
+	if err != nil {
+		return []string{}, fmt.Errorf("issue converting string slice to version slice: %w", err)
+	}
 
 	sortedVersions := SortVersionsDesc(versions)
 	if err != nil {
-		return nil, errors.New("failed to sort versions")
+		return []string{}, errors.New("failed to sort versions")
 	}
 	stringVersions := ConvertVersionSliceToStringSlice(sortedVersions)
 
