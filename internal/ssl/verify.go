@@ -6,19 +6,20 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/sol-eng/wbi/internal/system"
 	"os"
 	"strings"
+
+	"github.com/sol-eng/wbi/internal/system"
 )
 
 // VerifySSLCertAndKeyMD5Match Verify the SSL cert and key are valid
 func VerifySSLCertAndKeyMD5Match(certLocation string, keyLocation string) error {
 	//Go has a method to do this, I opted not too, so that these commands can be rerun outside wbi
-	certMD5, err := system.RunCommandAndCaptureOutput("openssl x509 -noout -modulus -in "+certLocation+" 2> /dev/null | openssl md5", false, 0)
+	certMD5, err := system.RunCommandAndCaptureOutput("openssl x509 -noout -modulus -in "+certLocation+" 2> /dev/null | openssl md5", false, 0, false)
 	if err != nil {
 		return fmt.Errorf("error checking md5 hash for certificate: %w", err)
 	}
-	keyMD5, err := system.RunCommandAndCaptureOutput("openssl rsa -noout -modulus -in "+keyLocation+" 2> /dev/null | openssl md5", false, 0)
+	keyMD5, err := system.RunCommandAndCaptureOutput("openssl rsa -noout -modulus -in "+keyLocation+" 2> /dev/null | openssl md5", false, 0, false)
 	if err != nil {
 		return fmt.Errorf("error checking md5 hash for key: %w", err)
 	}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
+	cmdlog "github.com/sol-eng/wbi/internal/logging"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -67,11 +68,21 @@ func DownloadAndInstallProDrivers(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("InstallProDrivers: %w", err)
 	}
+
+	// save to command log
+	installCommand, err := install.RetrieveInstallCommand(installerInfo.BaseName, osType)
+	if err != nil {
+		return fmt.Errorf("RetrieveInstallCommand: %w", err)
+	}
+	cmdlog.Info("curl -O " + installerInfo.URL + "\n")
+	cmdlog.Info(installCommand + "\n")
+
 	// Configure ODBC driver name and locations
 	err = BackupAndAppendODBCConfiguration()
 	if err != nil {
 		return fmt.Errorf("BackupAndAppendODBCConfiguration: %w", err)
 	}
+
 	system.PrintAndLogInfo("\nPosit Pro Drivers next steps:\nNow that the Pro Drivers are installed and /etc/odbcinst.ini is setup, the next step is to test database connectivity and/or create DSNs in your /etc/odbc.ini file.\n\n More information about each of these steps can be found here: https://docs.posit.co/pro-drivers/workbench-connect/#step-4-testing-database-connectivity")
 	return nil
 }
@@ -83,7 +94,7 @@ func InstallProDrivers(filepath string, osType config.OperatingSystem) error {
 		return fmt.Errorf("RetrieveInstallCommand: %w", err)
 	}
 
-	err = system.RunCommand(installCommand, false, 0)
+	err = system.RunCommand(installCommand, false, 0, false)
 	if err != nil {
 		return fmt.Errorf("issue installing Pro Drivers with the command '%s': %w", installCommand, err)
 	}
@@ -138,13 +149,13 @@ func RetrieveProDriversInstallerInfo() (ProDrivers, error) {
 func InstallUnixODBC(osType config.OperatingSystem) error {
 	if osType == config.Ubuntu22 || osType == config.Ubuntu20 || osType == config.Ubuntu18 {
 		prereqCommand := "apt-get -y install unixodbc unixodbc-dev"
-		err := system.RunCommand(prereqCommand, true, 1)
+		err := system.RunCommand(prereqCommand, true, 1, true)
 		if err != nil {
 			return fmt.Errorf("issue installing unixodbc and unixodbc-dev with the command '%s': %w", prereqCommand, err)
 		}
 	} else if osType == config.Redhat7 || osType == config.Redhat8 || osType == config.Redhat9 {
 		prereqCommand := "yum -y install unixODBC unixODBC-devel"
-		err := system.RunCommand(prereqCommand, true, 1)
+		err := system.RunCommand(prereqCommand, true, 1, true)
 		if err != nil {
 			return fmt.Errorf("issue installing unixodbc and unixodbc-dev with the command '%s': %w", prereqCommand, err)
 		}
@@ -161,14 +172,14 @@ func BackupAndAppendODBCConfiguration() error {
 	if _, err := os.Stat("/etc/odbcinst.ini"); err == nil {
 		system.PrintAndLogInfo("Backing up /etc/odbcinst.ini to /etc/odbcinst.ini.bak")
 		backupCommand := "cp /etc/odbcinst.ini /etc/odbcinst.ini.bak"
-		err := system.RunCommand(backupCommand, true, 1)
+		err := system.RunCommand(backupCommand, true, 1, true)
 		if err != nil {
 			return fmt.Errorf("issue backing up /etc/odbcinst.ini with the command '%s': %w", backupCommand, err)
 		}
 	}
 	// append sample ODBC configuration to odbcinst.ini
-	addDefaultCommand := "cat /opt/rstudio-drivers/odbcinst.ini.sample | tee -a /etc/odbcinst.ini"
-	_, err := system.RunCommandAndCaptureOutput(addDefaultCommand, true, 1)
+	addDefaultCommand := "cat /opt/rstudio-drivers/odbcinst.ini.sample | tee -a /etc/odbcinst.ini >/dev/null"
+	_, err := system.RunCommandAndCaptureOutput(addDefaultCommand, true, 1, true)
 	if err != nil {
 		return fmt.Errorf("issue appending sample configuration to /etc/odbcinst.ini with the command '%s': %w", addDefaultCommand, err)
 	}

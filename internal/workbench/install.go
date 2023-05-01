@@ -10,6 +10,7 @@ import (
 
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
+	cmdlog "github.com/sol-eng/wbi/internal/logging"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -77,6 +78,13 @@ func DownloadAndInstallWorkbench(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("InstallWorkbench: %w", err)
 	}
+	// save to command log
+	installCommand, err := RetrieveInstallCommandForWorkbench(installerInfo.BaseName, osType)
+	if err != nil {
+		return fmt.Errorf("RetrieveInstallCommand: %w", err)
+	}
+	cmdlog.Info("curl -O " + installerInfo.URL + "\n")
+	cmdlog.Info(installCommand + "\n")
 	return nil
 }
 
@@ -87,7 +95,7 @@ func InstallWorkbench(filepath string, osType config.OperatingSystem) error {
 		return fmt.Errorf("RetrieveInstallCommandForWorkbench: %w", err)
 	}
 
-	err = system.RunCommand(installCommand, false, 0)
+	err = system.RunCommand(installCommand, false, 0, false)
 	if err != nil {
 		return fmt.Errorf("issue installing Workbench with the command '%s': %w", installCommand, err)
 	}

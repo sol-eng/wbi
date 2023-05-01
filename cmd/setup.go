@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/connect"
 	"github.com/sol-eng/wbi/internal/jupyter"
@@ -16,8 +17,6 @@ import (
 	"github.com/sol-eng/wbi/internal/ssl"
 	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
-
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -310,6 +309,7 @@ func (opts *setupOpts) Validate(args []string) error {
 	if len(args) > 0 {
 		return fmt.Errorf("no arguments are supported for this command")
 	}
+
 	// ensure step is valid
 	validSteps := []string{"start", "prereqs", "firewall", "security", "languages", "r", "python", "workbench", "license", "jupyter", "prodrivers", "ssl", "packagemanager", "connect", "restart", "status", "verify"}
 	if opts.step != "" && !lo.Contains(validSteps, opts.step) {
