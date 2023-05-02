@@ -3,8 +3,9 @@ package ssl
 import (
 	"errors"
 	"fmt"
-	"github.com/sol-eng/wbi/internal/config"
 	"strings"
+
+	"github.com/sol-eng/wbi/internal/config"
 
 	"github.com/AlecAivazis/survey/v2"
 	log "github.com/sirupsen/logrus"
@@ -119,6 +120,22 @@ func PromptSSLFilePath() (string, error) {
 	err := survey.AskOne(prompt, &target)
 	if err != nil {
 		return "", errors.New("there was an issue with the SSL cert path prompt")
+	}
+	log.Info(messageText)
+	log.Info(target)
+	return target, nil
+}
+
+// PromptServerURL asks users for the server URL
+func PromptServerURL() (string, error) {
+	target := ""
+	messageText := "Server URL that end users will use to access the Workbench web interface (for example, https://workbench.mydomainname.com):"
+	prompt := &survey.Input{
+		Message: messageText,
+	}
+	err := survey.AskOne(prompt, &target)
+	if err != nil {
+		return "", errors.New("there was an issue with the server URL prompt")
 	}
 	log.Info(messageText)
 	log.Info(target)
