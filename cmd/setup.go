@@ -273,13 +273,15 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("issue selecting if verification is to be run: %w", err)
 		}
 		if verifyChoice {
-			username, err := operatingsystem.PromptAndVerifyUser()
+			username, skip, err := operatingsystem.PromptAndVerifyUser()
 			if err != nil {
 				return err
 			}
-			err = workbench.VerifyInstallation(username)
-			if err != nil {
-				return fmt.Errorf("issue running verification: %w", err)
+			if !skip {
+				err = workbench.VerifyInstallation(username)
+				if err != nil {
+					return fmt.Errorf("issue running verification: %w", err)
+				}
 			}
 		}
 		step = "done"
