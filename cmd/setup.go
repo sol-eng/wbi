@@ -47,19 +47,19 @@ func newSetup(setupOpts setupOpts) error {
 	// Check if running as root
 	err := operatingsystem.CheckIfRunningAsRoot()
 	if err != nil {
-		return err
+		return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step start\"", err)
 	}
 
 	// Determine OS and install pre-requisites
 	osType, err := operatingsystem.DetectOS()
 	if err != nil {
-		return err
+		return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step start\"", err)
 	}
 
 	if step == "prereqs" {
 		ConfirmInstall, err := operatingsystem.PromptInstallPrereqs()
 		if err != nil {
-			return err
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step prereqs\"", err)
 		}
 
 		if ConfirmInstall {
@@ -68,7 +68,7 @@ func newSetup(setupOpts setupOpts) error {
 			log.Fatal("Exited Workbench Installer")
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step prereqs\"", err)
 		}
 		step = "firewall"
 	}
@@ -78,19 +78,19 @@ func newSetup(setupOpts setupOpts) error {
 		// TODO: Add support for Ubuntu ufw
 		firewalldEnabled, err := operatingsystem.CheckFirewallStatus(osType)
 		if err != nil {
-			return err
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step firewall\"", err)
 		}
 
 		if firewalldEnabled {
 			disableFirewall, err := operatingsystem.FirewallPrompt()
 			if err != nil {
-				return err
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step firewall\"", err)
 			}
 
 			if disableFirewall {
 				err = operatingsystem.DisableFirewall(osType)
 				if err != nil {
-					return err
+					return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step firewall\"", err)
 				}
 			}
 		}
@@ -102,19 +102,19 @@ func newSetup(setupOpts setupOpts) error {
 		// TODO: Add support for Ubuntu AppArmor
 		selinuxEnabled, err := operatingsystem.CheckLinuxSecurityStatus(osType)
 		if err != nil {
-			return err
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step security\"", err)
 		}
 
 		if selinuxEnabled {
 			disableSELinux, err := operatingsystem.LinuxSecurityPrompt(osType)
 			if err != nil {
-				return err
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step security\"", err)
 			}
 
 			if disableSELinux {
 				err = operatingsystem.DisableLinuxSecurity()
 				if err != nil {
-					return err
+					return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step security\"", err)
 				}
 			}
 		}
@@ -126,7 +126,7 @@ func newSetup(setupOpts setupOpts) error {
 		// Languages
 		selectedLanguages, err = languages.PromptAndRespond()
 		if err != nil {
-			return fmt.Errorf("issue selecting languages: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step languages\"", err)
 		}
 		step = "r"
 	}
@@ -135,7 +135,7 @@ func newSetup(setupOpts setupOpts) error {
 		// R
 		err = languages.ScanAndHandleRVersions(osType)
 		if err != nil {
-			return fmt.Errorf("issue scanning, prompting or installing R: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step r\"", err)
 		}
 		step = "python"
 	}
@@ -145,7 +145,7 @@ func newSetup(setupOpts setupOpts) error {
 		if lo.Contains(selectedLanguages, "python") {
 			err := languages.ScanAndHandlePythonVersions(osType)
 			if err != nil {
-				return fmt.Errorf("issue scanning, prompting or installing Python: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step python\"", err)
 			}
 		}
 		step = "workbench"
@@ -155,7 +155,7 @@ func newSetup(setupOpts setupOpts) error {
 		// Workbench
 		err = workbench.CheckPromptDownloadAndInstallWorkbench(osType)
 		if err != nil {
-			return fmt.Errorf("issue checking, prompting, downloading or installing Workbench: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step workbench\"", err)
 		}
 		step = "license"
 	}
@@ -164,7 +164,7 @@ func newSetup(setupOpts setupOpts) error {
 		// Licensing
 		err = license.CheckPromptAndActivateLicense()
 		if err != nil {
-			return fmt.Errorf("issue checking, prompting or activating license: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step license\"", err)
 		}
 		step = "jupyter"
 	}
@@ -173,7 +173,7 @@ func newSetup(setupOpts setupOpts) error {
 		// Jupyter
 		err = jupyter.ScanPromptInstallAndConfigJupyter()
 		if err != nil {
-			return fmt.Errorf("issue scanning, prompting, installing or configuring Jupyter: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step jupyter\"", err)
 		}
 		step = "prodrivers"
 	}
@@ -182,7 +182,7 @@ func newSetup(setupOpts setupOpts) error {
 		// Pro Drivers
 		err = prodrivers.CheckPromptDownloadAndInstallProDrivers(osType)
 		if err != nil {
-			return fmt.Errorf("issue checking, prompting, downloading or installing Pro Drivers: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step prodrivers\"", err)
 		}
 		step = "ssl"
 	}
@@ -191,20 +191,20 @@ func newSetup(setupOpts setupOpts) error {
 		// SSL
 		sslChoice, err := ssl.PromptSSL()
 		if err != nil {
-			return fmt.Errorf("issue selecting if SSL is to be used: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step ssl\"", err)
 		}
 		if sslChoice {
 			serverURL, err := ssl.PromptServerURL()
 			if err != nil {
-				return fmt.Errorf("issue prompting for server URL: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step ssl\"", err)
 			}
 			certPath, keyPath, err := ssl.PromptAndVerifySSL(osType)
 			if err != nil {
-				return fmt.Errorf("issue verifying and configuring SSL: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step ssl\"", err)
 			}
 			workbench.WriteSSLConfig(certPath, keyPath, serverURL)
 			if err != nil {
-				return fmt.Errorf("error writing ssl configuration to file rserver.conf: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step ssl\"", err)
 			}
 		}
 		step = "packagemanager"
@@ -214,22 +214,22 @@ func newSetup(setupOpts setupOpts) error {
 		// Package Manager URL
 		packageManagerChoice, err := packagemanager.PromptPackageManagerChoice()
 		if err != nil {
-			return fmt.Errorf("issue in prompt for Posit Package Manager choice: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
 		}
 		if packageManagerChoice {
 			err = packagemanager.InteractivePackageManagerPrompts(osType)
 			if err != nil {
-				return fmt.Errorf("issue in interactive Posit Package Manager repo verification steps: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
 			}
 		} else {
 			publicPackageManagerChoice, err := packagemanager.PromptPublicPackageManagerChoice()
 			if err != nil {
-				return fmt.Errorf("issue in prompt for Posit Public Package Manager choice: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
 			}
 			if publicPackageManagerChoice {
 				err = packagemanager.VerifyAndBuildPublicPackageManager(osType)
 				if err != nil {
-					return fmt.Errorf("issue in verifying and building Public Posit Package Manager URL and repo: %w", err)
+					return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
 				}
 			}
 		}
@@ -240,12 +240,12 @@ func newSetup(setupOpts setupOpts) error {
 		// Connect URL
 		connectChoice, err := connect.PromptConnectChoice()
 		if err != nil {
-			return fmt.Errorf("issue in prompt for Connect URL choice: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step connect\"", err)
 		}
 		if connectChoice {
 			err = connect.PromptVerifyAndConfigConnect()
 			if err != nil {
-				return fmt.Errorf("issue in prompting, verifying and saving Connect URL: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step connect\"", err)
 			}
 		}
 		step = "restart"
@@ -256,7 +256,7 @@ func newSetup(setupOpts setupOpts) error {
 
 		err = workbench.RestartRStudioServerAndLauncher()
 		if err != nil {
-			return fmt.Errorf("issue restarting RStudio Server and Launcher: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step restart\"", err)
 		}
 		step = "status"
 	}
@@ -266,7 +266,7 @@ func newSetup(setupOpts setupOpts) error {
 
 		err = workbench.StatusRStudioServerAndLauncher()
 		if err != nil {
-			return fmt.Errorf("issue running status for RStudio Server and Launcher: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step status\"", err)
 		}
 		step = "verify"
 	}
@@ -274,12 +274,12 @@ func newSetup(setupOpts setupOpts) error {
 	if step == "verify" {
 		verifyChoice, err := workbench.PromptInstallVerify()
 		if err != nil {
-			return fmt.Errorf("issue selecting if verification is to be run: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step verify\"", err)
 		}
 		if verifyChoice {
 			err = workbench.VerifyInstallation()
 			if err != nil {
-				return fmt.Errorf("issue running verification: %w", err)
+				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step verify\"", err)
 			}
 		}
 		step = "done"
