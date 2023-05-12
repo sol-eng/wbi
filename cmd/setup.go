@@ -277,9 +277,15 @@ func newSetup(setupOpts setupOpts) error {
 			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step verify\"", err)
 		}
 		if verifyChoice {
-			err = workbench.VerifyInstallation()
+			username, skip, err := operatingsystem.PromptAndVerifyUser()
 			if err != nil {
 				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step verify\"", err)
+			}
+			if !skip {
+				err = workbench.VerifyInstallation(username)
+				if err != nil {
+					return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step verify\"", err)
+				}
 			}
 		}
 		step = "done"

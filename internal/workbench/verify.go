@@ -21,16 +21,17 @@ func VerifyWorkbench() bool {
 }
 
 // Runs verify-installation command
-func VerifyInstallation() error {
+func VerifyInstallation(username string) error {
 	// stop rstudio-server
 	err := StopRStudioServer()
 	if err != nil {
 		return fmt.Errorf("issue stopping rstudio-server: %w", err)
 	}
 	// run verify-installation
-	err = system.RunCommand("rstudio-server verify-installation", true, 1)
+	verifyCommand := "rstudio-server verify-installation  --verify-user=" + username
+	err = system.RunCommand(verifyCommand, true, 1)
 	if err != nil {
-		return fmt.Errorf("issue running verify-installation command 'rstudio-server verify-installation': %w", err)
+		return fmt.Errorf("issue running verify-installation command '%s': %w", verifyCommand, err)
 	}
 	// start rstudio-server
 	err = StartRStudioServer()
