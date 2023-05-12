@@ -226,21 +226,15 @@ func newSetup(setupOpts setupOpts) error {
 		if err != nil {
 			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
 		}
-		if packageManagerChoice {
+		if packageManagerChoice == "Posit Package Manager" {
 			err = packagemanager.InteractivePackageManagerPrompts(osType)
 			if err != nil {
 				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
 			}
-		} else {
-			publicPackageManagerChoice, err := packagemanager.PromptPublicPackageManagerChoice()
+		} else if packageManagerChoice == "Posit Public Package Manager" {
+			err = packagemanager.VerifyAndBuildPublicPackageManager(osType)
 			if err != nil {
 				return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
-			}
-			if publicPackageManagerChoice {
-				err = packagemanager.VerifyAndBuildPublicPackageManager(osType)
-				if err != nil {
-					return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step packagemanager\"", err)
-				}
 			}
 		}
 		step = "connect"
