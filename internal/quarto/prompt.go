@@ -74,7 +74,7 @@ func quartoVersionsToPaths(quartoVersions []string) []string {
 
 func PromptQuartoInstall(bundledVersion string) (bool, error) {
 	name := false
-	messageText := "Workbench bundles Quarto version " + bundledVersion + ". Would you like to install any different version(s)?"
+	messageText := "Workbench bundles Quarto version " + bundledVersion + " Would you like to install any different version(s)?"
 	prompt := &survey.Confirm{
 		Message: messageText,
 	}
