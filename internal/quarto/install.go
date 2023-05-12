@@ -10,14 +10,28 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
-func RetrieveValidQuartoVersions(osType config.OperatingSystem) ([]string, error) {
+func RetrieveValidQuartoVersions() ([]string, error) {
 	// TODO automate the retrieving the list of valid versions
 	return []string{"1.3.340", "1.2.475", "1.1.189", "1.0.38"}, nil
+}
+
+func ValidateQuartoVersions(quartoVersions []string) error {
+	availQuartoVersions, err := RetrieveValidQuartoVersions()
+	if err != nil {
+		return fmt.Errorf("error retrieving valid Quarto versions: %w", err)
+	}
+	for _, quartoVersion := range quartoVersions {
+		if !lo.Contains(availQuartoVersions, quartoVersion) {
+			return errors.New("version " + quartoVersion + " is not a valid Quarto version")
+		}
+	}
+	return nil
 }
 
 func DownloadAndInstallQuartoVersions(quartoVersions []string, osType config.OperatingSystem) error {
@@ -117,29 +131,6 @@ func installQuarto(filepath string, osType config.OperatingSystem, version strin
 	return nil
 }
 
-func checkPromtAndSetQuartoSymlinks(quartoPaths []string) error {
-	// check if Quarto has already been symlinked
-	quartoSymlinked := checkIfQuartoSymlinkExists()
-	if (len(quartoPaths) > 0) && !quartoSymlinked {
-		err := promptAndSetQuartoSymlink(quartoPaths)
-		if err != nil {
-			return fmt.Errorf("issue setting Quarto symlinks: %w", err)
-		}
-	}
-	return nil
-}
-
-// checkIfQuartoSymlinkExists checks if the Quarto symlink exists
-func checkIfQuartoSymlinkExists() bool {
-	_, err := os.Stat("/usr/local/bin/quarto")
-	if err != nil {
-		return false
-	}
-
-	system.PrintAndLogInfo("\nAn existing Quarto symlink has been detected (/usr/local/bin/quarto)")
-	return true
-}
-
 // promptAndSetQuartoSymlinks prompts user to set the Quarto symlink
 func promptAndSetQuartoSymlink(quartoPaths []string) error {
 	setQuartoSymlinkChoice, err := quartoSymlinkPrompt()
@@ -151,7 +142,7 @@ func promptAndSetQuartoSymlink(quartoPaths []string) error {
 		if err != nil {
 			return fmt.Errorf("issue selecting Quarto binary to add symlinks: %w", err)
 		}
-		err = setQuartoSymlinks(quartoPathChoice)
+		err = setQuartoSymlinks(quartoPathChoice, true)
 		if err != nil {
 			return fmt.Errorf("issue setting Quarto symlinks: %w", err)
 		}
@@ -162,9 +153,9 @@ func promptAndSetQuartoSymlink(quartoPaths []string) error {
 }
 
 // setQuartoSymlinks sets the Quarto symlink
-func setQuartoSymlinks(quartoPath string) error {
+func setQuartoSymlinks(quartoPath string, display bool) error {
 	quartoCommand := "ln -s " + quartoPath + " /usr/local/bin/quarto"
-	err := system.RunCommand(quartoCommand, false, 0)
+	err := system.RunCommand(quartoCommand, display, 0)
 	if err != nil {
 		return fmt.Errorf("error setting Quarto symlink with the command '%s': %w", quartoCommand, err)
 	}

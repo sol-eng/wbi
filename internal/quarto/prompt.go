@@ -8,16 +8,24 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
-	"github.com/sol-eng/wbi/internal/system"
 )
 
 func ScanAndHandleQuartoVersions(osType config.OperatingSystem) error {
-	// detect the bundled Quarto version
-	quartoBundledVersion, err := ScanForBundledQuartoVersion()
+	// check if a Workbench bundled version of Quarto exists
+	quartoBundled, err := checkForBundledQuartoVersion()
 	if err != nil {
-		return fmt.Errorf("issue scanning for bundled Quarto version: %w", err)
+		return fmt.Errorf("issue checking for bundled Quarto version: %w", err)
 	}
-	// prompt the user to present the bundled version and ask if they want to install any other versions
+	var quartoBundledVersion string
+	if quartoBundled {
+		// detect the bundled Quarto version
+		quartoBundledVersion, err = ScanForBundledQuartoVersion()
+		if err != nil {
+			return fmt.Errorf("issue scanning for bundled Quarto version: %w", err)
+		}
+	}
+
+	// prompt the user to present the bundled version and ask if they want to install any other versions. If nothing is bundled then just ask if they want to install any versions
 	quartoInstall, err := PromptQuartoInstall(quartoBundledVersion)
 	if err != nil {
 		return fmt.Errorf("there was an issue prompting for Quarto install: %w", err)
@@ -25,7 +33,7 @@ func ScanAndHandleQuartoVersions(osType config.OperatingSystem) error {
 
 	if quartoInstall {
 		// retrieve other versions and present them to the user
-		validQuartoVersions, err := RetrieveValidQuartoVersions(osType)
+		validQuartoVersions, err := RetrieveValidQuartoVersions()
 		if err != nil {
 			return fmt.Errorf("there was an issue retrieving valid Quarto versions: %w", err)
 		}
@@ -40,21 +48,27 @@ func ScanAndHandleQuartoVersions(osType config.OperatingSystem) error {
 				return fmt.Errorf("there was an issue installing Quarto versions: %w", err)
 			}
 			// ask which version they want to use for default and symlink it to /usr/local/bin/quarto so Jupyter and VS Code will pick it up
-			quartoPaths := append(quartoVersionsToPaths(installQuartoVersions), "/usr/lib/rstudio-server/bin/quarto/bin/quarto")
+			var quartoPaths []string
+			if quartoBundled {
+				quartoPaths = append(quartoVersionsToPaths(installQuartoVersions), "/usr/lib/rstudio-server/bin/quarto/bin/quarto")
+			} else {
+				quartoPaths = quartoVersionsToPaths(installQuartoVersions)
+			}
+
 			err = checkPromtAndSetQuartoSymlinks(quartoPaths)
 			if err != nil {
 				return fmt.Errorf("there was an issue setting Quarto symlinks: %w", err)
 			}
 		} else {
 			// continue with the bundled version and symlink it to /usr/local/bin/quarto so Jupyter and VS Code will pick it up
-			err = setQuartoSymlinks("/usr/lib/rstudio-server/bin/quarto/bin/quarto")
+			err = setQuartoSymlinks("/usr/lib/rstudio-server/bin/quarto/bin/quarto", true)
 			if err != nil {
 				return fmt.Errorf("issue setting Quarto symlinks: %w", err)
 			}
 		}
 	} else {
 		// continue with the bundled version and symlink it to /usr/local/bin/quarto so Jupyter and VS Code will pick it up
-		err = setQuartoSymlinks("/usr/lib/rstudio-server/bin/quarto/bin/quarto")
+		err = setQuartoSymlinks("/usr/lib/rstudio-server/bin/quarto/bin/quarto", false)
 		if err != nil {
 			return fmt.Errorf("issue setting Quarto symlinks: %w", err)
 		}
@@ -73,8 +87,14 @@ func quartoVersionsToPaths(quartoVersions []string) []string {
 }
 
 func PromptQuartoInstall(bundledVersion string) (bool, error) {
-	name := false
-	messageText := "Workbench bundles Quarto version " + bundledVersion + " Would you like to install any different version(s)?"
+	var name bool
+	var messageText string
+	if bundledVersion == "" {
+		messageText = "Would you like to install Quarto?"
+	} else {
+		messageText = "Workbench bundles Quarto version " + bundledVersion + " Would you like to install any different version(s)?"
+	}
+
 	prompt := &survey.Confirm{
 		Message: messageText,
 	}
@@ -110,15 +130,4 @@ func QuartoSelectVersionsPrompt(availableQuartoVersions []string) ([]string, err
 	log.Info(messageText)
 	log.Info(strings.Join(quartoVersionsAnswers.QuartoVersions, ", "))
 	return quartoVersionsAnswers.QuartoVersions, nil
-}
-
-// ScanForBundledQuartoVersion scans for the bundled version of Quarto
-func ScanForBundledQuartoVersion() (string, error) {
-	quartoPath := "/usr/lib/rstudio-server/bin/quarto/bin/quarto"
-	versionCommand := quartoPath + " --version"
-	quartoVersion, err := system.RunCommandAndCaptureOutput(versionCommand, false, 0)
-	if err != nil {
-		return "", fmt.Errorf("issue finding Quarto version: %w", err)
-	}
-	return quartoVersion, nil
 }
