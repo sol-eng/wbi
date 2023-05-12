@@ -174,7 +174,7 @@ func newSetup(setupOpts setupOpts) error {
 		// Quarto
 		err := quarto.ScanAndHandleQuartoVersions(osType)
 		if err != nil {
-			return fmt.Errorf("issue scanning, prompting or installing Quarto: %w", err)
+			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step quarto\"", err)
 		}
 		step = "jupyter"
 	}
