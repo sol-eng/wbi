@@ -13,6 +13,7 @@ import (
 	"github.com/sol-eng/wbi/internal/operatingsystem"
 	"github.com/sol-eng/wbi/internal/packagemanager"
 	"github.com/sol-eng/wbi/internal/prodrivers"
+	"github.com/sol-eng/wbi/internal/quarto"
 	"github.com/sol-eng/wbi/internal/ssl"
 	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
@@ -165,6 +166,15 @@ func newSetup(setupOpts setupOpts) error {
 		err = license.CheckPromptAndActivateLicense()
 		if err != nil {
 			return fmt.Errorf("%w.\nTo return to this step in the setup process use \"wbi setup --step license\"", err)
+		}
+		step = "quarto"
+	}
+
+	if step == "quarto" {
+		// Quarto
+		err := quarto.ScanAndHandleQuartoVersions(osType)
+		if err != nil {
+			return fmt.Errorf("issue scanning, prompting or installing Quarto: %w", err)
 		}
 		step = "jupyter"
 	}
@@ -321,7 +331,7 @@ func (opts *setupOpts) Validate(args []string) error {
 		return fmt.Errorf("no arguments are supported for this command")
 	}
 	// ensure step is valid
-	validSteps := []string{"start", "prereqs", "firewall", "security", "languages", "r", "python", "workbench", "license", "jupyter", "prodrivers", "ssl", "packagemanager", "connect", "restart", "status", "verify"}
+	validSteps := []string{"start", "prereqs", "firewall", "security", "languages", "r", "python", "workbench", "license", "quarto", "jupyter", "prodrivers", "ssl", "packagemanager", "connect", "restart", "status", "verify"}
 	if opts.step != "" && !lo.Contains(validSteps, opts.step) {
 		return fmt.Errorf("invalid step: %s", opts.step)
 	}
@@ -363,7 +373,7 @@ func newSetupCmd() *setupCmd {
 		SilenceUsage: true,
 	}
 
-	stepHelp := `The step to start at. Valid steps are: start, prereqs, firewall, security, languages, r, python, workbench, license, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.`
+	stepHelp := `The step to start at. Valid steps are: start, prereqs, firewall, security, languages, r, python, workbench, license, quarto, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.`
 
 	cmd.Flags().StringP("step", "s", "", stepHelp)
 	viper.BindPFlag("step", cmd.Flags().Lookup("step"))

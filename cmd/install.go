@@ -8,6 +8,7 @@ import (
 	"github.com/sol-eng/wbi/internal/jupyter"
 	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/sol-eng/wbi/internal/operatingsystem"
+	"github.com/sol-eng/wbi/internal/quarto"
 
 	"github.com/sol-eng/wbi/internal/prodrivers"
 	"github.com/sol-eng/wbi/internal/system"
@@ -90,6 +91,26 @@ func newInstall(installOpts installOpts, program string) error {
 				}
 			}
 		}
+	} else if program == "quarto" {
+		// install Quarto
+		if len(installOpts.versions) == 0 {
+			err = quarto.ScanAndHandleQuartoVersions(osType)
+			if err != nil {
+				return fmt.Errorf("ScanAndHandleQuartoVersions: %w", err)
+			}
+		} else {
+			err = quarto.DownloadAndInstallQuartoVersions(installOpts.versions, osType)
+			if err != nil {
+				return fmt.Errorf("issue installing Quarto versions: %w", err)
+			}
+			if installOpts.symlink {
+				fullQuartoPath := "/opt/quarto/" + installOpts.versions[0] + "/bin/quarto"
+				err = quarto.CheckAndSetQuartoSymlink(fullQuartoPath)
+				if err != nil {
+					return fmt.Errorf("issue setting Quarto symlink: %w", err)
+				}
+			}
+		}
 	} else if program == "workbench" {
 		// install prereqs
 		err = operatingsystem.InstallPrereqs(osType)
@@ -148,9 +169,9 @@ func (opts *installOpts) Validate(args []string) error {
 		return fmt.Errorf("the path flag is only supported for jupyter")
 	}
 
-	// only the flag for symlink is supported for r
-	if opts.symlink && args[0] != "r" {
-		return fmt.Errorf("the symlink flag is only supported for r")
+	// only the flag for symlink is supported for r and quarto
+	if opts.symlink && (args[0] != "r" && args[0] != "quarto") {
+		return fmt.Errorf("the symlink flag is only supported for r and quarto")
 	}
 
 	// only the flag for add-to-path (addToPATH) is supported for python
@@ -158,7 +179,7 @@ func (opts *installOpts) Validate(args []string) error {
 		return fmt.Errorf("the add-to-path flag is only supported for python")
 	}
 
-	// ensure versions are valid if provided for r and python
+	// ensure versions are valid if provided for r, python or quarto
 	if args[0] == "r" && len(opts.versions) != 0 {
 		err := languages.ValidateRVersions(opts.versions)
 		if err != nil {
@@ -172,6 +193,11 @@ func (opts *installOpts) Validate(args []string) error {
 		err = languages.ValidatePythonVersions(opts.versions, osType)
 		if err != nil {
 			return fmt.Errorf("invalid Python versions: %w", err)
+		}
+	} else if args[0] == "quarto" && len(opts.versions) != 0 {
+		err := quarto.ValidateQuartoVersions(opts.versions)
+		if err != nil {
+			return fmt.Errorf("invalid Quarto versions: %w", err)
 		}
 	}
 
@@ -193,7 +219,7 @@ func (opts *installOpts) Validate(args []string) error {
 	}
 
 	// ensure program is valid
-	if args[0] != "r" && args[0] != "python" && args[0] != "workbench" && args[0] != "prodrivers" && args[0] != "jupyter" {
+	if args[0] != "r" && args[0] != "python" && args[0] != "workbench" && args[0] != "prodrivers" && args[0] != "jupyter" && args[0] != "quarto" {
 		return fmt.Errorf("invalid argument provided")
 	}
 
@@ -207,17 +233,20 @@ func newInstallCmd() *installCmd {
 
 	// adding two spaces to have consistent formatting
 	exampleText := []string{
-		"To start an interactive prompt to select R or Python version(s):",
+		"To start an interactive prompt to select R, Python or Quarto version(s):",
 		"  wbi install r",
 		"  wbi install python",
+		"  wbi install quarto",
 		"",
-		"To install a specific R or Python version:",
+		"To install a specific R, Python or Quarto version:",
 		"  wbi install r --version 4.2.2",
 		"  wbi install python --version 3.11.2",
+		"  wbi install quarto --version 1.3.340",
 		"",
-		"To install multiple R or Python versions:",
+		"To install multiple R, Python or Quarto versions:",
 		"  wbi install r --version 4.2.2,4.1.3",
 		"  wbi install python --version 3.11.2,3.10.10",
+		"  wbi install quarto --version 1.3.340,1.2.475",
 		"",
 		"To install Workbench:",
 		"  wbi install workbench",
@@ -234,7 +263,7 @@ func newInstallCmd() *installCmd {
 
 	cmd := &cobra.Command{
 		Use:     "install [program]",
-		Short:   "Install R, Python, Workbench, Pro Drivers, or Jupyter",
+		Short:   "Install R, Python, Quarto, Workbench, Pro Drivers, or Jupyter",
 		Example: strings.Join(exampleText, "\n"),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setInstallOpts(&root.opts)
@@ -254,13 +283,13 @@ func newInstallCmd() *installCmd {
 		SilenceUsage: true,
 	}
 
-	cmd.Flags().StringSliceP("version", "v", []string{}, "Version(s) of R or Python to install. Multiple values can be passed by seperating each version with a comma.")
+	cmd.Flags().StringSliceP("version", "v", []string{}, "Version(s) of R, Python or Quarto to install. Multiple values can be passed by seperating each version with a comma.")
 	viper.BindPFlag("version", cmd.Flags().Lookup("version"))
 
 	cmd.Flags().StringP("path", "p", "", "Python location to install Jupyter to.")
 	viper.BindPFlag("path", cmd.Flags().Lookup("path"))
 
-	cmd.Flags().BoolP("symlink", "s", false, "Symlinks both R and Rscript for the first version of R specified to /usr/local/bin/.")
+	cmd.Flags().BoolP("symlink", "s", false, "Sets symlinks for R and Quarto. For R both R/Rscript for the first version of R specified to /usr/local/bin/R, for Quarto the first version of Quarto specified to /usr/local/bin/quarto.")
 	viper.BindPFlag("symlink", cmd.Flags().Lookup("symlink"))
 
 	cmd.Flags().BoolP("add-to-path", "a", false, "Adds the first Python version specified to users PATH by adding a file in /etc/profile.d/.")

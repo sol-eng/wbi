@@ -62,8 +62,8 @@ func PromptInstallPrereqs() (bool, error) {
 	messageText := "In order to install Workbench from start to finish, you will need the following things\n" +
 		"1. Internet access for this server\n" +
 		"2. At least one non-root local Linux user account with a home directory\n" +
-		"3. The versions of R and Python you would like to install\n" +
-		"4. The version of R and Python you would like to set as defaults\n" +
+		"3. The versions of R, Python and Quarto you would like to install\n" +
+		"4. The version of R, Python and Quarto you would like to set as defaults\n" +
 		"5. Your Workbench license key string in this form: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX\n" +
 		"6. The location on this server of your SSL key and certificate files (optional)\n" +
 		"7. The URL and repo name for your instance of Posit Package Manager (optional)\n" +
