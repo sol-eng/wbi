@@ -99,7 +99,7 @@ func installQuarto(filepath string, osType config.OperatingSystem, version strin
 	// create the /opt/quarto directory if it doesn't exist
 	path := fmt.Sprintf("/opt/quarto/%s", version)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err := os.Mkdir(path, 0666)
+		err := os.MkdirAll(path, 0755)
 		if err != nil {
 			return fmt.Errorf("error creating directory: %w", err)
 		}
@@ -156,7 +156,7 @@ func promptAndSetQuartoSymlink(quartoPaths []string) error {
 			return fmt.Errorf("issue setting Quarto symlinks: %w", err)
 		}
 
-		system.PrintAndLogInfo("\nThe selected Quarto directory  " + quartoPathChoice + " has been successfully symlinked and will be available on the default system PATH.\n")
+		system.PrintAndLogInfo("\n " + quartoPathChoice + " has been successfully symlinked and will be available on the default system PATH.\n")
 	}
 	return nil
 }
@@ -164,7 +164,7 @@ func promptAndSetQuartoSymlink(quartoPaths []string) error {
 // setQuartoSymlinks sets the Quarto symlink
 func setQuartoSymlinks(quartoPath string) error {
 	quartoCommand := "ln -s " + quartoPath + " /usr/local/bin/quarto"
-	err := system.RunCommand(quartoCommand, true, 0)
+	err := system.RunCommand(quartoCommand, false, 0)
 	if err != nil {
 		return fmt.Errorf("error setting Quarto symlink with the command '%s': %w", quartoCommand, err)
 	}
