@@ -309,8 +309,21 @@ func newSetup(setupOpts setupOpts) error {
 		adDocURL = "https://support.posit.co/hc/en-us/articles/360016587973-Integrating-RStudio-Workbench-RStudio-Server-Pro-with-Active-Directory-using-CentOS-RHEL"
 	}
 
+	var sslEnabled bool
+	matched, err := system.CheckStringExists("ssl-enabled=1", "/etc/rstudio/rserver.conf")
+	if err == nil && matched {
+		sslEnabled = true
+	}
+	var serverAccessMessage string
+	if sslEnabled {
+		serverAccessMessage = "To access Workbench in a web browser navigate to https://YOUR_SERVER_URL.com, replacing YOUR_SERVER_URL.com with the actual URL of this server. \n\n"
+	} else {
+		serverAccessMessage = "To access Workbench in a web browser navigate to http://YOUR_SERVER_URL.com:8787 replacing YOUR_SERVER_URL.com with the actual URL of this server. By default Workbench runs on port 8787 when using HTTP, visit the Admin Guide for more information on how to change this: https://docs.posit.co/ide/server-pro/access_and_security/network_port_and_address.html \n\n"
+	}
+
 	finalMessage := "\nThank you for using wbi! \n\n" +
 		"Workbench is now configured using the default PAM authentication method. Users with local Linux accounts and home directories should be able to log in to Workbench. \n\n" +
+		serverAccessMessage +
 		"Workbench integrates with a variety of Authentication types. To learn more about specific integrations, visit the documentation links below:\n" +
 		"For more information on PAM authentication https://docs.posit.co/ide/server-pro/authenticating_users/pam_authentication.html. \n" + "For more information on Active Directory authentication " + adDocURL + ". \n" +
 		"For more information on SAML Single Sign-On authentication https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html. \n" +
