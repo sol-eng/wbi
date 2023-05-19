@@ -144,13 +144,18 @@ func WriteConnectURLConfig(url string) error {
 
 // WriteJupyterConfig writes the Jupyter config to the Workbench config file
 func WriteJupyterConfig(jupyterPath string) error {
-	// TODO check to ensure line doesn't already exist and ideally take out the default commented out line to reduce confusion
+	// remove the existing line
+	filepath := "/etc/rstudio/jupyter.conf"
+	err := system.DeleteStrings([]string{"# jupyter-exe=/usr/local/bin/jupyter"}, filepath, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to delete the old jupyter-exe=: %w", err)
+	}
+
 	writeLines := []string{
 		"jupyter-exe=" + jupyterPath,
 	}
-	filepath := "/etc/rstudio/jupyter.conf"
 
-	err := system.WriteStrings(writeLines, filepath, 0644, true)
+	err = system.WriteStrings(writeLines, filepath, 0644, true)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
