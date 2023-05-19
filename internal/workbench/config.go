@@ -21,8 +21,7 @@ func WriteRepoConfig(url string, source string) error {
 				"CRAN=" + url,
 			}
 
-			system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-			err := system.WriteStrings(writeLines, filepath, 0644)
+			err := system.WriteStrings(writeLines, filepath, 0644, true)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
 			}
@@ -43,8 +42,7 @@ func WriteRepoConfig(url string, source string) error {
 				"index-url=" + url,
 			}
 
-			system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-			err := system.WriteStrings(writeLines, filepath, 0644)
+			err := system.WriteStrings(writeLines, filepath, 0644, true)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
 			}
@@ -109,8 +107,7 @@ func WriteSSLConfig(certPath string, keyPath string, serverURL string) error {
 			"ssl-certificate-key=" + keyPath,
 		}
 
-		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-		err = system.WriteStrings(writeLines, filepath, 0644)
+		err = system.WriteStrings(writeLines, filepath, 0644, true)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
@@ -135,8 +132,7 @@ func WriteConnectURLConfig(url string) error {
 			"default-rsconnect-server=" + url,
 		}
 
-		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-		err := system.WriteStrings(writeLines, filepath, 0644)
+		err := system.WriteStrings(writeLines, filepath, 0644, true)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
@@ -154,8 +150,7 @@ func WriteJupyterConfig(jupyterPath string) error {
 	}
 	filepath := "/etc/rstudio/jupyter.conf"
 
-	system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath, 0644)
+	err := system.WriteStrings(writeLines, filepath, 0644, true)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
