@@ -14,7 +14,7 @@ import (
 // Prompt users if they wish to add a default Connect URL to Workbench
 func PromptConnectChoice() (bool, error) {
 	name := true
-	messageText := "Would you like to provide a default Connect URL for Workbench?"
+	messageText := "Would you like to provide a default Connect URL for Workbench? You will need connectivity to the Connect server to use this option."
 	prompt := &survey.Confirm{
 		Message: messageText,
 	}

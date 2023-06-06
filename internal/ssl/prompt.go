@@ -126,6 +126,22 @@ func PromptSSLFilePath() (string, error) {
 	return target, nil
 }
 
+// PromptServerURL asks users for the server URL
+func PromptServerURL() (string, error) {
+	target := ""
+	messageText := "Server URL that end users will use to access the Workbench web interface (for example, https://workbench.mydomainname.com):"
+	prompt := &survey.Input{
+		Message: messageText,
+	}
+	err := survey.AskOne(prompt, &target)
+	if err != nil {
+		return "", errors.New("there was an issue with the server URL prompt")
+	}
+	log.Info(messageText)
+	log.Info(target)
+	return target, nil
+}
+
 // PromptSSLKeyFilePath Prompt asking users for a filepath to their SSL cert key
 func PromptSSLKeyFilePath() (string, error) {
 	target := ""

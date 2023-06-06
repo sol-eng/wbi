@@ -3,6 +3,7 @@ package operatingsystem
 import (
 	"errors"
 	"os"
+	"os/user"
 	"runtime"
 	"strings"
 
@@ -48,4 +49,12 @@ func DetectOS() (config.OperatingSystem, error) {
 	} else {
 		return config.Unknown, errors.New("unsupported operating system")
 	}
+}
+
+func UserLookup(username string) (*user.User, error) {
+	user, err := user.Lookup(username)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

@@ -14,19 +14,21 @@ import (
 )
 
 // Prompt users if they wish to add a default Posit Package Manager URL to Workbench
-func PromptPackageManagerChoice() (bool, error) {
-	name := true
-	messageText := "Would you like to setup Posit Package Manager as the default R and/or Python repo in Workbench? You will need connectivity to the Package Manager server to use this option."
-	prompt := &survey.Confirm{
+func PromptPackageManagerChoice() (string, error) {
+	choice := ""
+	messageText := "Would you like to setup Posit Package Manager or Posit Public Package Manager as the default R and/or Python repo for Workbench? You will need connectivity to the Package Manager server to use this option."
+	prompt := &survey.Select{
 		Message: messageText,
+		Options: []string{"Posit Package Manager", "Posit Public Package Manager", "Skip"},
+		Default: "Posit Public Package Manager",
 	}
-	err := survey.AskOne(prompt, &name)
+	err := survey.AskOne(prompt, &choice)
 	if err != nil {
-		return false, errors.New("there was an issue with the Posit Package Manager choice prompt")
+		return "", errors.New("there was an issue with the Posit Package Manager choice prompt")
 	}
 	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+	log.Info(fmt.Sprintf("%v", choice))
+	return choice, nil
 }
 
 func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {

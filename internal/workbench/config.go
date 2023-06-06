@@ -21,7 +21,6 @@ func WriteRepoConfig(url string, source string) error {
 				"CRAN=" + url,
 			}
 
-			system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
 			err := system.WriteStrings(writeLines, filepath, 0644, true)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
@@ -43,8 +42,7 @@ func WriteRepoConfig(url string, source string) error {
 				"index-url=" + url,
 			}
 
-			system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-			err := system.WriteStrings(writeLines, filepath, 0644, true)
+			err = system.WriteStrings(writeLines, filepath, 0644, true)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
 			}
@@ -55,8 +53,26 @@ func WriteRepoConfig(url string, source string) error {
 	return nil
 }
 
+func cleanServerURL(serverURL string) string {
+	// remove trailing slash if present
+	if serverURL[len(serverURL)-1] == '/' {
+		serverURL = serverURL[:len(serverURL)-1]
+	}
+	// remove http:// or https:// if present
+	if serverURL[:7] == "http://" {
+		serverURL = serverURL[7:]
+	} else if serverURL[:8] == "https://" {
+		serverURL = serverURL[8:]
+	}
+	return serverURL
+}
+
 // WriteSSLConfig writes the SSL config to the Workbench config file
-func WriteSSLConfig(certPath string, keyPath string) error {
+func WriteSSLConfig(certPath string, keyPath string, serverURL string) error {
+	// clean the serverURL
+	serverURLClean := cleanServerURL(serverURL)
+	finalServerURL := "https://" + serverURLClean
+
 	// check to ensure the lines don't already exist
 	linesCheck := []string{
 		"ssl-enabled=",
@@ -73,16 +89,25 @@ func WriteSSLConfig(certPath string, keyPath string) error {
 		}
 	}
 
-	// append the lines if they don't exist
+	// remove launcher-sessions-callback-address and append the lines if they don't exist
 	if !linesExist {
+		// remove launcher-sessions-callback-address
+		err := system.DeleteStrings([]string{"launcher-sessions-callback-address"}, filepath, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to delete launcher-sessions-callback-address: %w", err)
+		}
+
+		// append new lines including the updated launcher-sessions-callback-address
 		writeLines := []string{
+			"",
+			"launcher-sessions-callback-address=" + finalServerURL,
+			"",
 			"ssl-enabled=1",
 			"ssl-certificate=" + certPath,
 			"ssl-certificate-key=" + keyPath,
 		}
 
-		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-		err := system.WriteStrings(writeLines, filepath, 0644, true)
+		err = system.WriteStrings(writeLines, filepath, 0644, true)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
@@ -107,8 +132,7 @@ func WriteConnectURLConfig(url string) error {
 			"default-rsconnect-server=" + url,
 		}
 
-		system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-		err := system.WriteStrings(writeLines, filepath, 0644, true)
+		err = system.WriteStrings(writeLines, filepath, 0644, true)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
@@ -120,14 +144,18 @@ func WriteConnectURLConfig(url string) error {
 
 // WriteJupyterConfig writes the Jupyter config to the Workbench config file
 func WriteJupyterConfig(jupyterPath string) error {
-	// TODO check to ensure line doesn't already exist and ideally take out the default commented out line to reduce confusion
+	// remove the existing line
+	filepath := "/etc/rstudio/jupyter.conf"
+	err := system.DeleteStrings([]string{"# jupyter-exe=/usr/local/bin/jupyter"}, filepath, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to delete the old jupyter-exe=: %w", err)
+	}
+
 	writeLines := []string{
 		"jupyter-exe=" + jupyterPath,
 	}
-	filepath := "/etc/rstudio/jupyter.conf"
 
-	system.PrintAndLogInfo("\n=== Writing to the file " + filepath + ":")
-	err := system.WriteStrings(writeLines, filepath, 0644, true)
+	err = system.WriteStrings(writeLines, filepath, 0644, true)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}

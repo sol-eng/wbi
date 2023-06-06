@@ -61,12 +61,13 @@ func PromptInstallPrereqs() (bool, error) {
 	var name bool
 	messageText := "In order to install Workbench from start to finish, you will need the following things\n" +
 		"1. Internet access for this server\n" +
-		"2. The versions of R and Python you would like to install\n" +
-		"3. The version of R and Python you would like to set as defaults\n" +
-		"4. Your Workbench license key string in this form: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX\n" +
-		"5. The location on this server of your SSL key and certificate files (optional)\n" +
-		"6. The URL and repo name for your instance of Posit Package Manager (optional)\n" +
-		"7. The URL for your instance of Posit Connect (optional)\n\n" +
+		"2. At least one non-root local Linux user account with a home directory\n" +
+		"3. The versions of R, Python and Quarto you would like to install\n" +
+		"4. The version of R, Python and Quarto you would like to set as defaults\n" +
+		"5. Your Workbench license key string in this form: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX\n" +
+		"6. The location on this server of your SSL key and certificate files (optional)\n" +
+		"7. The URL and repo name for your instance of Posit Package Manager (optional)\n" +
+		"8. The URL for your instance of Posit Connect (optional)\n\n" +
 		"Please confirm that you're ready to install Workbench"
 	prompt := &survey.Confirm{
 		Message: messageText,
@@ -78,4 +79,20 @@ func PromptInstallPrereqs() (bool, error) {
 	log.Info(messageText)
 	log.Info(fmt.Sprintf("%v", name))
 	return name, nil
+}
+
+// PromptUserAccount prompts the user for the name of a local Linux user account to use for verifying the installation
+func PromptUserAccount() (string, error) {
+	target := ""
+	messageText := "Enter a non-root local Linux account username to use for testing the Workbench installation:"
+	prompt := &survey.Input{
+		Message: messageText,
+	}
+	err := survey.AskOne(prompt, &target)
+	if err != nil {
+		return "", fmt.Errorf("issue prompting for a local user account: %w", err)
+	}
+	log.Info(messageText)
+	log.Info(target)
+	return target, nil
 }

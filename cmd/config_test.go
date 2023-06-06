@@ -35,19 +35,19 @@ func TestConfigParamsValidate(t *testing.T) {
 			flags:       configOpts{certPath: "cert.crt"},
 			expectError: "the key-path flag is required for ssl",
 		},
-		"ssl argument with cert-path and key-path flags succeeds": {
+		"ssl argument with cert-path and key-path flags fails": {
 			args:        []string{"ssl"},
 			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key"},
-			expectError: "",
+			expectError: "the url flag is required for ssl",
 		},
-		"ssl argument with url flag fails": {
+		"ssl argument with cert-path, key-path and url flags succeeds": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "https://www.packagemanager.rstudio.com"},
-			expectError: "the url flag is only valid for repo and connect-url",
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com"},
+			expectError: "",
 		},
 		"ssl argument with source flag fails": {
 			args:        []string{"ssl"},
-			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", source: "cran"},
+			flags:       configOpts{certPath: "cert.crt", keyPath: "cert.key", url: "myserverurl.com", source: "cran"},
 			expectError: "the source flag is only valid for repo",
 		},
 		// repo argument tests

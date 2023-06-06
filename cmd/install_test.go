@@ -6,6 +6,7 @@ import (
 
 	"github.com/sol-eng/wbi/internal/languages"
 	"github.com/sol-eng/wbi/internal/operatingsystem"
+	"github.com/sol-eng/wbi/internal/quarto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,6 +25,10 @@ func TestInstallParamsValidate(t *testing.T) {
 	validPythonVersions, err := languages.RetrieveValidPythonVersions(osType)
 	if err != nil {
 		t.Fatalf("failed to retrieve valid Python versions: %v", err)
+	}
+	validQuartoVersions, err := quarto.RetrieveValidQuartoVersions()
+	if err != nil {
+		t.Fatalf("failed to retrieve valid Quarto versions: %v", err)
 	}
 
 	tests := map[string]struct {
@@ -153,6 +158,62 @@ func TestInstallParamsValidate(t *testing.T) {
 			args:        []string{"python"},
 			flags:       installOpts{path: "/opt/python/3.6.1/bin/python"},
 			expectError: "the path flag is only supported for jupyter",
+		},
+		// quarto argument tests
+		"quarto argument only succeeds": {
+			args:        []string{"quarto"},
+			flags:       installOpts{},
+			expectError: "",
+		},
+		"quarto argument with a symlink flag succeeds": {
+			args:        []string{"quarto"},
+			flags:       installOpts{symlink: true},
+			expectError: "",
+		},
+		"quarto argument with a valid quarto version and a symlink flag succeeds": {
+			args:        []string{"quarto"},
+			flags:       installOpts{symlink: true, versions: validQuartoVersions[0:1]},
+			expectError: "",
+		},
+		"quarto argument with an invalid quarto version and a symlink flag fails": {
+			args:        []string{"quarto"},
+			flags:       installOpts{symlink: true, versions: []string{"0.6.1"}},
+			expectError: "version 0.6.1 is not a valid Quarto version",
+		},
+		"quarto argument with single valid version flag succeeds": {
+			args:        []string{"quarto"},
+			flags:       installOpts{versions: validQuartoVersions[0:1]},
+			expectError: "",
+		},
+		"quarto argument with single invalid version flag fails": {
+			args:        []string{"quarto"},
+			flags:       installOpts{versions: []string{"0.6.1"}},
+			expectError: "version 0.6.1 is not a valid Quarto version",
+		},
+		"quarto argument with multiple valid version flags succeeds": {
+			args:        []string{"quarto"},
+			flags:       installOpts{versions: validQuartoVersions[0:2]},
+			expectError: "",
+		},
+		"quarto argument with multiple invalid version flags fails": {
+			args:        []string{"quarto"},
+			flags:       installOpts{versions: []string{"0.6.1", "0.2.2"}},
+			expectError: "version 0.6.1 is not a valid Quarto version",
+		},
+		"quarto argument with one valid and one invalid version flags fails": {
+			args:        []string{"quarto"},
+			flags:       installOpts{versions: []string{validQuartoVersions[0], "0.2.2"}},
+			expectError: "version 0.2.2 is not a valid Quarto version",
+		},
+		"quarto argument with path flag fails": {
+			args:        []string{"quarto"},
+			flags:       installOpts{path: "/opt/python/3.6.1/bin/python"},
+			expectError: "the path flag is only supported for jupyter",
+		},
+		"quarto argument with addToPATH flag fails": {
+			args:        []string{"quarto"},
+			flags:       installOpts{addToPATH: true},
+			expectError: "the add-to-path flag is only supported for python",
 		},
 		// Workbench argument tests
 		"workbench argument only succeeds": {
