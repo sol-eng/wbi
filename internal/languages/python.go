@@ -422,8 +422,8 @@ func DownloadAndInstallPython(pythonVersion string, osType config.OperatingSyste
 	if err != nil {
 		return fmt.Errorf("RetrieveInstallCommand: %w", err)
 	}
-	cmdlog.Info("curl -O " + installerInfo.URL + "\n")
-	cmdlog.Info(installCommand + "\n")
+	cmdlog.Info("curl -O " + installerInfo.URL)
+	cmdlog.Info(installCommand)
 	// Upgrade pip, setuptools, and wheel
 	err = UpgradePythonTools(pythonVersion)
 	if err != nil {

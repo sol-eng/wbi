@@ -33,7 +33,7 @@ func RunCommand(command string, displayCommand bool, delay time.Duration, save b
 		return fmt.Errorf("issue running the command '%s': %w", command, err)
 	}
 	if save {
-		cmdlog.Info(command + "\n")
+		cmdlog.Info(command)
 	}
 	if len(outBuf.String()) > 0 {
 		log.Info(outBuf.String())
@@ -61,7 +61,7 @@ func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.
 		return "", fmt.Errorf("issue running the command '%s': %w", command, err)
 	}
 	if save {
-		cmdlog.Info(command + "\n")
+		cmdlog.Info(command)
 	}
 	log.Info(string(out))
 

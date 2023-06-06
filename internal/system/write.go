@@ -24,7 +24,7 @@ func WriteStrings(lines []string, filepath string, perm fs.FileMode, save bool) 
 			return fmt.Errorf("failed to write line: %w", err)
 		}
 		if save {
-			cmdlog.Info("echo \"" + data + "\" " + ">> " + filepath + "\n")
+			cmdlog.Info("echo \"" + data + "\" " + ">> " + filepath)
 		}
 	}
 

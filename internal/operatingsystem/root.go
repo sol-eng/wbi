@@ -16,10 +16,10 @@ func CheckIfRunningAsRoot() error {
 	}
 
 	// save to command log
-	cmdlog.Info("if [ \"$(id -u)\" -ne 0 ]; then\n")
-	cmdlog.Info("  echo \"This script must be run as root\" 1>&2\n")
-	cmdlog.Info("  exit 1\n")
-	cmdlog.Info("fi\n")
+	cmdlog.Info("if [ \"$(id -u)\" -ne 0 ]; then")
+	cmdlog.Info("  echo \"This script must be run as root\" 1>&2")
+	cmdlog.Info("  exit 1")
+	cmdlog.Info("fi")
 
 	if strings.TrimSpace(idOutput) != "0" {
 		return errors.New("wbi must be as root, the command 'id -u' did not return 0. Please run wbi with sudo and try again")

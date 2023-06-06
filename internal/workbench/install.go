@@ -83,8 +83,8 @@ func DownloadAndInstallWorkbench(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("RetrieveInstallCommand: %w", err)
 	}
-	cmdlog.Info("curl -O " + installerInfo.URL + "\n")
-	cmdlog.Info(installCommand + "\n")
+	cmdlog.Info("curl -O " + installerInfo.URL)
+	cmdlog.Info(installCommand)
 	return nil
 }
 
