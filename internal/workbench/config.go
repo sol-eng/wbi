@@ -21,7 +21,7 @@ func WriteRepoConfig(url string, source string) error {
 				"CRAN=" + url,
 			}
 
-			err := system.WriteStrings(writeLines, filepath, 0644, true)
+			err := system.WriteStrings(writeLines, filepath, 0644, true, true)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
 			}
@@ -42,7 +42,7 @@ func WriteRepoConfig(url string, source string) error {
 				"index-url=" + url,
 			}
 
-			err = system.WriteStrings(writeLines, filepath, 0644, true)
+			err = system.WriteStrings(writeLines, filepath, 0644, true, true)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
 			}
@@ -107,7 +107,7 @@ func WriteSSLConfig(certPath string, keyPath string, serverURL string) error {
 			"ssl-certificate-key=" + keyPath,
 		}
 
-		err = system.WriteStrings(writeLines, filepath, 0644, true)
+		err = system.WriteStrings(writeLines, filepath, 0644, true, true)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
@@ -132,7 +132,7 @@ func WriteConnectURLConfig(url string) error {
 			"default-rsconnect-server=" + url,
 		}
 
-		err = system.WriteStrings(writeLines, filepath, 0644, true)
+		err = system.WriteStrings(writeLines, filepath, 0644, true, true)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}
@@ -155,7 +155,7 @@ func WriteJupyterConfig(jupyterPath string) error {
 		"jupyter-exe=" + jupyterPath,
 	}
 
-	err = system.WriteStrings(writeLines, filepath, 0644, true)
+	err = system.WriteStrings(writeLines, filepath, 0644, true, true)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}
