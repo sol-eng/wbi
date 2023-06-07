@@ -53,13 +53,17 @@ func DownloadAndInstallQuarto(quartoVersion string, osType config.OperatingSyste
 	if err != nil {
 		return fmt.Errorf("DownloadFileQuarto: %w", err)
 	}
-	// save download to command log
-	cmdlog.Info("curl -O " + quartoURL)
 	// Install Quarto
 	err = installQuarto(installerPath, osType, quartoVersion, true)
 	if err != nil {
 		return fmt.Errorf("InstallQuarto: %w", err)
 	}
+	// save to command log
+	quartoPath := fmt.Sprintf("/opt/quarto/%s", quartoVersion)
+	cmdlog.Info("curl -o quarto.tar.gz -L " + quartoURL)
+	cmdlog.Info("mkdir -p " + quartoPath)
+	cmdlog.Info(fmt.Sprintf(`tar -zxvf quarto.tar.gz -C "%s" --strip-components=1`, quartoPath))
+	cmdlog.Info("rm quarto.tar.gz")
 	return nil
 }
 
@@ -120,12 +124,11 @@ func installQuarto(filepath string, osType config.OperatingSystem, version strin
 		if err != nil {
 			return fmt.Errorf("error creating directory: %w", err)
 		}
-		cmdlog.Info("mkdir -p " + path)
 	}
 
 	installCommand := fmt.Sprintf(`tar -zxvf "%s" -C "%s" --strip-components=1`, filepath, path)
 
-	err := system.RunCommand(installCommand, false, 0, true)
+	err := system.RunCommand(installCommand, false, 0, false)
 	if err != nil {
 		return fmt.Errorf("the command '%s' failed to run: %w", installCommand, err)
 	}
