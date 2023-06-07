@@ -13,6 +13,7 @@ import (
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
+	cmdlog "github.com/sol-eng/wbi/internal/logging"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -52,8 +53,10 @@ func DownloadAndInstallQuarto(quartoVersion string, osType config.OperatingSyste
 	if err != nil {
 		return fmt.Errorf("DownloadFileQuarto: %w", err)
 	}
+	// save download to command log
+	cmdlog.Info("curl -O " + quartoURL)
 	// Install Quarto
-	err = installQuarto(installerPath, osType, quartoVersion)
+	err = installQuarto(installerPath, osType, quartoVersion, true)
 	if err != nil {
 		return fmt.Errorf("InstallQuarto: %w", err)
 	}
@@ -109,7 +112,7 @@ func downloadFileQuarto(url string, version string, osType config.OperatingSyste
 }
 
 // Installs Quarto
-func installQuarto(filepath string, osType config.OperatingSystem, version string) error {
+func installQuarto(filepath string, osType config.OperatingSystem, version string, save bool) error {
 	// create the /opt/quarto directory if it doesn't exist
 	path := fmt.Sprintf("/opt/quarto/%s", version)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -117,6 +120,7 @@ func installQuarto(filepath string, osType config.OperatingSystem, version strin
 		if err != nil {
 			return fmt.Errorf("error creating directory: %w", err)
 		}
+		cmdlog.Info("mkdir -p " + path)
 	}
 
 	installCommand := fmt.Sprintf(`tar -zxvf "%s" -C "%s" --strip-components=1`, filepath, path)
