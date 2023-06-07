@@ -73,28 +73,28 @@ activate
 `wbi activate license`
 
 config
-`wbi config ssl`
-`wbi config repo`
-`wbi config connect-url`
+`wbi config ssl` 
+`wbi config repo` 
+`wbi config connect-url` 
 
 install
-`wbi install r`
-`wbi install python`
-`wbi install quarto`
-`wbi install workbench`
-`wbi install prodrivers`
-`wbi install jupyter`
+`wbi install r` 
+`wbi install python` 
+`wbi install quarto` 
+`wbi install workbench` 
+`wbi install prodrivers` 
+`wbi install jupyter` 
 
 scan
-`wbi scan r`
-`wbi scan python`
+`wbi scan r` 
+`wbi scan python` 
 
 verify
-`wbi verify packagemanager`
-`wbi verify connect-url`
-`wbi verify workbench`
-`wbi verify ssl`
-`wbi verify license`
+`wbi verify packagemanager` 
+`wbi verify connect-url` 
+`wbi verify workbench` 
+`wbi verify ssl` 
+`wbi verify license` 
 
 ### Command Log
 
