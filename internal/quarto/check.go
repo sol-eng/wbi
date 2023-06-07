@@ -11,7 +11,7 @@ import (
 func ScanForBundledQuartoVersion() (string, error) {
 	quartoPath := "/usr/lib/rstudio-server/bin/quarto/bin/quarto"
 	versionCommand := quartoPath + " --version"
-	quartoVersion, err := system.RunCommandAndCaptureOutput(versionCommand, false, 0)
+	quartoVersion, err := system.RunCommandAndCaptureOutput(versionCommand, false, 0, false)
 	if err != nil {
 		return "", fmt.Errorf("issue finding Quarto version: %w", err)
 	}

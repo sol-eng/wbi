@@ -121,7 +121,7 @@ func installQuarto(filepath string, osType config.OperatingSystem, version strin
 
 	installCommand := fmt.Sprintf(`tar -zxvf "%s" -C "%s" --strip-components=1`, filepath, path)
 
-	err := system.RunCommand(installCommand, false, 0)
+	err := system.RunCommand(installCommand, false, 0, true)
 	if err != nil {
 		return fmt.Errorf("the command '%s' failed to run: %w", installCommand, err)
 	}
@@ -155,7 +155,7 @@ func promptAndSetQuartoSymlink(quartoPaths []string) error {
 // setQuartoSymlinks sets the Quarto symlink
 func setQuartoSymlinks(quartoPath string, display bool) error {
 	quartoCommand := "ln -s " + quartoPath + " /usr/local/bin/quarto"
-	err := system.RunCommand(quartoCommand, display, 0)
+	err := system.RunCommand(quartoCommand, display, 0, true)
 	if err != nil {
 		return fmt.Errorf("error setting Quarto symlink with the command '%s': %w", quartoCommand, err)
 	}
