@@ -69,17 +69,17 @@ The following steps are valid options: start, prereqs, firewall, security, langu
 
 wbi has individual commands to simplify different parts of the installation and configuration process. The complete list is outlined below. To get more information and examples, please use the `--help` flag (for example, for more information about the `install` command use `wbi install --help`).
 
-activate
+#### activate
 
 `wbi activate license`
 
-config
+#### config
 
 `wbi config ssl`  
 `wbi config repo`  
 `wbi config connect-url`  
 
-install
+#### install
 
 `wbi install r`  
 `wbi install python`  
@@ -88,12 +88,12 @@ install
 `wbi install prodrivers`  
 `wbi install jupyter`  
 
-scan
+#### scan
 
 `wbi scan r`  
 `wbi scan python`
 
-verify
+#### verify
 
 `wbi verify packagemanager`  
 `wbi verify connect-url`  
