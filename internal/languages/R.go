@@ -19,6 +19,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
+	cmdlog "github.com/sol-eng/wbi/internal/logging"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -333,6 +334,14 @@ func DownloadAndInstallR(rVersion string, osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("InstallLanguage: %w", err)
 	}
+	// save to command log
+	installCommand, err := install.RetrieveInstallCommand(installerInfo.Name, osType)
+	if err != nil {
+		return fmt.Errorf("RetrieveInstallCommand: %w", err)
+	}
+	cmdlog.Info("curl -O " + installerInfo.URL)
+	cmdlog.Info(installCommand)
+
 	return nil
 }
 
@@ -397,12 +406,12 @@ func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 // SetRSymlinks sets the R symlinks (both R and Rscript)
 func SetRSymlinks(rPath string) error {
 	rCommand := "ln -s " + rPath + " /usr/local/bin/R"
-	err := system.RunCommand(rCommand, true, 0)
+	err := system.RunCommand(rCommand, true, 0, true)
 	if err != nil {
 		return fmt.Errorf("error setting R symlink with the command '%s': %w", rCommand, err)
 	}
 	rScriptCommand := "ln -s " + rPath + "script /usr/local/bin/Rscript"
-	err = system.RunCommand(rScriptCommand, true, 0)
+	err = system.RunCommand(rScriptCommand, true, 0, true)
 	if err != nil {
 		return fmt.Errorf("error setting Rscript symlink with the command '%s': %w", rScriptCommand, err)
 	}

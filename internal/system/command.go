@@ -9,10 +9,11 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	cmdlog "github.com/sol-eng/wbi/internal/logging"
 )
 
 // Runs a command in the terminal and streams the output
-func RunCommand(command string, displayCommand bool, delay time.Duration) error {
+func RunCommand(command string, displayCommand bool, delay time.Duration, save bool) error {
 	if displayCommand {
 		PrintAndLogInfo("Running command: " + command)
 	}
@@ -31,6 +32,9 @@ func RunCommand(command string, displayCommand bool, delay time.Duration) error 
 	if err != nil {
 		return fmt.Errorf("issue running the command '%s': %w", command, err)
 	}
+	if save {
+		cmdlog.Info(command)
+	}
 	if len(outBuf.String()) > 0 {
 		log.Info(outBuf.String())
 	}
@@ -42,7 +46,7 @@ func RunCommand(command string, displayCommand bool, delay time.Duration) error 
 }
 
 // Runs a command in the terminal and return stdout/stderr as seperate strings
-func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.Duration) (string, error) {
+func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.Duration, save bool) (string, error) {
 	if displayCommand {
 		PrintAndLogInfo("Running command: " + command)
 	}
@@ -55,6 +59,9 @@ func RunCommandAndCaptureOutput(command string, displayCommand bool, delay time.
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("issue running the command '%s': %w", command, err)
+	}
+	if save {
+		cmdlog.Info(command)
 	}
 	log.Info(string(out))
 

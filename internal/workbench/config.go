@@ -42,7 +42,7 @@ func WriteRepoConfig(url string, source string) error {
 				"index-url=" + url,
 			}
 
-			err := system.WriteStrings(writeLines, filepath, 0644, true)
+			err = system.WriteStrings(writeLines, filepath, 0644, true)
 			if err != nil {
 				return fmt.Errorf("failed to write config: %w", err)
 			}
@@ -132,7 +132,7 @@ func WriteConnectURLConfig(url string) error {
 			"default-rsconnect-server=" + url,
 		}
 
-		err := system.WriteStrings(writeLines, filepath, 0644, true)
+		err = system.WriteStrings(writeLines, filepath, 0644, true)
 		if err != nil {
 			return fmt.Errorf("failed to write config: %w", err)
 		}

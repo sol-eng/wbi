@@ -20,7 +20,7 @@ func StatusRStudioServerAndLauncher() error {
 }
 
 func StatusRStudioServer() error {
-	status, err := system.RunCommandAndCaptureOutput("rstudio-server status | cat", true, 1)
+	status, err := system.RunCommandAndCaptureOutput("rstudio-server status | cat", true, 1, false)
 	if err != nil {
 		return fmt.Errorf("issue running status for rstudio-server: %w", err)
 	}
@@ -36,7 +36,7 @@ func StatusRStudioServer() error {
 }
 
 func StatusRStudioLauncher() error {
-	status, err := system.RunCommandAndCaptureOutput("rstudio-launcher status | cat", true, 1)
+	status, err := system.RunCommandAndCaptureOutput("rstudio-launcher status | cat", true, 1, false)
 	if err != nil {
 		return fmt.Errorf("issue running status for rstudio-launcher with the command 'rstudio-launcher status | cat': %w", err)
 	}

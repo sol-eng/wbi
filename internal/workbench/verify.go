@@ -29,7 +29,7 @@ func VerifyInstallation(username string) error {
 	}
 	// run verify-installation
 	verifyCommand := "rstudio-server verify-installation  --verify-user=" + username
-	err = system.RunCommand(verifyCommand, true, 1)
+	err = system.RunCommand(verifyCommand, true, 1, false)
 	if err != nil {
 		return fmt.Errorf("issue running verify-installation command '%s': %w", verifyCommand, err)
 	}

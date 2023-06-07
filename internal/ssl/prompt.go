@@ -96,7 +96,7 @@ func PromptAndVerifySSL(osType config.OperatingSystem) (string, string, error) {
 				return certPath, keyPath, fmt.Errorf("failure while trying to trust the SSL cert: %w", err)
 			}
 			//re-verify certificate via Bash, because SystemCertPool isn't refreshed in this context
-			output, err := system.RunCommandAndCaptureOutput("openssl verify "+certPath, true, 1)
+			output, err := system.RunCommandAndCaptureOutput("openssl verify "+certPath, true, 1, false)
 			if err != nil {
 				return certPath, keyPath, fmt.Errorf("failure while trying to re-verify server trust of the SSL cert: %w", err)
 			}

@@ -18,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
+	cmdlog "github.com/sol-eng/wbi/internal/logging"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -416,6 +417,13 @@ func DownloadAndInstallPython(pythonVersion string, osType config.OperatingSyste
 	if err != nil {
 		return fmt.Errorf("InstallLanguage: %w", err)
 	}
+	// save to command log
+	installCommand, err := install.RetrieveInstallCommand(installerInfo.Name, osType)
+	if err != nil {
+		return fmt.Errorf("RetrieveInstallCommand: %w", err)
+	}
+	cmdlog.Info("curl -O " + installerInfo.URL)
+	cmdlog.Info(installCommand)
 	// Upgrade pip, setuptools, and wheel
 	err = UpgradePythonTools(pythonVersion)
 	if err != nil {
@@ -427,7 +435,7 @@ func DownloadAndInstallPython(pythonVersion string, osType config.OperatingSyste
 
 func UpgradePythonTools(pythonVersion string) error {
 	upgradeCommand := "PIP_ROOT_USER_ACTION=ignore /opt/python/" + pythonVersion + "/bin/pip install --upgrade --no-warn-script-location --disable-pip-version-check pip setuptools wheel"
-	err := system.RunCommand(upgradeCommand, true, 2)
+	err := system.RunCommand(upgradeCommand, true, 2, true)
 	if err != nil {
 		return fmt.Errorf("issue upgrading pip, setuptools and wheel for Python with the command '%s': %w", upgradeCommand, err)
 	}

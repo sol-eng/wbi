@@ -25,7 +25,7 @@ func InstallJupyter(pythonPath string) error {
 // Install various Jupyter related packages from PyPI
 func InstallJupyterAndComponents(pythonPath string) error {
 	licenseCommand := "PIP_ROOT_USER_ACTION=ignore " + pythonPath + " -m pip install --no-warn-script-location --disable-pip-version-check jupyter jupyterlab rsp_jupyter rsconnect_jupyter workbench_jupyterlab"
-	err := system.RunCommand(licenseCommand, true, 2)
+	err := system.RunCommand(licenseCommand, true, 2, true)
 	if err != nil {
 		return fmt.Errorf("issue installing Jupyter with the command '%s': %w", licenseCommand, err)
 	}
@@ -52,7 +52,7 @@ func InstallAndEnableJupyterNotebookExtensions(pythonPath string) error {
 
 	for _, command := range commands {
 		installCommand := pythonPathShort + "/" + command
-		err := system.RunCommand(installCommand, true, 0)
+		err := system.RunCommand(installCommand, true, 0, true)
 		if err != nil {
 			return fmt.Errorf("issue installing Jupyter notebook extension with the command '%s': %w", installCommand, err)
 		}
@@ -87,7 +87,7 @@ func RegisterJupyterKernels(additionalPythonPaths []string) error {
 	for _, pythonPath := range additionalPythonPaths {
 		// find the version
 		versionCommand := pythonPath + " --version"
-		pythonVersion, err := system.RunCommandAndCaptureOutput(versionCommand, false, 0)
+		pythonVersion, err := system.RunCommandAndCaptureOutput(versionCommand, false, 0, false)
 		if err != nil {
 			return fmt.Errorf("issue finding python version: %w", err)
 		}
@@ -112,7 +112,7 @@ func installIpykernel(pythonPath string) error {
 	}
 
 	installCommand := "PIP_ROOT_USER_ACTION=ignore " + basePath + "/pip install --no-warn-script-location --disable-pip-version-check ipykernel"
-	err = system.RunCommand(installCommand, true, 1)
+	err = system.RunCommand(installCommand, true, 1, true)
 	if err != nil {
 		return fmt.Errorf("issue installing ipykernel with the command '%s': %w", installCommand, err)
 	}
@@ -121,10 +121,11 @@ func installIpykernel(pythonPath string) error {
 
 func registerKernel(pythonPath string, pythonVersion string) error {
 	pythonVersionClean := strings.Replace(pythonVersion, "Python ", "", 1)
+	pythonVersionNoBreak := strings.Replace(pythonVersion, "\n", "", -1)
 
-	installCommand := pythonPath + " -m ipykernel install --name py" + strings.TrimSpace(pythonVersionClean) + " --display-name \"" + pythonVersion + "\""
+	installCommand := pythonPath + " -m ipykernel install --name py" + strings.TrimSpace(pythonVersionClean) + " --display-name" + " \"" + pythonVersionNoBreak + "\""
 
-	err := system.RunCommand(installCommand, true, 0)
+	err := system.RunCommand(installCommand, true, 0, true)
 	if err != nil {
 		return fmt.Errorf("issue registering the Python kernel with the command '%s': %w", installCommand, err)
 	}

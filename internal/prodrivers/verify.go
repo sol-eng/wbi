@@ -11,7 +11,7 @@ import (
 func CheckExistingProDrivers() (bool, error) {
 	// check if /etc/opt/rstudio/odbcinst.ini exists
 	if _, err := os.Stat("/etc/odbcinst.ini"); err == nil {
-		odbciniOutput, err := system.RunCommandAndCaptureOutput("cat /etc/odbcinst.ini", false, 0)
+		odbciniOutput, err := system.RunCommandAndCaptureOutput("cat /etc/odbcinst.ini", false, 0, false)
 		if err != nil {
 			return false, fmt.Errorf("issue checking for /etc/odbcinst.ini: %w", err)
 		}
