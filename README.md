@@ -2,7 +2,7 @@
 
 ## Getting started
 
-wbi is a CLI tool aimed at streamlining the installation and configuration of Posit Workbench. Please read through the assumptions below to ensure that your target architecture matches the current capabilities of wbi. Also note wbi requires to be run as root.
+wbi is a CLI tool aimed at streamlining the installation and configuration of Posit Workbench. Please read through the assumptions below to ensure that your target architecture matches the current capabilities of wbi. Also, note wbi requires to be run as root.
 
 ## Installation
 
@@ -36,23 +36,6 @@ sudo wbi setup
 
 Visit the [release page](https://github.com/sol-eng/wbi/releases) to find install instructions for the latest release.
 
-
-## Usage
-
-### Interactive Prompts
-
-To get started run the setup command as root and follow the prompts:
-```
-sudo wbi setup
-```
-
-You can also pass the `--step` flag to begin at a certain spot in the interactive flow. For example to start at the Workbench installation step:
-```
-sudo wbi setup --step workbench
-```
-
-The following steps are valid options: start, prereqs, firewall, security, languages, r, python, workbench, license, quarto, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.
-
 ## Assumptions
 - Single server
 - SQLite database
@@ -66,41 +49,77 @@ The following steps are valid options: start, prereqs, firewall, security, langu
 - Ubuntu 20.04
 - Ubuntu 18.04
 
-## Functionality
+## Usage
 
-### R and Python installations
-- Scan for existing R installations
-- Install one or more R version from binary
-- Symlinks R and Rscript
-- Scan for existing Python installations
-- Install one or more Python version from binary
-- Adds a version of Python to PATH
+### Interactive Prompts
 
-### Posit Workbench installation
-- Scan for an existing Workbench installation
-- Install Workbench
+To get started, run the setup command as root and follow the prompts:
+```
+sudo wbi setup
+```
 
-### Licensing
-- Detect if a license is already activated
-- Activate a new license
+You can also pass the `--step` flag to begin at a certain spot in the interactive flow. For example, to start at the Workbench installation step:
+```
+sudo wbi setup --step workbench
+```
 
-### Jupyter
-- Install Jupyter & extensions into a specified Python location
-- Enable Jupyter Notebook extensions
+The following steps are valid options: start, prereqs, firewall, security, languages, r, python, workbench, license, quarto, jupyter, prodrivers, ssl, packagemanager, connect, restart, status, verify.
 
-### Posit Pro Drivers installation
-- Scan for an existing Pro Drivers installation
-- Install Posit Pro Drivers
+### Individual Commands
 
-### SSL
-- Record and specify where to put cert and key paths
+wbi has individual commands to simplify different parts of the installation and configuration process. The complete list is outlined below. To get more information and examples, please use the `--help` flag (for example, for more information about the `install` command use `wbi install --help`).
 
-### Posit Package Manager integration
-- Record, validate, and specify config for Posit Package Manger URL and R/Python repos
-- Automatically generate, validate and specify config for Posit Public Package Manager
+#### activate
 
-### Posit Connect integration
-- Record, validate and specify config for Posit Connect URL
+`wbi activate license`
 
-### Configuration
-- Write changes to the correct config files
+#### config
+
+`wbi config ssl`  
+`wbi config repo`  
+`wbi config connect-url`  
+
+#### install
+
+`wbi install r`  
+`wbi install python`  
+`wbi install quarto`  
+`wbi install workbench`  
+`wbi install prodrivers`  
+`wbi install jupyter`  
+
+#### scan
+
+`wbi scan r`  
+`wbi scan python`
+
+#### verify
+
+`wbi verify packagemanager`  
+`wbi verify connect-url`  
+`wbi verify workbench`  
+`wbi verify ssl`  
+`wbi verify license`  
+
+### Command Log
+
+A timestamped bash script will be generated in the same directory as `wbi` containing a record of each command executed. This is especially helpful if you wish to repeat the same setup process on another machine by running this script. Please note that this script is only to be used on an identical machine as `wbi` was run on (same OS, users, etc.)
+
+## Support
+
+**IMPORTANT:**
+
+wbi is provided as a convenience to Posit customers. If you have
+questions about this tool, you can ask them in the
+[issues](https://github.com/sol-eng/wbi/issues/new) in the repository
+or to your support representative, who will route them appropriately.
+
+Bugs or feature requests should be opened in an [issue](https://github.com/sol-eng/wbi/issues/new).
+
+### Logs
+
+wbi will output detailed log information in a timestamped file in the same directory as `wbi`. If you are encountering issues with using `wbi` please refer to the logs and if reaching out for help, include the logs (after removing any sensitive data).
+
+## License
+
+[MIT License](./LICENSE)
