@@ -24,7 +24,7 @@ type InstallerInfo struct {
 
 // OperatingSystems contains the installer information for each supported operating system
 type OperatingSystems struct {
-	Bionic  InstallerInfo `json:"bionic"`
+	Focal   InstallerInfo `json:"focal"`
 	Jammy   InstallerInfo `json:"jammy"`
 	Redhat7 InstallerInfo `json:"redhat7_64"`
 	Redhat8 InstallerInfo `json:"rhel8"`
@@ -120,7 +120,7 @@ func RetrieveInstallCommandForWorkbench(filepath string, osType config.Operating
 func (r *RStudio) GetInstallerInfo(osType config.OperatingSystem) (InstallerInfo, error) {
 	switch osType {
 	case config.Ubuntu18, config.Ubuntu20:
-		return r.Rstudio.Pro.Stable.Server.Installer.Bionic, nil
+		return r.Rstudio.Pro.Stable.Server.Installer.Focal, nil
 	case config.Ubuntu22:
 		return r.Rstudio.Pro.Stable.Server.Installer.Jammy, nil
 	case config.Redhat7:
