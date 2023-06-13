@@ -13,6 +13,7 @@ import (
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
+	cmdlog "github.com/sol-eng/wbi/internal/logging"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -53,10 +54,16 @@ func DownloadAndInstallQuarto(quartoVersion string, osType config.OperatingSyste
 		return fmt.Errorf("DownloadFileQuarto: %w", err)
 	}
 	// Install Quarto
-	err = installQuarto(installerPath, osType, quartoVersion)
+	err = installQuarto(installerPath, osType, quartoVersion, true)
 	if err != nil {
 		return fmt.Errorf("InstallQuarto: %w", err)
 	}
+	// save to command log
+	quartoPath := fmt.Sprintf("/opt/quarto/%s", quartoVersion)
+	cmdlog.Info("curl -o quarto.tar.gz -L " + quartoURL)
+	cmdlog.Info("mkdir -p " + quartoPath)
+	cmdlog.Info(fmt.Sprintf(`tar -zxvf quarto.tar.gz -C "%s" --strip-components=1`, quartoPath))
+	cmdlog.Info("rm quarto.tar.gz")
 	return nil
 }
 
@@ -109,7 +116,7 @@ func downloadFileQuarto(url string, version string, osType config.OperatingSyste
 }
 
 // Installs Quarto
-func installQuarto(filepath string, osType config.OperatingSystem, version string) error {
+func installQuarto(filepath string, osType config.OperatingSystem, version string, save bool) error {
 	// create the /opt/quarto directory if it doesn't exist
 	path := fmt.Sprintf("/opt/quarto/%s", version)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -121,7 +128,7 @@ func installQuarto(filepath string, osType config.OperatingSystem, version strin
 
 	installCommand := fmt.Sprintf(`tar -zxvf "%s" -C "%s" --strip-components=1`, filepath, path)
 
-	err := system.RunCommand(installCommand, false, 0, true)
+	err := system.RunCommand(installCommand, false, 0, false)
 	if err != nil {
 		return fmt.Errorf("the command '%s' failed to run: %w", installCommand, err)
 	}
