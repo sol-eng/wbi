@@ -2,31 +2,103 @@ package quarto
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/samber/lo"
 	"io"
 	"net/http"
 	"os"
+	"sort"
+	"strconv"
+	"sync"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 	cmdlog "github.com/sol-eng/wbi/internal/logging"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
+type Assets []struct {
+	BrowserDownloadURL string `json:"browser_download_url"`
+}
+type Quarto []struct {
+	Assets     Assets `json:"assets"`
+	Name       string `json:"name"`
+	Prerelease bool   `json:"prerelease"`
+}
+
+type result struct {
+	index int
+	res   http.Response
+	err   error
+}
+
 func RetrieveValidQuartoVersions() ([]string, error) {
-	// TODO automate the retrieving the list of valid versions
-	return []string{"1.3.340", "1.2.475", "1.1.189", "1.0.38"}, nil
+	var availQuartoVersions []string
+	var results []result
+	var quarto Quarto
+	var urls []string
+	for pagenum := 1; pagenum < 5; pagenum++ {
+		urls = append(urls, "https://api.github.com/repos/quarto-dev/quarto-cli/releases?per_page=100&page="+strconv.Itoa(pagenum))
+	}
+	fmt.Println("Appended URLs")
+	wg := sync.WaitGroup{}
+
+	for i, url := range urls {
+		fmt.Println("url loop" + strconv.Itoa(i))
+		wg.Add(1)
+		// start a go routine with the index and url in a closure
+		go func(i int, url string) {
+			fmt.Println("Start go func" + strconv.Itoa(i))
+
+			// send the request and put the response in a result struct
+			// along with the index so we can sort them later along with
+			// any error that might have occurred
+			res, err := http.Get(url)
+			if err != nil {
+				return
+			}
+			result := &result{i, *res, err}
+			results = append(results, *result)
+			fmt.Println("End go func " + strconv.Itoa(i))
+			wg.Done()
+
+		}(i, url)
+
+	}
+
+	wg.Wait()
+
+	// let's sort these results real quick
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].index < results[j].index
+	})
+
+	for _, result := range results {
+
+		err := json.NewDecoder(result.res.Body).Decode(&quarto)
+		if err != nil {
+			return nil, err
+		}
+		for _, release := range quarto {
+			if release.Prerelease == false {
+				availQuartoVersions = append(availQuartoVersions, release.Name)
+			}
+		}
+	}
+	return availQuartoVersions, nil
 }
 
 func ValidateQuartoVersions(quartoVersions []string) error {
+
 	availQuartoVersions, err := RetrieveValidQuartoVersions()
 	if err != nil {
 		return fmt.Errorf("error retrieving valid Quarto versions: %w", err)
 	}
+
 	for _, quartoVersion := range quartoVersions {
 		if !lo.Contains(availQuartoVersions, quartoVersion) {
 			return errors.New("version " + quartoVersion + " is not a valid Quarto version")
