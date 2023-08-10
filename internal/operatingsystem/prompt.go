@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 )
@@ -58,8 +59,7 @@ func LinuxSecurityPrompt(osType config.OperatingSystem) (bool, error) {
 }
 
 func PromptInstallPrereqs() (bool, error) {
-	var name bool
-	messageText := "In order to install Workbench from start to finish, you will need the following things\n" +
+	messageText := "In order to install Workbench from start to finish, you will need the following things\n\n" +
 		"1. Internet access for this server\n" +
 		"2. At least one non-root local Linux user account with a home directory\n" +
 		"3. The versions of R, Python and Quarto you would like to install\n" +
@@ -67,32 +67,33 @@ func PromptInstallPrereqs() (bool, error) {
 		"5. Your Workbench license key string in this form: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX\n" +
 		"6. The location on this server of your SSL key and certificate files (optional)\n" +
 		"7. The URL and repo name for your instance of Posit Package Manager (optional)\n" +
-		"8. The URL for your instance of Posit Connect (optional)\n\n" +
-		"Please confirm that you're ready to install Workbench"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+		"8. The URL for your instance of Posit Connect (optional)"
+
+	confirmText := "Please confirm that you're ready to install Workbench"
+
+	pterm.DefaultBasicText.Println(messageText)
+	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 	if err != nil {
-		return false, errors.New("there was an issue with the installation confirmation")
+		return false, errors.New("there was an issue with the prereqs confirmation")
 	}
+
 	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+	log.Info(confirmText)
+	log.Info(fmt.Sprintf("%v", result))
+
+	return result, nil
 }
 
 // PromptUserAccount prompts the user for the name of a local Linux user account to use for verifying the installation
 func PromptUserAccount() (string, error) {
-	target := ""
-	messageText := "Enter a non-root local Linux account username to use for testing the Workbench installation:"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	messageText := "Enter a non-root local Linux account username to use for testing the Workbench installation"
+
+	result, err := pterm.DefaultInteractiveTextInput.WithDefaultText(messageText).Show()
 	if err != nil {
 		return "", fmt.Errorf("issue prompting for a local user account: %w", err)
 	}
+
 	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+	log.Info(result)
+	return result, nil
 }
