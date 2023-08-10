@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
@@ -99,23 +99,25 @@ func CheckPromptAndSetPythonPATH(pythonPaths []string) error {
 
 // PythonLocationPATHPrompt asks users which Python binary they want to add to PATH
 func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
-	// Allow the user to select a version of Python to target
-	target := ""
-	messageText := `Please select a Python binary to add to PATH.`
-	prompt := &survey.Select{
-		Message: messageText,
-		Options: pythonPaths,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Select a Python binary to add to PATH"
+
+	selectOptions := pythonPaths
+
+	result, err := pterm.DefaultInteractiveSelect.
+		WithDefaultText(promptText).
+		WithDefaultOption(selectOptions[0]).
+		WithOptions(selectOptions).
+		Show()
 	if err != nil {
 		return "", errors.New("there was an issue with the Python selection prompt for adding to PATH")
 	}
-	if target == "" {
-		return target, errors.New("no Python binary selected to add to PATH")
+	if result == "" {
+		return result, errors.New("no Python binary selected to add to PATH")
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	log.Info(promptText)
+	log.Info(result)
+	return result, nil
 }
 
 // PromptAndInstallPython Prompts user if they want to install Python and does the installation
@@ -278,34 +280,30 @@ func sortOptPythonVersionPaths(versionPaths []string) ([]string, error) {
 
 // PythonInstallPrompt Prompt users if they would like to install Python versions
 func PythonInstallPrompt() (bool, error) {
-	name := true
-	messageText := "Would you like to install version(s) of Python?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to install version(s) of Python?"
+
+	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 	if err != nil {
 		return false, errors.New("there was an issue with the Python install prompt")
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	log.Info(confirmText)
+	log.Info(fmt.Sprintf("%v", result))
+	return result, nil
 }
 
 // PythonPATHPrompt asks users if they would like to set Python PATH
 func PythonPATHPrompt() (bool, error) {
-	name := true
-	messageText := `Would you like to add a Python version to PATH? This is recommended so users can type "python" and "pip" in the terminal to access this specified version of python and associated tools.`
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := `Would you like to add a Python version to PATH? This is recommended so users can type "python" and "pip" in the terminal to access this specified version of python and associated tools`
+
+	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 	if err != nil {
 		return false, errors.New("there was an issue with the Python set PATH prompt")
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	log.Info(confirmText)
+	log.Info(fmt.Sprintf("%v", result))
+	return result, nil
 }
 
 func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error) {
@@ -377,27 +375,23 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 
 // PythonSelectVersionsPrompt Prompt asking users which Python version(s) they would like to install
 func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, error) {
-	messageText := "Which version(s) of Python would you like to install?"
-	var qs = []*survey.Question{
-		{
-			Name: "pythonVersions",
-			Prompt: &survey.MultiSelect{
-				Message: messageText,
-				Options: availablePythonVersions,
-				Default: availablePythonVersions[0],
-			},
-		},
-	}
-	pythonVersionsAnswers := struct {
-		PythonVersions []string `survey:"pythonVersions"`
-	}{}
-	err := survey.Ask(qs, &pythonVersionsAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
+	promptText := "Which version(s) of Python would you like to install"
+
+	selectOptions := availablePythonVersions
+
+	result, err := pterm.DefaultInteractiveMultiselect.
+		WithDefaultText(promptText).
+		WithDefaultOptions([]string{selectOptions[0]}).
+		WithOptions(selectOptions).
+		WithFilter(false).
+		Show()
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the Python versions selection prompt")
 	}
-	log.Info(messageText)
-	log.Info(strings.Join(pythonVersionsAnswers.PythonVersions, ", "))
-	return pythonVersionsAnswers.PythonVersions, nil
+
+	log.Info(promptText)
+	log.Info(strings.Join(result, ", "))
+	return result, nil
 }
 
 // DownloadAndInstallPython Downloads the Python installer, and installs Python
