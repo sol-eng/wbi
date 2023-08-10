@@ -4,58 +4,60 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 )
 
 func PromptCloud() (bool, error) {
-	name := false
-	messageText := "Is your instance of Workbench running in a public cloud(AWS, Azure, GCP, etc)?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Is your instance of Workbench running in a public cloud(AWS, Azure, GCP, etc)?"
+
+	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 	if err != nil {
-		return false, errors.New("there was an issue with determining workbench server location")
+		return false, errors.New("there was an issue with the cloud prompt")
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	log.Info(confirmText)
+	log.Info(fmt.Sprintf("%v", result))
+	return result, nil
 }
 
 func FirewallPrompt() (bool, error) {
-	name := true
-	messageText := "Posit products are often blocked by local server firewalls, most organizations\n " + "do not rely on local firewalls for server security. If your organization controls access\n " + "to this server with an external firewall, we recommend disabling the local firewall.\n" + " Would you like to disable the local firewall?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	messageText := "Posit products are often blocked by local server firewalls, most organizations do not rely on local firewalls for server security. If your organization controls access to this server with an external firewall, we recommend disabling the local firewall."
+
+	confirmText := "Would you like to disable the local firewall?"
+
+	pterm.DefaultParagraph.Println(messageText)
+	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 	if err != nil {
 		return false, errors.New("there was an issue with the disable local firewall prompt")
 	}
+
 	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+	log.Info(confirmText)
+	log.Info(fmt.Sprintf("%v", result))
+	return result, nil
 }
 
 func LinuxSecurityPrompt(osType config.OperatingSystem) (bool, error) {
-	name := false
+	result := false
 	if osType == config.Redhat7 || osType == config.Redhat8 || osType == config.Redhat9 {
-		name = true
-		messageText := "SELinux is often enabled by default on Redhat Linux distributions. \nWe recommend that SELinux be" + " disabled, unless you and your organization have \nspecific security requirements that require its use.\n" + "Would you like to disable SELinux on this server?"
-		prompt := &survey.Confirm{
-			Message: messageText,
-		}
-		err := survey.AskOne(prompt, &name)
+
+		messageText := "SELinux is often enabled by default on Redhat Linux distributions. We recommend that SELinux be disabled, unless you and your organization have specific security requirements that require its use."
+
+		confirmText := "Would you like to disable SELinux on this server?"
+
+		pterm.DefaultParagraph.Println(messageText)
+		result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 		if err != nil {
-			return false, errors.New("there was an issue with the disable local firewall prompt")
+			return false, errors.New("there was an issue with the SELinux prompt prompt")
 		}
+
 		log.Info(messageText)
-		log.Info(fmt.Sprintf("%v", name))
+		log.Info(confirmText)
+		log.Info(fmt.Sprintf("%v", result))
 	}
-	return name, nil
+	return result, nil
 }
 
 func PromptInstallPrereqs() (bool, error) {
