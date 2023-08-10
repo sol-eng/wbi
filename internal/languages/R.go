@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
@@ -233,18 +233,16 @@ func sortOptRVersionPaths(versionPaths []string) ([]string, error) {
 
 // RInstallPrompt Prompt users if they would like to install R versions
 func RInstallPrompt() (bool, error) {
-	name := true
-	messageText := "Would you like to install version(s) of R?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to install version(s) of R?"
+
+	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 	if err != nil {
 		return false, errors.New("there was an issue with the R install prompt")
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	log.Info(confirmText)
+	log.Info(fmt.Sprintf("%v", result))
+	return result, nil
 }
 
 func RetrieveValidRVersions() ([]string, error) {
@@ -294,27 +292,23 @@ func RetrieveValidRVersions() ([]string, error) {
 
 // RSelectVersionsPrompt Prompt asking users which R version(s) they would like to install
 func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
-	messageText := "Which version(s) of R would you like to install?"
-	var qs = []*survey.Question{
-		{
-			Name: "rversions",
-			Prompt: &survey.MultiSelect{
-				Message: messageText,
-				Options: availableRVersions,
-				Default: availableRVersions[0],
-			},
-		},
-	}
-	rVersionsAnswers := struct {
-		RVersions []string `survey:"rversions"`
-	}{}
-	err := survey.Ask(qs, &rVersionsAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
+	promptText := "Which version(s) of R would you like to install"
+
+	selectOptions := availableRVersions
+
+	result, err := pterm.DefaultInteractiveMultiselect.
+		WithDefaultText(promptText).
+		WithDefaultOptions([]string{selectOptions[0]}).
+		WithOptions(selectOptions).
+		WithFilter(false).
+		Show()
 	if err != nil {
 		return []string{}, errors.New("there was an issue with the R versions selection prompt")
 	}
-	log.Info(messageText)
-	log.Info(strings.Join(rVersionsAnswers.RVersions, ", "))
-	return rVersionsAnswers.RVersions, nil
+
+	log.Info(promptText)
+	log.Info(strings.Join(result, ", "))
+	return result, nil
 }
 
 // DownloadAndInstallR Downloads the R installer, and installs R
@@ -368,39 +362,39 @@ func PromptAndSetRSymlinks(rPaths []string) error {
 
 // RSymlinkPrompt asks users if they would like to set R symlinks
 func RSymlinkPrompt() (bool, error) {
-	name := true
-	messageText := `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal.`
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal`
+
+	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
 	if err != nil {
 		return false, errors.New("there was an issue with the symlink R prompt")
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	log.Info(confirmText)
+	log.Info(fmt.Sprintf("%v", result))
+	return result, nil
 }
 
 // RLocationSymlinksPrompt asks users which R binary they want to symlink
 func RLocationSymlinksPrompt(rPaths []string) (string, error) {
-	// Allow the user to select a version of R to target
-	target := ""
-	messageText := "Select a R binary to symlink:"
-	prompt := &survey.Select{
-		Message: messageText,
-		Options: rPaths,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Select an R binary to symlink"
+
+	selectOptions := rPaths
+
+	result, err := pterm.DefaultInteractiveSelect.
+		WithDefaultText(promptText).
+		WithDefaultOption(selectOptions[0]).
+		WithOptions(selectOptions).
+		Show()
 	if err != nil {
 		return "", errors.New("there was an issue with the R selection prompt for symlinking")
 	}
-	if target == "" {
-		return target, errors.New("no R binary selected to be symlinked")
+	if result == "" {
+		return result, errors.New("no R binary selected to be symlinked")
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	log.Info(promptText)
+	log.Info(result)
+	return result, nil
 }
 
 // SetRSymlinks sets the R symlinks (both R and Rscript)
