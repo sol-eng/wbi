@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
@@ -40,7 +41,9 @@ func newSetup(setupOpts setupOpts) error {
 	}
 
 	if step == "start" {
-		system.PrintAndLogInfo("Welcome to the Workbench Installer!")
+		message := "Welcome to the Workbench Installer!"
+		pterm.DefaultCenter.Println(message)
+		log.Info(message)
 		step = "prereqs"
 	}
 
@@ -309,21 +312,37 @@ func newSetup(setupOpts setupOpts) error {
 	}
 	var serverAccessMessage string
 	if sslEnabled {
-		serverAccessMessage = "To access Workbench in a web browser navigate to https://YOUR_SERVER_URL.com, replacing YOUR_SERVER_URL.com with the actual URL of this server. \n\n"
+		serverAccessMessage = "To access Workbench in a web browser navigate to https://YOUR_SERVER_URL.com, replacing YOUR_SERVER_URL.com with the actual URL of this server."
 	} else {
-		serverAccessMessage = "To access Workbench in a web browser navigate to http://YOUR_SERVER_URL.com:8787 replacing YOUR_SERVER_URL.com with the actual URL of this server. By default Workbench runs on port 8787 when using HTTP, visit the Admin Guide for more information on how to change this: https://docs.posit.co/ide/server-pro/access_and_security/network_port_and_address.html \n\n"
+		serverAccessMessage = "To access Workbench in a web browser navigate to http://YOUR_SERVER_URL.com:8787 replacing YOUR_SERVER_URL.com with the actual URL of this server. By default Workbench runs on port 8787 when using HTTP, visit the Admin Guide for more information on how to change this: https://docs.posit.co/ide/server-pro/access_and_security/network_port_and_address.html"
 	}
 
+	// Final message to be logged
 	finalMessage := "\nThank you for using wbi! \n\n" +
 		"Workbench is now configured using the default PAM authentication method. Users with local Linux accounts and home directories should be able to log in to Workbench. \n\n" +
 		serverAccessMessage +
-		"Workbench integrates with a variety of Authentication types. To learn more about specific integrations, visit the documentation links below:\n" +
+		"\n\nWorkbench integrates with a variety of Authentication types. To learn more about specific integrations, visit the documentation links below:\n" +
 		"For more information on PAM authentication https://docs.posit.co/ide/server-pro/authenticating_users/pam_authentication.html. \n" + "For more information on Active Directory authentication " + adDocURL + ". \n" +
 		"For more information on SAML Single Sign-On authentication https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html. \n" +
 		"For more information on OpenID Connect Single Sign-On authentication https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html. \n" +
 		"For more information on Proxied Authentication https://docs.posit.co/ide/server-pro/authenticating_users/proxied_authentication.html."
 
-	system.PrintAndLogInfo(finalMessage)
+	log.Info(finalMessage)
+
+	// Nicer output to the user
+	pterm.DefaultBasicText.Println("Thank you for using wbi!")
+
+	pterm.DefaultBasicText.Println("Workbench is now configured using the default PAM authentication method. Users with local Linux accounts and home directories should be able to log in to Workbench.")
+
+	pterm.DefaultBasicText.Println(serverAccessMessage)
+
+	pterm.DefaultBasicText.Println("Workbench integrates with a variety of Authentication types. To learn more about specific integrations, visit the documentation links below:")
+
+	pterm.DefaultBasicText.Println("For more information on PAM authentication https://docs.posit.co/ide/server-pro/authenticating_users/pam_authentication.html")
+	pterm.DefaultBasicText.Println("For more information on Active Directory authentication " + adDocURL)
+	pterm.DefaultBasicText.Println("For more information on SAML Single Sign-On authentication https://docs.posit.co/ide/server-pro/authenticating_users/saml_sso.html")
+	pterm.DefaultBasicText.Println("For more information on OpenID Connect Single Sign-On authentication https://docs.posit.co/ide/server-pro/authenticating_users/openid_connect_authentication.html")
+	pterm.DefaultBasicText.Println("For more information on Proxied Authentication https://docs.posit.co/ide/server-pro/authenticating_users/proxied_authentication.html")
 	return nil
 }
 
