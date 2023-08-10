@@ -1,12 +1,11 @@
 package system
 
 import (
-	"fmt"
-
+	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 )
 
 func PrintAndLogInfo(message string) {
-	fmt.Println(message)
+	pterm.DefaultBasicText.Println(message)
 	log.Info(message)
 }
