@@ -9,11 +9,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 	cmdlog "github.com/sol-eng/wbi/internal/logging"
+	"github.com/sol-eng/wbi/internal/prompt"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -171,37 +170,27 @@ func setQuartoSymlinks(quartoPath string, display bool) error {
 
 // quartoLocationSymlinksPrompt asks users which Quarto binary they want to symlink
 func quartoLocationSymlinksPrompt(quartoPaths []string) (string, error) {
-	// Allow the user to select a version of Quarto to target
-	target := ""
 	messageText := "Select a Quarto binary to symlink:"
-	prompt := &survey.Select{
-		Message: messageText,
-		Options: quartoPaths,
-	}
-	err := survey.AskOne(prompt, &target)
+
+	result, err := prompt.PromptSingleSelect(messageText, quartoPaths, quartoPaths[0])
 	if err != nil {
-		return "", errors.New("there was an issue with the Quarto selection prompt for symlinking")
+		return "", fmt.Errorf("issue occured in Quarto selection prompt for symlinking: %w", err)
 	}
-	if target == "" {
-		return target, errors.New("no Quarto binary selected to be symlinked")
+	if result == "" {
+		return result, errors.New("no Quarto binary selected to be symlinked")
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 // quartoSymlinkPrompt asks users if they would like to set the quarto symlink
 func quartoSymlinkPrompt() (bool, error) {
-	name := true
-	messageText := `Would you like to symlink a Quarto version to make it available on PATH? This is recommended so Workbench can default to this version of Quarto in each of the IDEs and users can type "quarto" in the terminal.`
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := `Would you like to symlink a Quarto version to make it available on PATH? This is recommended so Workbench can default to this version of Quarto in each of the IDEs and users can type "quarto" in the terminal.`
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the symlink Quarto prompt")
+		return false, fmt.Errorf("issue occured in Quarto symlink confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }

@@ -1,31 +1,27 @@
 package ssl
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/prompt"
 
-	"github.com/AlecAivazis/survey/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
 // PromptSSL Prompt asking users if they wish to use SSL
 func PromptSSL() (bool, error) {
-	name := false
-	messageText := "Would you like to use SSL?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to use SSL?"
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the SSL prompt")
+		return false, fmt.Errorf("issue occured in SSL confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }
 
 func PromptAndVerifySSL(osType config.OperatingSystem) (string, string, error) {
@@ -112,103 +108,83 @@ func PromptAndVerifySSL(osType config.OperatingSystem) (string, string, error) {
 
 // PromptSSLFilePath Prompt asking users for a filepath to their SSL cert
 func PromptSSLFilePath() (string, error) {
-	target := ""
-	messageText := "Filepath to SSL certificate:"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Filepath to SSL certificate:"
+
+	result, err := prompt.PromptText(promptText)
 	if err != nil {
-		return "", errors.New("there was an issue with the SSL cert path prompt")
+		return "", fmt.Errorf("issue occured in SSL cert path prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 // PromptServerURL asks users for the server URL
 func PromptServerURL() (string, error) {
-	target := ""
-	messageText := "Server URL that end users will use to access the Workbench web interface (for example, https://workbench.mydomainname.com):"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Server URL that end users will use to access the Workbench web interface (for example, https://workbench.mydomainname.com):"
+
+	result, err := prompt.PromptText(promptText)
 	if err != nil {
-		return "", errors.New("there was an issue with the server URL prompt")
+		return "", fmt.Errorf("issue occured in server URL prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 // PromptSSLKeyFilePath Prompt asking users for a filepath to their SSL cert key
 func PromptSSLKeyFilePath() (string, error) {
-	target := ""
-	messageText := "Filepath to SSL certificate key:"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Filepath to SSL certificate key:"
+
+	result, err := prompt.PromptText(promptText)
 	if err != nil {
-		return "", errors.New("there was an issue with the SSL cert key path prompt")
+		return "", fmt.Errorf("issue occured in SSL key path prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 func PromptMisMatchedHostName() (bool, error) {
-	name := false
 	messageText := "The hostname of your server and the subject name in the certificate " +
 		"don't match.\n This is common in configurations that include a load balancer " +
 		"or a proxy.\n If you would like to exit the installer, resolve the certificate mismatch\n" +
-		" and restart the installer at this step, you can run \"wbi setup --step ssl\" \n" +
-		"Please confirm that you want to proceed with mismatched names above?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
-	if err != nil {
-		return false, errors.New("there was an issue with the SSL prompt")
-	}
+		" and restart the installer at this step, you can run \"wbi setup --step ssl\" "
+
+	pterm.DefaultBasicText.Println(messageText)
 	log.Info(messageText)
-	log.Info(name)
-	return name, nil
+
+	confirmText := "Please confirm that you want to proceed with mismatched names above?"
+
+	result, err := prompt.PromptConfirm(confirmText)
+	if err != nil {
+		return false, fmt.Errorf("issue occured in hostname mismatch confirm prompt: %w", err)
+	}
+
+	return result, nil
 }
 
 func PromptAddRootCAToTrustStore() (bool, error) {
-	name := true
-	messageText := "The certificate provided is not trusted by the system, this system level trust is usually required" +
+	confirmText := "The certificate provided is not trusted by the system, this system level trust is usually required" +
 		"\n to support connectivity between systems. Would you like to add this untrusted root certificate " +
 		"\n to the system trust store?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the CA Trust prompt")
+		return false, fmt.Errorf("issue occured in the CA Trust confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(name)
-	return name, nil
+
+	return result, nil
 }
 
 func PromptRootCAMissing() (bool, error) {
-	name := true
-	messageText := "The certificate provided does not include a root Certificate Authority," +
+	confirmText := "The certificate provided does not include a root Certificate Authority," +
 		" otherwise known as a Root CA Certificate. Generally, Posit products require a chain of certificates from server to" +
 		" your domains root certificate authority in order to present a valid HTTPS connection. In rare circumstances" +
 		" this is not required. Does your corporate browser trust the server certificate that you're using without the" +
 		" presence of a root certificate? If you are not sure, please select No."
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the missing Root Cert prompt")
+		return false, fmt.Errorf("issue occured in CA root missing confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(name)
-	return name, nil
+
+	return result, nil
 }

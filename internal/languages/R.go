@@ -13,13 +13,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/samber/lo"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
 	cmdlog "github.com/sol-eng/wbi/internal/logging"
+	"github.com/sol-eng/wbi/internal/prompt"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -235,13 +235,11 @@ func sortOptRVersionPaths(versionPaths []string) ([]string, error) {
 func RInstallPrompt() (bool, error) {
 	confirmText := "Would you like to install version(s) of R?"
 
-	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the R install prompt")
+		return false, fmt.Errorf("issue occured in R install confirm prompt: %w", err)
 	}
 
-	log.Info(confirmText)
-	log.Info(fmt.Sprintf("%v", result))
 	return result, nil
 }
 
@@ -294,20 +292,11 @@ func RetrieveValidRVersions() ([]string, error) {
 func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	promptText := "Which version(s) of R would you like to install"
 
-	selectOptions := availableRVersions
-
-	result, err := pterm.DefaultInteractiveMultiselect.
-		WithDefaultText(promptText).
-		WithDefaultOptions([]string{selectOptions[0]}).
-		WithOptions(selectOptions).
-		WithFilter(false).
-		Show()
+	result, err := prompt.PromptMultiSelect(promptText, availableRVersions, []string{availableRVersions[0]}, false)
 	if err != nil {
-		return []string{}, errors.New("there was an issue with the R versions selection prompt")
+		return []string{}, fmt.Errorf("issue occured in R version selection prompt: %w", err)
 	}
 
-	log.Info(promptText)
-	log.Info(strings.Join(result, ", "))
 	return result, nil
 }
 
@@ -364,13 +353,11 @@ func PromptAndSetRSymlinks(rPaths []string) error {
 func RSymlinkPrompt() (bool, error) {
 	confirmText := `Would you like to symlink a R version to make it available on PATH? This is recommended so Workbench can default to this version of R and users can type "R" in the terminal`
 
-	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the symlink R prompt")
+		return false, fmt.Errorf("issue occured in R symlink confirm prompt: %w", err)
 	}
 
-	log.Info(confirmText)
-	log.Info(fmt.Sprintf("%v", result))
 	return result, nil
 }
 
@@ -378,22 +365,14 @@ func RSymlinkPrompt() (bool, error) {
 func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 	promptText := "Select an R binary to symlink"
 
-	selectOptions := rPaths
-
-	result, err := pterm.DefaultInteractiveSelect.
-		WithDefaultText(promptText).
-		WithDefaultOption(selectOptions[0]).
-		WithOptions(selectOptions).
-		Show()
+	result, err := prompt.PromptSingleSelect(promptText, rPaths, rPaths[0])
 	if err != nil {
-		return "", errors.New("there was an issue with the R selection prompt for symlinking")
+		return "", fmt.Errorf("issue occured in R selection prompt for symlinking: %w", err)
 	}
 	if result == "" {
 		return result, errors.New("no R binary selected to be symlinked")
 	}
 
-	log.Info(promptText)
-	log.Info(result)
 	return result, nil
 }
 

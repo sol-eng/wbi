@@ -1,29 +1,23 @@
 package prodrivers
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/prompt"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
 // Prompt users if they would like to install Posit Pro Drivers
 func ProDriversInstallPrompt() (bool, error) {
-	name := true
-	messageText := "Would you like to install Post Pro Drivers?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to install Post Pro Drivers?"
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the Pro Drivers install prompt")
+		return false, fmt.Errorf("issue occured in Pro Drivers install confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }
 
 func CheckPromptDownloadAndInstallProDrivers(osType config.OperatingSystem) error {

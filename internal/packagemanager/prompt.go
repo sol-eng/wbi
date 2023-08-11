@@ -5,30 +5,26 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/prompt"
 	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // Prompt users if they wish to add a default Posit Package Manager URL to Workbench
 func PromptPackageManagerChoice() (string, error) {
-	choice := ""
-	messageText := "Would you like to setup Posit Package Manager or Posit Public Package Manager as the default R and/or Python repo for Workbench? You will need connectivity to the Package Manager server to use this option."
-	prompt := &survey.Select{
-		Message: messageText,
-		Options: []string{"Posit Package Manager", "Posit Public Package Manager", "Skip"},
-		Default: "Posit Public Package Manager",
-	}
-	err := survey.AskOne(prompt, &choice)
+	promptText := "Would you like to setup Posit Package Manager or Posit Public Package Manager as the default R and/or Python repo for Workbench? You will need connectivity to the Package Manager server to use this option."
+
+	options := []string{"Posit Package Manager", "Posit Public Package Manager", "Skip"}
+	defaultOptions := "Posit Public Package Manager"
+
+	result, err := prompt.PromptSingleSelect(promptText, options, defaultOptions)
 	if err != nil {
-		return "", errors.New("there was an issue with the Posit Package Manager choice prompt")
+		return "", fmt.Errorf("issue occured in Package Manager selection prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", choice))
-	return choice, nil
+
+	return result, nil
 }
 
 func InteractivePackageManagerPrompts(osType config.OperatingSystem) error {
@@ -191,18 +187,14 @@ func VerifyAndBuildPublicPackageManager(osType config.OperatingSystem) error {
 
 // Prompt users for a default Posit Package Manager URL
 func PromptPackageManagerURL() (string, error) {
-	target := ""
-	messageText := "Enter your Posit Package Manager base URL (for example, https://exampleaddress.com):"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Enter your Posit Package Manager base URL (for example, https://exampleaddress.com)"
+
+	result, err := prompt.PromptText(promptText)
 	if err != nil {
-		return "", fmt.Errorf("issue prompting for a Posit Package Manager URL: %w", err)
+		return "", fmt.Errorf("issue occured in Posit Package Manager URL prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 // Prompt users for a Posit Package Manager repo name
@@ -218,34 +210,26 @@ func PromptPackageManagerRepo(language string) (string, error) {
 
 	languageTitle := strings.Title(language)
 
-	target := ""
-	messageText := "Enter the name of your " + languageTitle + " repository on Posit Package Manager (for example, " + exampleRepo + ") :"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Enter the name of your " + languageTitle + " repository on Posit Package Manager (for example, " + exampleRepo + ") :"
+
+	result, err := prompt.PromptText(promptText)
 	if err != nil {
-		return "", fmt.Errorf("issue prompting for a Posit Package Manager "+languageTitle+" repo: %w", err)
+		return "", fmt.Errorf("issue occured in Package Manager repo name prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 // Prompt users if they wish to add Posit Public Package Manager as the default R repo in Workbench
 func PromptPublicPackageManagerChoice() (bool, error) {
-	name := true
-	messageText := "Would you like to setup Posit Public Package Manager as the default R repo in Workbench? You will need internet accessibility to use this option."
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to setup Posit Public Package Manager as the default R repo in Workbench? You will need internet accessibility to use this option."
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the Posit Public Package Manager R choice prompt")
+		return false, fmt.Errorf("issue occured in Posit Public Package Manager R repo confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }
 
 // PromptPackageManagerNameAndBuildURL prompts users for a Posit Package Manager repo name and builds the full URL
@@ -269,25 +253,14 @@ func PromptPackageManagerNameAndBuildURL(cleanURL string, osType config.Operatin
 
 // Prompt asking users which language repos they will use
 func PromptLanguageRepos() ([]string, error) {
-	messageText := "What language repositories would you like to setup?"
-	var qs = []*survey.Question{
-		{
-			Name: "languages",
-			Prompt: &survey.MultiSelect{
-				Message: messageText,
-				Options: []string{"r", "python"},
-				Default: []string{"r", "python"},
-			},
-		},
-	}
-	languageAnswers := struct {
-		Languages []string `survey:"languages"`
-	}{}
-	err := survey.Ask(qs, &languageAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
+	promptText := "What language repositories would you like to setup?"
+
+	options := []string{"r", "python"}
+
+	result, err := prompt.PromptMultiSelect(promptText, options, options, false)
 	if err != nil {
-		return []string{}, errors.New("there was an issue with the repo languages prompt")
+		return []string{}, fmt.Errorf("issue occured in repo languages selection prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(strings.Join(languageAnswers.Languages, ", "))
-	return languageAnswers.Languages, nil
+
+	return result, nil
 }

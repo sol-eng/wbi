@@ -1,30 +1,24 @@
 package connect
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
-	log "github.com/sirupsen/logrus"
+	"github.com/sol-eng/wbi/internal/prompt"
 	"github.com/sol-eng/wbi/internal/system"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // Prompt users if they wish to add a default Connect URL to Workbench
 func PromptConnectChoice() (bool, error) {
-	name := true
-	messageText := "Would you like to provide a default Connect URL for Workbench? You will need connectivity to the Connect server to use this option."
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to provide a default Connect URL for Workbench? You will need connectivity to the Connect server to use this option."
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the Connect URL prompt")
+		return false, fmt.Errorf("issue occured in Connect URL confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }
 
 func PromptVerifyAndConfigConnect() error {
@@ -67,16 +61,12 @@ func PromptVerifyAndConfigConnect() error {
 
 // Prompt users for a default Connect URL
 func PromptConnectURL() (string, error) {
-	target := ""
-	messageText := "Enter a default Connect URL:"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Enter a default Connect URL"
+
+	result, err := prompt.PromptText(promptText)
 	if err != nil {
-		return "", fmt.Errorf("issue prompting for a Connect URL: %w", err)
+		return "", fmt.Errorf("issue occured in Connect URL text prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }

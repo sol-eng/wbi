@@ -1,43 +1,33 @@
 package license
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/AlecAivazis/survey/v2"
-	log "github.com/sirupsen/logrus"
+	"github.com/sol-eng/wbi/internal/prompt"
 )
 
 // Prompt users if they wish to activate Workbench with a license key
 func PromptLicenseChoice() (bool, error) {
-	name := true
-	messageText := "Would you like to activate Workbench with a license key?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to activate Workbench with a license key?"
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the Workbench activation prompt")
+		return false, fmt.Errorf("issue occured in Workbench license activation confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }
 
 // Prompt users for a Workbench license key
 func PromptLicense() (string, error) {
-	target := ""
-	messageText := "Workbench license key:"
-	prompt := &survey.Input{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Workbench license key:"
+
+	result, err := prompt.PromptText(promptText)
 	if err != nil {
-		return "", fmt.Errorf("issue prompting for a license key: %w", err)
+		return "", fmt.Errorf("issue occured in license key text prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 func CheckPromptAndActivateLicense() error {

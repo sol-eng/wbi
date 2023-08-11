@@ -1,75 +1,49 @@
 package jupyter
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 
-	"github.com/AlecAivazis/survey/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/languages"
+	"github.com/sol-eng/wbi/internal/prompt"
 	"github.com/sol-eng/wbi/internal/workbench"
 )
 
 // Prompt asking users if they wish to install Jupyter
 func InstallPrompt() (bool, error) {
-	name := true
-	messageText := "Would you like to install Jupyter?"
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	confirmText := "Would you like to install Jupyter?"
+
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the Jupyter install prompt")
+		return false, fmt.Errorf("issue occured in Jupyter install confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }
 
 // Prompt asking users which Python location should Jupyter be installed into
 func KernelPrompt(pythonPaths []string) (string, error) {
-	// Allow the user to select a version of Python to target
-	target := ""
-	messageText := "Select a Python kernel to install Jupyter into:"
-	prompt := &survey.Select{
-		Message: messageText,
-		Options: pythonPaths,
-	}
-	err := survey.AskOne(prompt, &target)
+	promptText := "Select a Python kernel to install Jupyter into"
+
+	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0])
 	if err != nil {
-		return "", errors.New("there was an issue with the Python selection prompt for installing Jupyter")
+		return "", fmt.Errorf("issue occured in Jupyter kernel selection prompt: %w", err)
 	}
-	if target == "" {
-		return target, errors.New("no Python kernel selected for Jupyter")
-	}
-	log.Info(messageText)
-	log.Info(target)
-	return target, nil
+
+	return result, nil
 }
 
 // Prompt asking users which additional Python location should be registered as Jupyter kernels
 func AdditionalKernelPrompt(pythonPaths []string, defaultPythonPaths []string) ([]string, error) {
-	// Allow the user to select multiple versions
-	var qs = []*survey.Question{
-		{
-			Name: "kernelprompt",
-			Prompt: &survey.MultiSelect{
-				Message: "Which of the remaining Python versions would you like to have automatically registered as Jupyter kernels? (select none to skip this step)",
-				Options: pythonPaths,
-				Default: defaultPythonPaths,
-			},
-		},
-	}
-	kernelAnswers := struct {
-		Versions []string `survey:"kernelprompt"`
-	}{}
 
-	err := survey.Ask(qs, &kernelAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
+	promptText := "Which of the remaining Python versions would you like to have automatically registered as Jupyter kernels? (select none to skip this step)"
+
+	result, err := prompt.PromptMultiSelect(promptText, pythonPaths, defaultPythonPaths, false)
 	if err != nil {
-		return []string{}, errors.New("there was an issue with the languages prompt")
+		return []string{}, fmt.Errorf("issue occured in Jupyter kernel registration selection prompt: %w", err)
 	}
-	return kernelAnswers.Versions, nil
+
+	return result, nil
 }
 
 func removeString(s []string, r string) []string {

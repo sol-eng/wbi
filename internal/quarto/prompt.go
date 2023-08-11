@@ -1,13 +1,10 @@
 package quarto
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
-	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
+	"github.com/sol-eng/wbi/internal/prompt"
 )
 
 func ScanAndHandleQuartoVersions(osType config.OperatingSystem) error {
@@ -87,47 +84,29 @@ func quartoVersionsToPaths(quartoVersions []string) []string {
 }
 
 func PromptQuartoInstall(bundledVersion string) (bool, error) {
-	var name bool
-	var messageText string
+	var confirmText string
 	if bundledVersion == "" {
-		messageText = "Would you like to install Quarto?"
+		confirmText = "Would you like to install Quarto?"
 	} else {
-		messageText = "Workbench bundles Quarto version " + bundledVersion + " Would you like to install any different version(s)?"
+		confirmText = "Workbench bundles Quarto version " + bundledVersion + " Would you like to install any different version(s)?"
 	}
 
-	prompt := &survey.Confirm{
-		Message: messageText,
-	}
-	err := survey.AskOne(prompt, &name)
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with Quarto install prompt question")
+		return false, fmt.Errorf("issue occured in Quarto install confirm prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(fmt.Sprintf("%v", name))
-	return name, nil
+
+	return result, nil
 }
 
 // QuartoSelectVersionsPrompt Prompt asking users which Quarto version(s) they would like to install
 func QuartoSelectVersionsPrompt(availableQuartoVersions []string) ([]string, error) {
-	messageText := "Which version(s) of Quarto would you like to install?"
-	var qs = []*survey.Question{
-		{
-			Name: "quartoversions",
-			Prompt: &survey.MultiSelect{
-				Message: messageText,
-				Options: availableQuartoVersions,
-				Default: availableQuartoVersions[0],
-			},
-		},
-	}
-	quartoVersionsAnswers := struct {
-		QuartoVersions []string `survey:"quartoversions"`
-	}{}
-	err := survey.Ask(qs, &quartoVersionsAnswers, survey.WithRemoveSelectAll(), survey.WithRemoveSelectNone())
+	promptText := "Which version(s) of Quarto would you like to install?"
+
+	result, err := prompt.PromptMultiSelect(promptText, availableQuartoVersions, []string{availableQuartoVersions[0]}, false)
 	if err != nil {
-		return []string{}, errors.New("there was an issue with the Quarto versions selection prompt")
+		return []string{}, fmt.Errorf("issue occured in the Quarto versions selection prompt: %w", err)
 	}
-	log.Info(messageText)
-	log.Info(strings.Join(quartoVersionsAnswers.QuartoVersions, ", "))
-	return quartoVersionsAnswers.QuartoVersions, nil
+
+	return result, nil
 }

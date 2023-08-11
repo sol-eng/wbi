@@ -2,11 +2,10 @@ package languages
 
 import (
 	"errors"
-	"strings"
+	"fmt"
 
-	"github.com/pterm/pterm"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
+	"github.com/sol-eng/wbi/internal/prompt"
 )
 
 // Prompt asking users which languages they will use
@@ -15,20 +14,13 @@ func PromptAndRespond() ([]string, error) {
 
 	selectOptions := []string{"R", "python"}
 
-	result, err := pterm.DefaultInteractiveMultiselect.
-		WithDefaultText(promptText).
-		WithDefaultOptions(selectOptions).
-		WithOptions(selectOptions).
-		WithFilter(false).
-		Show()
+	result, err := prompt.PromptMultiSelect(promptText, selectOptions, selectOptions, false)
 	if err != nil {
-		return []string{}, errors.New("there was an issue with the languages prompt")
+		return []string{}, fmt.Errorf("issue occured in languages selection prompt: %w", err)
 	}
 	if !lo.Contains(result, "R") {
 		return []string{}, errors.New("R must be a select language to install Workbench")
 	}
 
-	log.Info(promptText)
-	log.Info(strings.Join(result, ", "))
 	return result, nil
 }

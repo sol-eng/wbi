@@ -13,12 +13,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pterm/pterm"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/sol-eng/wbi/internal/config"
 	"github.com/sol-eng/wbi/internal/install"
 	cmdlog "github.com/sol-eng/wbi/internal/logging"
+	"github.com/sol-eng/wbi/internal/prompt"
 	"github.com/sol-eng/wbi/internal/system"
 )
 
@@ -101,22 +100,14 @@ func CheckPromptAndSetPythonPATH(pythonPaths []string) error {
 func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
 	promptText := "Select a Python binary to add to PATH"
 
-	selectOptions := pythonPaths
-
-	result, err := pterm.DefaultInteractiveSelect.
-		WithDefaultText(promptText).
-		WithDefaultOption(selectOptions[0]).
-		WithOptions(selectOptions).
-		Show()
+	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0])
 	if err != nil {
-		return "", errors.New("there was an issue with the Python selection prompt for adding to PATH")
+		return "", fmt.Errorf("issue occured in Python selection prompt for adding to PATH: %w", err)
 	}
 	if result == "" {
 		return result, errors.New("no Python binary selected to add to PATH")
 	}
 
-	log.Info(promptText)
-	log.Info(result)
 	return result, nil
 }
 
@@ -282,13 +273,11 @@ func sortOptPythonVersionPaths(versionPaths []string) ([]string, error) {
 func PythonInstallPrompt() (bool, error) {
 	confirmText := "Would you like to install version(s) of Python?"
 
-	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the Python install prompt")
+		return false, fmt.Errorf("issue occured in Python install confirm prompt: %w", err)
 	}
 
-	log.Info(confirmText)
-	log.Info(fmt.Sprintf("%v", result))
 	return result, nil
 }
 
@@ -296,13 +285,11 @@ func PythonInstallPrompt() (bool, error) {
 func PythonPATHPrompt() (bool, error) {
 	confirmText := `Would you like to add a Python version to PATH? This is recommended so users can type "python" and "pip" in the terminal to access this specified version of python and associated tools`
 
-	result, err := pterm.DefaultInteractiveConfirm.WithDefaultText(confirmText).Show()
+	result, err := prompt.PromptConfirm(confirmText)
 	if err != nil {
-		return false, errors.New("there was an issue with the Python set PATH prompt")
+		return false, fmt.Errorf("issue occured in Python set PATH confirm prompt: %w", err)
 	}
 
-	log.Info(confirmText)
-	log.Info(fmt.Sprintf("%v", result))
 	return result, nil
 }
 
@@ -377,20 +364,11 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, error) {
 	promptText := "Which version(s) of Python would you like to install"
 
-	selectOptions := availablePythonVersions
-
-	result, err := pterm.DefaultInteractiveMultiselect.
-		WithDefaultText(promptText).
-		WithDefaultOptions([]string{selectOptions[0]}).
-		WithOptions(selectOptions).
-		WithFilter(false).
-		Show()
+	result, err := prompt.PromptMultiSelect(promptText, availablePythonVersions, []string{availablePythonVersions[0]}, false)
 	if err != nil {
-		return []string{}, errors.New("there was an issue with the Python versions selection prompt")
+		return []string{}, fmt.Errorf("issue occured in Python version selection prompt: %w", err)
 	}
 
-	log.Info(promptText)
-	log.Info(strings.Join(result, ", "))
 	return result, nil
 }
 
