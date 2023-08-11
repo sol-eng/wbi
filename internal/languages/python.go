@@ -100,7 +100,7 @@ func CheckPromptAndSetPythonPATH(pythonPaths []string) error {
 func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
 	promptText := "Select a Python binary to add to PATH"
 
-	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0])
+	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0], false)
 	if err != nil {
 		return "", fmt.Errorf("issue occured in Python selection prompt for adding to PATH: %w", err)
 	}

@@ -365,7 +365,7 @@ func RSymlinkPrompt() (bool, error) {
 func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 	promptText := "Select an R binary to symlink"
 
-	result, err := prompt.PromptSingleSelect(promptText, rPaths, rPaths[0])
+	result, err := prompt.PromptSingleSelect(promptText, rPaths, rPaths[0], false)
 	if err != nil {
 		return "", fmt.Errorf("issue occured in R selection prompt for symlinking: %w", err)
 	}

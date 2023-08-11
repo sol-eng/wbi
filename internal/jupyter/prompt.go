@@ -25,7 +25,7 @@ func InstallPrompt() (bool, error) {
 func KernelPrompt(pythonPaths []string) (string, error) {
 	promptText := "Select a Python kernel to install Jupyter into"
 
-	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0])
+	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0], false)
 	if err != nil {
 		return "", fmt.Errorf("issue occured in Jupyter kernel selection prompt: %w", err)
 	}

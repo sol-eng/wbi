@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"atomicgo.dev/keyboard/keys"
 	"github.com/pterm/pterm"
 	log "github.com/sirupsen/logrus"
 )
@@ -33,10 +34,11 @@ func PromptText(promptText string) (string, error) {
 	return result, nil
 }
 
-func PromptSingleSelect(promptText string, options []string, defaultOption string) (string, error) {
+func PromptSingleSelect(promptText string, options []string, defaultOption string, filter bool) (string, error) {
 	result, err := pterm.DefaultInteractiveSelect.
 		WithDefaultText(promptText).
 		WithDefaultOption(defaultOption).
+		WithFilter(filter).
 		WithOptions(options).
 		Show()
 	if err != nil {
@@ -54,6 +56,9 @@ func PromptMultiSelect(promptText string, options []string, defaultOptions []str
 		WithDefaultOptions(defaultOptions).
 		WithOptions(options).
 		WithFilter(filter).
+		WithKeyConfirm(keys.Enter).
+		WithKeySelect(keys.Space).
+		WithCheckmark(&pterm.Checkmark{Checked: "+", Unchecked: " "}).
 		Show()
 	if err != nil {
 		return []string{}, errors.New("issue occured with the multi select prompt")

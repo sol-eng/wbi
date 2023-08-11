@@ -19,7 +19,7 @@ func PromptPackageManagerChoice() (string, error) {
 	options := []string{"Posit Package Manager", "Posit Public Package Manager", "Skip"}
 	defaultOptions := "Posit Public Package Manager"
 
-	result, err := prompt.PromptSingleSelect(promptText, options, defaultOptions)
+	result, err := prompt.PromptSingleSelect(promptText, options, defaultOptions, false)
 	if err != nil {
 		return "", fmt.Errorf("issue occured in Package Manager selection prompt: %w", err)
 	}

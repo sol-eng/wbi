@@ -172,7 +172,7 @@ func setQuartoSymlinks(quartoPath string, display bool) error {
 func quartoLocationSymlinksPrompt(quartoPaths []string) (string, error) {
 	messageText := "Select a Quarto binary to symlink:"
 
-	result, err := prompt.PromptSingleSelect(messageText, quartoPaths, quartoPaths[0])
+	result, err := prompt.PromptSingleSelect(messageText, quartoPaths, quartoPaths[0], false)
 	if err != nil {
 		return "", fmt.Errorf("issue occured in Quarto selection prompt for symlinking: %w", err)
 	}
