@@ -108,7 +108,7 @@ func PromptAndVerifySSL(osType config.OperatingSystem) (string, string, error) {
 
 // PromptSSLFilePath Prompt asking users for a filepath to their SSL cert
 func PromptSSLFilePath() (string, error) {
-	promptText := "Filepath to SSL certificate:"
+	promptText := "Filepath to SSL certificate"
 
 	result, err := prompt.PromptText(promptText)
 	if err != nil {
@@ -120,7 +120,7 @@ func PromptSSLFilePath() (string, error) {
 
 // PromptServerURL asks users for the server URL
 func PromptServerURL() (string, error) {
-	promptText := "Server URL that end users will use to access the Workbench web interface (for example, https://workbench.mydomainname.com):"
+	promptText := "to access the Workbench web interface (for example, https://workbench.mydomainname.com)"
 
 	result, err := prompt.PromptText(promptText)
 	if err != nil {
@@ -132,7 +132,7 @@ func PromptServerURL() (string, error) {
 
 // PromptSSLKeyFilePath Prompt asking users for a filepath to their SSL cert key
 func PromptSSLKeyFilePath() (string, error) {
-	promptText := "Filepath to SSL certificate key:"
+	promptText := "Filepath to SSL certificate key"
 
 	result, err := prompt.PromptText(promptText)
 	if err != nil {

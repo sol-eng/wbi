@@ -88,7 +88,7 @@ func PromptQuartoInstall(bundledVersion string) (bool, error) {
 	if bundledVersion == "" {
 		confirmText = "Would you like to install Quarto?"
 	} else {
-		confirmText = "Workbench bundles Quarto version " + bundledVersion + " Would you like to install any different version(s)?"
+		confirmText = "Workbench bundles Quarto version " + bundledVersion + "Would you like to install any different version(s)?"
 	}
 
 	result, err := prompt.PromptConfirm(confirmText)

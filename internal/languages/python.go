@@ -154,7 +154,7 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue occured in scanning for Python versions: %w", err)
 	}
 
-	system.PrintAndLogInfo("\nFound Python versions:")
+	system.PrintAndLogInfo("Found Python versions:")
 	system.PrintAndLogInfo(strings.Join(pythonVersionsOrig, "\n"))
 
 	if len(pythonVersionsOrig) == 0 {
@@ -195,7 +195,7 @@ func ScanAndHandlePythonVersions(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue setting Python PATH: %w", err)
 	}
 
-	system.PrintAndLogInfo("\nFound Python versions:")
+	system.PrintAndLogInfo("Found Python versions:")
 	system.PrintAndLogInfo(strings.Join(pythonVersions, "\n"))
 	return nil
 }

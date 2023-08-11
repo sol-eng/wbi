@@ -20,7 +20,7 @@ func PromptLicenseChoice() (bool, error) {
 
 // Prompt users for a Workbench license key
 func PromptLicense() (string, error) {
-	promptText := "Workbench license key:"
+	promptText := "Workbench license key"
 
 	result, err := prompt.PromptText(promptText)
 	if err != nil {

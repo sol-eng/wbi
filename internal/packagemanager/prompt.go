@@ -14,7 +14,7 @@ import (
 
 // Prompt users if they wish to add a default Posit Package Manager URL to Workbench
 func PromptPackageManagerChoice() (string, error) {
-	promptText := "Would you like to setup Posit Package Manager or Posit Public Package Manager as the default R and/or Python repo for Workbench? You will need connectivity to the Package Manager server to use this option."
+	promptText := "Would you like to setup Posit Package Manager or Posit Public Package Manager as the default R and/or Python repo for Workbench? You will need connectivity to the Package Manager server to use this option"
 
 	options := []string{"Posit Package Manager", "Posit Public Package Manager", "Skip"}
 	defaultOptions := "Posit Public Package Manager"
@@ -210,7 +210,7 @@ func PromptPackageManagerRepo(language string) (string, error) {
 
 	languageTitle := strings.Title(language)
 
-	promptText := "Enter the name of your " + languageTitle + " repository on Posit Package Manager (for example, " + exampleRepo + ") :"
+	promptText := "Enter the name of your " + languageTitle + " repository on Posit Package Manager (for example, " + exampleRepo + ")"
 
 	result, err := prompt.PromptText(promptText)
 	if err != nil {

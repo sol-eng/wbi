@@ -83,7 +83,7 @@ func DownloadAndInstallProDrivers(osType config.OperatingSystem) error {
 		return fmt.Errorf("BackupAndAppendODBCConfiguration: %w", err)
 	}
 
-	system.PrintAndLogInfo("\nPosit Pro Drivers next steps:\nNow that the Pro Drivers are installed and /etc/odbcinst.ini is setup, the next step is to test database connectivity and/or create DSNs in your /etc/odbc.ini file.\n\n More information about each of these steps can be found here: https://docs.posit.co/pro-drivers/workbench-connect/#step-4-testing-database-connectivity")
+	system.PrintAndLogInfo("\nPosit Pro Drivers next steps:\nNow that the Pro Drivers are installed and /etc/odbcinst.ini is setup, the next step is to test database connectivity and/or create DSNs in your /etc/odbc.ini file.\n\nMore information about each of these steps can be found here: https://docs.posit.co/pro-drivers/workbench-connect/#step-4-testing-database-connectivity")
 	return nil
 }
 

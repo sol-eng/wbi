@@ -104,7 +104,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 	if err != nil {
 		return fmt.Errorf("issue occured in scanning for R versions: %w", err)
 	}
-	system.PrintAndLogInfo("\nFound R versions:")
+	system.PrintAndLogInfo("Found R versions:")
 	system.PrintAndLogInfo(strings.Join(rVersionsOrig, "\n"))
 
 	if len(rVersionsOrig) == 0 {
@@ -148,7 +148,7 @@ func ScanAndHandleRVersions(osType config.OperatingSystem) error {
 		return fmt.Errorf("issue setting R symlinks: %w", err)
 	}
 
-	system.PrintAndLogInfo("\nFound R versions:")
+	system.PrintAndLogInfo("Found R versions:")
 	system.PrintAndLogInfo(strings.Join(rVersions, "\n"))
 	return nil
 }
