@@ -25,7 +25,7 @@ func InstallPrompt() (bool, error) {
 func KernelPrompt(pythonPaths []string) (string, error) {
 	promptText := "Select a Python kernel to install Jupyter into"
 
-	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0], false)
+	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0])
 	if err != nil {
 		return "", fmt.Errorf("issue occured in Jupyter kernel selection prompt: %w", err)
 	}
@@ -38,7 +38,7 @@ func AdditionalKernelPrompt(pythonPaths []string, defaultPythonPaths []string) (
 
 	promptText := "Which of the remaining Python versions would you like to have automatically registered as Jupyter kernels? (select none to skip this step)"
 
-	result, err := prompt.PromptMultiSelect(promptText, pythonPaths, defaultPythonPaths, false)
+	result, err := prompt.PromptMultiSelect(promptText, pythonPaths, defaultPythonPaths)
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in Jupyter kernel registration selection prompt: %w", err)
 	}

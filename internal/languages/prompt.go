@@ -14,7 +14,7 @@ func PromptAndRespond() ([]string, error) {
 
 	selectOptions := []string{"R", "python"}
 
-	result, err := prompt.PromptMultiSelect(promptText, selectOptions, selectOptions, false)
+	result, err := prompt.PromptMultiSelect(promptText, selectOptions, selectOptions)
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in languages selection prompt: %w", err)
 	}

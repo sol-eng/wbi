@@ -103,7 +103,7 @@ func PromptQuartoInstall(bundledVersion string) (bool, error) {
 func QuartoSelectVersionsPrompt(availableQuartoVersions []string) ([]string, error) {
 	promptText := "Which version(s) of Quarto would you like to install?"
 
-	result, err := prompt.PromptMultiSelect(promptText, availableQuartoVersions, []string{availableQuartoVersions[0]}, false)
+	result, err := prompt.PromptMultiSelect(promptText, availableQuartoVersions, []string{availableQuartoVersions[0]})
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in the Quarto versions selection prompt: %w", err)
 	}

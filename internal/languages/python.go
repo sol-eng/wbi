@@ -100,7 +100,7 @@ func CheckPromptAndSetPythonPATH(pythonPaths []string) error {
 func PythonLocationPATHPrompt(pythonPaths []string) (string, error) {
 	promptText := "Select a Python binary to add to PATH"
 
-	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0], false)
+	result, err := prompt.PromptSingleSelect(promptText, pythonPaths, pythonPaths[0])
 	if err != nil {
 		return "", fmt.Errorf("issue occured in Python selection prompt for adding to PATH: %w", err)
 	}
@@ -364,7 +364,7 @@ func RetrieveValidPythonVersions(osType config.OperatingSystem) ([]string, error
 func PythonSelectVersionsPrompt(availablePythonVersions []string) ([]string, error) {
 	promptText := "Which version(s) of Python would you like to install"
 
-	result, err := prompt.PromptMultiSelect(promptText, availablePythonVersions, []string{availablePythonVersions[0]}, false)
+	result, err := prompt.PromptMultiSelect(promptText, availablePythonVersions, []string{availablePythonVersions[0]})
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in Python version selection prompt: %w", err)
 	}

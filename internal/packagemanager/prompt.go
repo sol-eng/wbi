@@ -19,7 +19,7 @@ func PromptPackageManagerChoice() (string, error) {
 	options := []string{"Posit Package Manager", "Posit Public Package Manager", "Skip"}
 	defaultOptions := "Posit Public Package Manager"
 
-	result, err := prompt.PromptSingleSelect(promptText, options, defaultOptions, false)
+	result, err := prompt.PromptSingleSelect(promptText, options, defaultOptions)
 	if err != nil {
 		return "", fmt.Errorf("issue occured in Package Manager selection prompt: %w", err)
 	}
@@ -257,7 +257,7 @@ func PromptLanguageRepos() ([]string, error) {
 
 	options := []string{"r", "python"}
 
-	result, err := prompt.PromptMultiSelect(promptText, options, options, false)
+	result, err := prompt.PromptMultiSelect(promptText, options, options)
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in repo languages selection prompt: %w", err)
 	}

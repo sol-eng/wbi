@@ -21,9 +21,9 @@ type modelText struct {
 
 func initialModelText(text string, defaultText string) modelText {
 	ti := textinput.New()
-	ti.Placeholder = defaultText
 	ti.Focus()
 	ti.CharLimit = 500
+	ti.SetValue(defaultText)
 
 	return modelText{
 		text:      text,

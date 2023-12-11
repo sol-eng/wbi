@@ -292,7 +292,7 @@ func RetrieveValidRVersions() ([]string, error) {
 func RSelectVersionsPrompt(availableRVersions []string) ([]string, error) {
 	promptText := "Which version(s) of R would you like to install"
 
-	result, err := prompt.PromptMultiSelect(promptText, availableRVersions, []string{availableRVersions[0]}, false)
+	result, err := prompt.PromptMultiSelect(promptText, availableRVersions, []string{availableRVersions[0]})
 	if err != nil {
 		return []string{}, fmt.Errorf("issue occured in R version selection prompt: %w", err)
 	}
@@ -365,7 +365,7 @@ func RSymlinkPrompt() (bool, error) {
 func RLocationSymlinksPrompt(rPaths []string) (string, error) {
 	promptText := "Select an R binary to symlink"
 
-	result, err := prompt.PromptSingleSelect(promptText, rPaths, rPaths[0], false)
+	result, err := prompt.PromptSingleSelect(promptText, rPaths, rPaths[0])
 	if err != nil {
 		return "", fmt.Errorf("issue occured in R selection prompt for symlinking: %w", err)
 	}
